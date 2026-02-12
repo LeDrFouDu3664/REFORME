@@ -27,11 +27,16 @@ public class FactionCommand implements CommandExecutor {
         }
 
         if (args.length == 0) {
-            player.sendMessage("§cUtilisation: /f <sous-commande>");
+            displayHelp(player);
             return true;
         }
 
         String sub = args[0].toLowerCase();
+        if (!player.hasPermission("faction.command." + sub)) {
+            MessageUtils.sendMessage(player, "no-permission");
+            return true;
+        }
+
         switch (sub) {
             case "create":
                 handleCreate(player, args);
@@ -123,6 +128,15 @@ public class FactionCommand implements CommandExecutor {
                 break;
             case "unstuck":
                 handleUnstuck(player);
+                break;
+            case "gui":
+                handlePerm(player);
+                break;
+            case "help":
+                displayHelp(player);
+                break;
+            case "admin":
+                handleAdmin(player, args);
                 break;
             case "sethome":
                 handleFactionSetHome(player);
@@ -604,10 +618,20 @@ public class FactionCommand implements CommandExecutor {
             return;
         }
 
+        if (args.length > 1 && args[1].equalsIgnoreCase("auto")) {
+            data.setAutoClaim(!data.isAutoClaim());
+            player.sendMessage("§aAuto-claim: " + (data.isAutoClaim() ? "§aActivé" : "§cDésactivé"));
+            return;
+        }
+
         String world = player.getWorld().getName();
         int x = player.getLocation().getChunk().getX();
         int z = player.getLocation().getChunk().getZ();
 
+        performClaim(player, faction, world, x, z);
+    }
+
+    public void performClaim(Player player, Faction faction, String world, int x, int z) {
         if (plugin.getClaimManager().isClaimed(world, x, z)) {
             MessageUtils.sendMessage(player, "claim-already-owned");
             return;
@@ -663,7 +687,7 @@ public class FactionCommand implements CommandExecutor {
     }
 
     private void handleMap(Player player) {
-        int radius = 4;
+        int radius = 8;
         player.sendMessage("§6--- Carte des Factions ---");
         int playerX = player.getLocation().getChunk().getX();
         int playerZ = player.getLocation().getChunk().getZ();
@@ -685,6 +709,84 @@ public class FactionCommand implements CommandExecutor {
             }
             player.sendMessage(line.toString());
         }
+    }
+
+    private void handleAdmin(Player player, String[] args) {
+        if (!player.hasPermission("faction.admin")) {
+            MessageUtils.sendMessage(player, "no-permission");
+            return;
+        }
+        if (args.length < 2) {
+            player.sendMessage("§cUtilisation: /f admin <disband/bypass/setpower>");
+            return;
+        }
+        String action = args[1].toLowerCase();
+        PlayerData data = plugin.getPlayerManager().getPlayerData(player.getUniqueId());
+
+        switch (action) {
+            case "bypass":
+                data.setBypass(!data.isBypass());
+                player.sendMessage("§aMode bypass: " + (data.isBypass() ? "Activé" : "Désactivé"));
+                break;
+            case "disband":
+                if (args.length < 3) {
+                    player.sendMessage("§cUtilisation: /f admin disband [faction]");
+                    return;
+                }
+                Faction faction = plugin.getFactionManager().getFactionByName(args[2]);
+                if (faction == null) {
+                    MessageUtils.sendMessage(player, "faction-not-found");
+                    return;
+                }
+                for (UUID memberId : faction.getMembers()) {
+                    PlayerData memberData = plugin.getPlayerManager().getPlayerData(memberId);
+                    memberData.setFactionId(null);
+                    memberData.setRole(Grade.MEMBER);
+                }
+                plugin.getClaimManager().removeAllFactionClaims(faction.getId());
+                plugin.getFactionManager().disbandFaction(faction.getId());
+                player.sendMessage("§aFaction " + faction.getName() + " dissoute par un administrateur.");
+                break;
+            case "setpower":
+                if (args.length < 4) {
+                    player.sendMessage("§cUtilisation: /f admin setpower [joueur] [montant]");
+                    return;
+                }
+                PlayerData targetData = plugin.getPlayerManager().getPlayerDataByName(args[2]);
+                if (targetData == null) {
+                    player.sendMessage("§cJoueur non trouvé.");
+                    return;
+                }
+                targetData.setPower(Double.parseDouble(args[3]));
+                player.sendMessage("§aPower de " + args[2] + " mis à: " + args[3]);
+                break;
+            default:
+                player.sendMessage("§cAction admin inconnue.");
+                break;
+        }
+    }
+
+    private void displayHelp(Player player) {
+        player.sendMessage("§6--- Commandes Faction ---");
+        player.sendMessage("§e/f create [nom] §7- Créer une faction");
+        player.sendMessage("§e/f join [nom] §7- Rejoindre une faction");
+        player.sendMessage("§e/f leave §7- Quitter votre faction");
+        player.sendMessage("§e/f disband §7- Dissoudre votre faction");
+        player.sendMessage("§e/f invite add/revoke [pseudo] §7- Gérer les invitations");
+        player.sendMessage("§e/f kick [pseudo] §7- Exclure un membre");
+        player.sendMessage("§e/f promote/demote [pseudo] §7- Gérer les grades");
+        player.sendMessage("§e/f leader [pseudo] §7- Nommer un nouveau chef");
+        player.sendMessage("§e/f claim [one/all] §7- Revendiquer un terrain");
+        player.sendMessage("§e/f unclaim [one/all] §7- Libérer un terrain");
+        player.sendMessage("§e/f map §7- Voir la carte");
+        player.sendMessage("§e/f status §7- Voir le statut de la faction");
+        player.sendMessage("§e/f faction [nom] §7- Infos sur une faction");
+        player.sendMessage("§e/f player [pseudo] §7- Infos sur un joueur");
+        player.sendMessage("§e/f home/sethome/unsethome §7- Gérer le home");
+        player.sendMessage("§e/f chat [f/t/a/p] §7- Changer de chat");
+        player.sendMessage("§e/f gui §7- Ouvrir le menu de gestion");
+        player.sendMessage("§e/f seechunk §7- Voir les limites du chunk");
+        player.sendMessage("§e/f unstuck §7- Se débloquer");
     }
 
     private void handleSeechunk(Player player) {

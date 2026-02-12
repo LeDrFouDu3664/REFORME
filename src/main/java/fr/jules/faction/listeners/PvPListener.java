@@ -33,9 +33,12 @@ public class PvPListener implements Listener {
         }
 
         Faction attackerFaction = plugin.getFactionManager().getFaction(attackerData.getFactionId());
-        String relation = attackerFaction.getRelations().get(targetData.getFactionId());
+        Faction targetFaction = plugin.getFactionManager().getFaction(targetData.getFactionId());
 
-        if ("ALLY".equals(relation) || "TRUCE".equals(relation)) {
+        String rel1 = attackerFaction.getRelations().get(targetData.getFactionId());
+        String rel2 = targetFaction.getRelations().get(attackerData.getFactionId());
+
+        if (("ALLY".equals(rel1) && "ALLY".equals(rel2)) || ("TRUCE".equals(rel1) && "TRUCE".equals(rel2))) {
             MessageUtils.sendMessage(attacker, "pvp-denied-relation");
             event.setCancelled(true);
         }

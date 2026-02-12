@@ -2,6 +2,7 @@ package fr.jules.faction.listeners;
 
 import fr.jules.faction.FactionPlugin;
 import fr.jules.faction.model.Claim;
+import fr.jules.faction.model.Faction;
 import fr.jules.faction.model.PlayerData;
 import fr.jules.faction.utils.MessageUtils;
 import org.bukkit.Location;
@@ -51,6 +52,9 @@ public class ProtectionListener implements Listener {
     }
 
     private boolean canInteract(Player player, Location loc) {
+        PlayerData data = plugin.getPlayerManager().getPlayerData(player.getUniqueId());
+        if (data.isBypass()) return true;
+
         String world = loc.getWorld().getName();
         int x = loc.getChunk().getX();
         int z = loc.getChunk().getZ();
@@ -58,7 +62,11 @@ public class ProtectionListener implements Listener {
         Claim claim = plugin.getClaimManager().getClaim(world, x, z);
         if (claim == null) return true;
 
-        PlayerData data = plugin.getPlayerManager().getPlayerData(player.getUniqueId());
+        Faction owner = plugin.getFactionManager().getFaction(claim.getFactionId());
+        if (owner != null && owner.getPower() < owner.getClaims().size()) {
+            return true; // Territory is raidable
+        }
+
         return data.getFactionId() != null && data.getFactionId().equals(claim.getFactionId());
     }
 }

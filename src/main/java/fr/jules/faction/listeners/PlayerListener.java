@@ -6,6 +6,7 @@ import fr.jules.faction.model.PlayerData;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
 public class PlayerListener implements Listener {
@@ -39,5 +40,19 @@ public class PlayerListener implements Listener {
         PlayerData data = plugin.getPlayerManager().getPlayerData(event.getPlayer().getUniqueId());
         plugin.getDataManager().savePlayerData(data);
         plugin.getPlayerManager().removePlayerData(event.getPlayer().getUniqueId());
+    }
+
+    @EventHandler
+    public void onMove(PlayerMoveEvent event) {
+        if (event.getFrom().getChunk().equals(event.getTo().getChunk())) return;
+
+        PlayerData data = plugin.getPlayerManager().getPlayerData(event.getPlayer().getUniqueId());
+        if (data.isAutoClaim() && data.getFactionId() != null) {
+            Faction faction = plugin.getFactionManager().getFaction(data.getFactionId());
+            if (faction != null && faction.isOfficer(event.getPlayer().getUniqueId())) {
+                fr.jules.faction.commands.FactionCommand cmd = (fr.jules.faction.commands.FactionCommand) plugin.getCommand("f").getExecutor();
+                cmd.performClaim(event.getPlayer(), faction, event.getTo().getWorld().getName(), event.getTo().getChunk().getX(), event.getTo().getChunk().getZ());
+            }
+        }
     }
 }

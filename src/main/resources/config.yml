@@ -79,3 +79,7 @@ messages:
   money-status: "§aArgent: %amount%$"
   shop-open: "§aOuverture de la boutique Faction."
   boutique-open: "§aOuverture de la boutique Me's."
+
+  # Admin
+  admin-faction-disbanded: "§aFaction %name% dissoute par un administrateur."
+  bypass-mode: "§aMode bypass: %status%"

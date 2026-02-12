@@ -22,7 +22,13 @@ public class TeleportCommands implements CommandExecutor {
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         if (!(sender instanceof Player player)) return true;
 
-        switch (label.toLowerCase()) {
+        String cmd = label.toLowerCase();
+        if (!player.hasPermission("faction.command." + cmd)) {
+            MessageUtils.sendMessage(player, "no-permission");
+            return true;
+        }
+
+        switch (cmd) {
             case "tpa":
                 handleTpa(player, args);
                 break;

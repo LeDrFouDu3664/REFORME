@@ -18,6 +18,8 @@ public class PlayerData {
     private long lastJoin;
     private String title = "";
     private String chatMode = "PUBLIC";
+    private boolean bypass = false;
+    private boolean autoClaim = false;
 
     public void addPower(double amount) {
         this.power = Math.min(maxPower, this.power + amount);

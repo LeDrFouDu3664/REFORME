@@ -25,7 +25,13 @@ public class MiscCommands implements CommandExecutor {
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         if (!(sender instanceof Player player)) return true;
 
-        switch (label.toLowerCase()) {
+        String cmd = label.toLowerCase();
+        if (!player.hasPermission("faction.command." + cmd)) {
+            MessageUtils.sendMessage(player, "no-permission");
+            return true;
+        }
+
+        switch (cmd) {
             case "spawn":
                 player.teleport(player.getWorld().getSpawnLocation());
                 MessageUtils.sendMessage(player, "spawn-teleport");
@@ -37,7 +43,9 @@ public class MiscCommands implements CommandExecutor {
                 player.sendMessage("§cVous ne possédez pas la forteresse.");
                 break;
             case "money":
-                MessageUtils.sendMessage(player, "money-status", "%amount%", "1000");
+                // In production, integrate with Vault API
+                MessageUtils.sendMessage(player, "money-status", "%amount%", "1250.50");
+                player.sendMessage("§7(Note: Intégrez Vault pour l'économie réelle)");
                 break;
             case "power":
                 handlePower(player, args);

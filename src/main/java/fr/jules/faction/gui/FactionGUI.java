@@ -23,6 +23,30 @@ public class FactionGUI {
         player.openInventory(inv);
     }
 
+    public static void openMembersMenu(Player player, Faction faction) {
+        Inventory inv = Bukkit.createInventory(null, 54, "§6Membres: " + faction.getName());
+        int slot = 0;
+        for (java.util.UUID memberId : faction.getMembers()) {
+            if (slot >= 54) break;
+            String role = faction.getLeader().equals(memberId) ? "Chef" :
+                         (faction.getOfficers().contains(memberId) ? "Officier" : "Membre");
+            inv.setItem(slot++, createItem(Material.PLAYER_HEAD, "§e" + Bukkit.getOfflinePlayer(memberId).getName(), "§7Grade: " + role, "§7Clic gauche: Promouvoir", "§7Clic droit: Rétrograder", "§7Shift+Clic: Exclure"));
+        }
+        player.openInventory(inv);
+    }
+
+    public static void openPermissionsMenu(Player player, Faction faction) {
+        Inventory inv = Bukkit.createInventory(null, 27, "§6Permissions: " + faction.getName());
+
+        boolean allyHome = faction.getPermissions().getOrDefault("ALLY_HOME", true);
+        inv.setItem(10, createItem(allyHome ? Material.LIME_DYE : Material.GRAY_DYE, "§eALLY_HOME", "§7Autoriser les alliés au home", "§7Statut: " + (allyHome ? "§aActivé" : "§cDésactivé")));
+
+        boolean openInvites = faction.getPermissions().getOrDefault("OPEN_INVITES", false);
+        inv.setItem(11, createItem(openInvites ? Material.LIME_DYE : Material.GRAY_DYE, "§eOPEN_INVITES", "§7Tout le monde peut rejoindre", "§7Statut: " + (openInvites ? "§aActivé" : "§cDésactivé")));
+
+        player.openInventory(inv);
+    }
+
     private static ItemStack createItem(Material material, String name, String... lore) {
         ItemStack item = new ItemStack(material);
         if (item.getItemMeta() == null) return item;

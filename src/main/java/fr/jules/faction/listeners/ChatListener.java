@@ -59,11 +59,14 @@ public class ChatListener implements Listener {
     private void broadcastToRelations(Faction faction, String message, String... relations) {
         broadcastToFaction(faction, message);
         for (UUID otherFacId : faction.getRelations().keySet()) {
-            String rel = faction.getRelations().get(otherFacId);
+            String rel1 = faction.getRelations().get(otherFacId);
+            Faction otherFac = plugin.getFactionManager().getFaction(otherFacId);
+            if (otherFac == null) continue;
+            String rel2 = otherFac.getRelations().get(faction.getId());
+
             for (String allowed : relations) {
-                if (rel.equals(allowed)) {
-                    Faction otherFac = plugin.getFactionManager().getFaction(otherFacId);
-                    if (otherFac != null) broadcastToFaction(otherFac, message);
+                if (rel1.equals(allowed) && rel1.equals(rel2)) {
+                    broadcastToFaction(otherFac, message);
                     break;
                 }
             }

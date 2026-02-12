@@ -20,9 +20,15 @@ public class HomeCommands implements CommandExecutor {
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         if (!(sender instanceof Player player)) return true;
 
-        if (label.equalsIgnoreCase("sethome")) {
+        String cmd = label.toLowerCase();
+        if (!player.hasPermission("faction.command." + cmd)) {
+            MessageUtils.sendMessage(player, "no-permission");
+            return true;
+        }
+
+        if (cmd.equals("sethome")) {
             handleSetHome(player, args);
-        } else if (label.equalsIgnoreCase("home")) {
+        } else if (cmd.equals("home")) {
             handleHome(player, args);
         }
         return true;
