@@ -20,7 +20,8 @@ public class GUIListener implements Listener {
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
-        if (event.getView().getTitle().startsWith("§6Gestion: ")) {
+        String title = event.getView().getTitle();
+        if (title.startsWith("§6Gestion: ") || title.equals("§6Boutique Faction") || title.equals("§6Boutique Me's")) {
             event.setCancelled(true);
             if (!(event.getWhoClicked() instanceof Player player)) return;
 

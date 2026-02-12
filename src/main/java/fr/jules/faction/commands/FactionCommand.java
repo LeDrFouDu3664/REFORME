@@ -688,7 +688,25 @@ public class FactionCommand implements CommandExecutor {
     }
 
     private void handleSeechunk(Player player) {
-        player.sendMessage("§eLimites du chunk affichées (Simulation).");
+        org.bukkit.Chunk chunk = player.getLocation().getChunk();
+        int minX = chunk.getX() * 16;
+        int minZ = chunk.getZ() * 16;
+        int maxX = minX + 16;
+        int maxZ = minZ + 16;
+
+        for (int y = player.getLocation().getBlockY() - 2; y < player.getLocation().getBlockY() + 5; y++) {
+            for (int x = minX; x <= maxX; x += 16) {
+                for (int z = minZ; z <= maxZ; z++) {
+                    player.spawnParticle(org.bukkit.Particle.REDSTONE, x, y, z, 1, new org.bukkit.Particle.DustOptions(org.bukkit.Color.RED, 1));
+                }
+            }
+            for (int z = minZ; z <= maxZ; z += 16) {
+                for (int x = minX; x <= maxX; x++) {
+                    player.spawnParticle(org.bukkit.Particle.REDSTONE, x, y, z, 1, new org.bukkit.Particle.DustOptions(org.bukkit.Color.RED, 1));
+                }
+            }
+        }
+        player.sendMessage("§eLimites du chunk affichées avec des particules.");
     }
 
     private void handleRelation(Player player, String[] args, String relationName) {
