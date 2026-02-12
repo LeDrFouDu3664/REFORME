@@ -24,6 +24,7 @@ public class GUIListener implements Listener {
         if (!(event.getWhoClicked() instanceof Player player)) return;
 
         if (title.startsWith("§6Gestion: ") || title.startsWith("§6Membres: ") || title.startsWith("§6Permissions: ") ||
+            title.startsWith("§6Grade: ") || title.startsWith("§6Sélecteur de Grade") ||
             title.equals("§6Boutique Faction") || title.equals("§6Boutique Me's")) {
             event.setCancelled(true);
 
@@ -40,6 +41,10 @@ public class GUIListener implements Listener {
                 handleMembersMenuClick(player, name, faction, event);
             } else if (title.startsWith("§6Permissions: ")) {
                 handlePermissionsMenuClick(player, name, faction);
+            } else if (title.startsWith("§6Sélecteur de Grade")) {
+                handleGradeSelectorClick(player, name, faction);
+            } else if (title.startsWith("§6Grade: ")) {
+                handleGradePermissionsClick(player, name, faction, title);
             }
         }
     }
@@ -78,11 +83,43 @@ public class GUIListener implements Listener {
             player.sendMessage("§cSeuls les officiers peuvent gérer les permissions.");
             return;
         }
-        boolean current = faction.getPermissions().getOrDefault(permName, false);
-        if (permName.equals("ALLY_HOME")) current = faction.getPermissions().getOrDefault("ALLY_HOME", true);
+        if (permName.equalsIgnoreCase("Permissions par Grade")) {
+            fr.jules.faction.gui.FactionGUI.openGradeSelectorMenu(player, faction);
+            return;
+        }
 
-        faction.getPermissions().put(permName, !current);
-        player.sendMessage("§aPermission " + permName + " passée à: " + (!current));
+        boolean current = faction.getFlags().getOrDefault(permName, false);
+        if (permName.equals("ALLY_HOME")) current = faction.getFlags().getOrDefault("ALLY_HOME", true);
+
+        faction.getFlags().put(permName, !current);
+        player.sendMessage("§aOption " + permName + " passée à: " + (!current));
         fr.jules.faction.gui.FactionGUI.openPermissionsMenu(player, faction);
+    }
+
+    private void handleGradeSelectorClick(Player player, String name, Faction faction) {
+        if (name.equals("Retour")) {
+            fr.jules.faction.gui.FactionGUI.openPermissionsMenu(player, faction);
+            return;
+        }
+        fr.jules.faction.model.Grade grade = fr.jules.faction.model.Grade.valueOf(name);
+        fr.jules.faction.gui.FactionGUI.openGradePermissionsMenu(player, faction, grade);
+    }
+
+    private void handleGradePermissionsClick(Player player, String action, Faction faction, String title) {
+        if (action.equals("Retour")) {
+            fr.jules.faction.gui.FactionGUI.openGradeSelectorMenu(player, faction);
+            return;
+        }
+        String gradeName = title.split(" ")[1];
+        fr.jules.faction.model.Grade grade = fr.jules.faction.model.Grade.valueOf(gradeName);
+
+        java.util.Set<fr.jules.faction.model.Grade> allowed = faction.getPermissions().computeIfAbsent(action, k -> new java.util.HashSet<>());
+        if (allowed.contains(grade)) {
+            allowed.remove(grade);
+        } else {
+            allowed.add(grade);
+        }
+        player.sendMessage("§aPermission " + action + " pour " + gradeName + " modifiée.");
+        fr.jules.faction.gui.FactionGUI.openGradePermissionsMenu(player, faction, grade);
     }
 }

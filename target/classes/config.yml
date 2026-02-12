@@ -9,7 +9,7 @@ settings:
 
 messages:
   prefix: "§6[Faction] "
-  no-permission: "§cVous n'avez pas la permission."
+  no-permission: "§cVous n'avez pas la permission: %perm%"
   only-players: "§cSeuls les joueurs peuvent utiliser cette commande."
 
   # Faction Lifecycle

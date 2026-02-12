@@ -8,6 +8,7 @@
 /app/src/main/java/fr/jules/faction/model/Claim.java
 /app/src/main/java/fr/jules/faction/listeners/PvPListener.java
 /app/src/main/java/fr/jules/faction/model/Grade.java
+/app/src/main/java/fr/jules/faction/commands/FactionTabCompleter.java
 /app/src/main/java/fr/jules/faction/manager/DataManager.java
 /app/src/main/java/fr/jules/faction/listeners/PlayerListener.java
 /app/src/main/java/fr/jules/faction/commands/HomeCommands.java

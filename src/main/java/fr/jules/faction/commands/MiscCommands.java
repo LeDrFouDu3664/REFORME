@@ -26,8 +26,9 @@ public class MiscCommands implements CommandExecutor {
         if (!(sender instanceof Player player)) return true;
 
         String cmd = label.toLowerCase();
-        if (!player.hasPermission("faction.command." + cmd)) {
-            MessageUtils.sendMessage(player, "no-permission");
+        String perm = "faction.command." + cmd;
+        if (!player.hasPermission(perm)) {
+            MessageUtils.sendMessage(player, "no-permission", "%perm%", perm);
             return true;
         }
 

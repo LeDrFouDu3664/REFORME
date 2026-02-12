@@ -44,7 +44,10 @@ public class DataManager {
         faction.getRelations().forEach((k, v) -> relations.put(k.toString(), v));
         config.set("relations", relations);
 
-        config.set("permissions", faction.getPermissions());
+        Map<String, List<String>> perms = new HashMap<>();
+        faction.getPermissions().forEach((k, v) -> perms.put(k, v.stream().map(Grade::name).toList()));
+        config.set("permissions", perms);
+        config.set("flags", faction.getFlags());
 
         try {
             config.save(file);
@@ -99,7 +102,16 @@ public class DataManager {
             ConfigurationSection permSection = config.getConfigurationSection("permissions");
             if (permSection != null) {
                 for (String key : permSection.getKeys(false)) {
-                    faction.getPermissions().put(key, permSection.getBoolean(key));
+                    Set<Grade> grades = new HashSet<>();
+                    permSection.getStringList(key).forEach(g -> grades.add(Grade.valueOf(g)));
+                    faction.getPermissions().put(key, grades);
+                }
+            }
+
+            ConfigurationSection flagSection = config.getConfigurationSection("flags");
+            if (flagSection != null) {
+                for (String key : flagSection.getKeys(false)) {
+                    faction.getFlags().put(key, flagSection.getBoolean(key));
                 }
             }
 

@@ -36,11 +36,15 @@ public class FactionPlugin extends JavaPlugin {
     }
 
     private void registerCommands() {
-        getCommand("f").setExecutor(new FactionCommand(this));
-        getCommand("tpa").setExecutor(new TeleportCommands(this));
-        getCommand("tpahere").setExecutor(new TeleportCommands(this));
-        getCommand("tpyes").setExecutor(new TeleportCommands(this));
-        getCommand("tpno").setExecutor(new TeleportCommands(this));
+        FactionCommand factionCommand = new FactionCommand(this);
+        getCommand("f").setExecutor(factionCommand);
+        getCommand("f").setTabCompleter(new FactionTabCompleter());
+
+        TeleportCommands teleportCommands = new TeleportCommands(this);
+        getCommand("tpa").setExecutor(teleportCommands);
+        getCommand("tpahere").setExecutor(teleportCommands);
+        getCommand("tpyes").setExecutor(teleportCommands);
+        getCommand("tpno").setExecutor(teleportCommands);
         getCommand("sethome").setExecutor(new HomeCommands(this));
         getCommand("home").setExecutor(new HomeCommands(this));
 

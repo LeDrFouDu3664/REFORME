@@ -17,7 +17,8 @@ public class Faction {
     private Set<UUID> invites = new HashSet<>();
     private Set<UUID> requests = new HashSet<>();
     private Map<UUID, String> relations = new HashMap<>(); // UUID of other faction -> Relation name
-    private Map<String, Boolean> permissions = new HashMap<>();
+    private Map<String, Set<Grade>> permissions = new HashMap<>();
+    private Map<String, Boolean> flags = new HashMap<>();
     private Location home;
     private double power = 0;
     private Set<String> claims = new HashSet<>(); // Format: "world,x,z"
@@ -33,5 +34,15 @@ public class Faction {
 
     public boolean isOfficer(UUID uuid) {
         return officers.contains(uuid) || uuid.equals(leader);
+    }
+
+    public boolean hasPermission(Grade grade, String action) {
+        if (grade == Grade.LEADER) return true;
+        Set<Grade> allowed = permissions.get(action);
+        if (allowed == null) {
+            // Default permissions
+            return grade == Grade.OFFICER;
+        }
+        return allowed.contains(grade);
     }
 }

@@ -38,12 +38,37 @@ public class FactionGUI {
     public static void openPermissionsMenu(Player player, Faction faction) {
         Inventory inv = Bukkit.createInventory(null, 27, "§6Permissions: " + faction.getName());
 
-        boolean allyHome = faction.getPermissions().getOrDefault("ALLY_HOME", true);
+        boolean allyHome = faction.getFlags().getOrDefault("ALLY_HOME", true);
         inv.setItem(10, createItem(allyHome ? Material.LIME_DYE : Material.GRAY_DYE, "§eALLY_HOME", "§7Autoriser les alliés au home", "§7Statut: " + (allyHome ? "§aActivé" : "§cDésactivé")));
 
-        boolean openInvites = faction.getPermissions().getOrDefault("OPEN_INVITES", false);
+        boolean openInvites = faction.getFlags().getOrDefault("OPEN_INVITES", false);
         inv.setItem(11, createItem(openInvites ? Material.LIME_DYE : Material.GRAY_DYE, "§eOPEN_INVITES", "§7Tout le monde peut rejoindre", "§7Statut: " + (openInvites ? "§aActivé" : "§cDésactivé")));
 
+        inv.setItem(22, createItem(Material.NAME_TAG, "§ePermissions par Grade", "§7Gérer les actions autorisées"));
+
+        player.openInventory(inv);
+    }
+
+    public static void openGradePermissionsMenu(Player player, Faction faction, fr.jules.faction.model.Grade targetGrade) {
+        Inventory inv = Bukkit.createInventory(null, 36, "§6Grade: " + targetGrade.name() + " (" + faction.getName() + ")");
+
+        String[] actions = {"CLAIM", "UNCLAIM", "SETHOME", "UNSETHOME", "PROMOTE", "DEMOTE", "KICK", "INVITE", "DESC", "MOTD", "RENAME", "TITLE"};
+        int slot = 0;
+        for (String action : actions) {
+            boolean allowed = faction.hasPermission(targetGrade, action);
+            inv.setItem(slot++, createItem(allowed ? Material.LIME_STAINED_GLASS_PANE : Material.RED_STAINED_GLASS_PANE, "§e" + action, "§7Autorisé: " + (allowed ? "§aOui" : "§cNon")));
+        }
+
+        inv.setItem(31, createItem(Material.ARROW, "§7Retour"));
+
+        player.openInventory(inv);
+    }
+
+    public static void openGradeSelectorMenu(Player player, Faction faction) {
+        Inventory inv = Bukkit.createInventory(null, 27, "§6Sélecteur de Grade");
+        inv.setItem(11, createItem(Material.LEATHER_HELMET, "§eMEMBER"));
+        inv.setItem(15, createItem(Material.IRON_HELMET, "§eOFFICER"));
+        inv.setItem(22, createItem(Material.ARROW, "§7Retour"));
         player.openInventory(inv);
     }
 
