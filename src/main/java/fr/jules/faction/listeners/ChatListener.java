@@ -1,0 +1,72 @@
+package fr.jules.faction.listeners;
+
+import fr.jules.faction.FactionPlugin;
+import fr.jules.faction.model.Faction;
+import fr.jules.faction.model.PlayerData;
+import fr.jules.faction.utils.MessageUtils;
+import io.papermc.paper.event.player.AsyncChatEvent;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+
+import java.util.UUID;
+
+public class ChatListener implements Listener {
+    private final FactionPlugin plugin;
+
+    public ChatListener(FactionPlugin plugin) {
+        this.plugin = plugin;
+    }
+
+    @EventHandler
+    public void onChat(AsyncChatEvent event) {
+        Player player = event.getPlayer();
+        PlayerData data = plugin.getPlayerManager().getPlayerData(player.getUniqueId());
+        String mode = data.getChatMode();
+
+        if (mode.equalsIgnoreCase("PUBLIC")) return;
+
+        event.setCancelled(true);
+        String message = PlainTextComponentSerializer.plainText().serialize(event.message());
+
+        if (data.getFactionId() == null) {
+            MessageUtils.sendMessage(player, "not-in-faction");
+            data.setChatMode("PUBLIC");
+            return;
+        }
+
+        Faction faction = plugin.getFactionManager().getFaction(data.getFactionId());
+        String title = data.getTitle() == null || data.getTitle().isEmpty() ? "" : data.getTitle() + " ";
+
+        if (mode.equalsIgnoreCase("FACTION")) {
+            broadcastToFaction(faction, "§a[F] " + title + player.getName() + ": §f" + message);
+        } else if (mode.equalsIgnoreCase("TRUCE")) {
+            broadcastToRelations(faction, "§6[T] " + title + player.getName() + ": §f" + message, "TRUCE", "ALLY");
+        } else if (mode.equalsIgnoreCase("ALLY")) {
+            broadcastToRelations(faction, "§d[A] " + title + player.getName() + ": §f" + message, "ALLY");
+        }
+    }
+
+    private void broadcastToFaction(Faction faction, String message) {
+        for (UUID memberId : faction.getMembers()) {
+            Player p = Bukkit.getPlayer(memberId);
+            if (p != null) p.sendMessage(message);
+        }
+    }
+
+    private void broadcastToRelations(Faction faction, String message, String... relations) {
+        broadcastToFaction(faction, message);
+        for (UUID otherFacId : faction.getRelations().keySet()) {
+            String rel = faction.getRelations().get(otherFacId);
+            for (String allowed : relations) {
+                if (rel.equals(allowed)) {
+                    Faction otherFac = plugin.getFactionManager().getFaction(otherFacId);
+                    if (otherFac != null) broadcastToFaction(otherFac, message);
+                    break;
+                }
+            }
+        }
+    }
+}
