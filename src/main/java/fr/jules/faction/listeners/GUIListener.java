@@ -88,10 +88,10 @@ public class GUIListener implements Listener {
             return;
         }
 
-        boolean current = faction.getFlags().getOrDefault(permName, false);
-        if (permName.equals("ALLY_HOME")) current = faction.getFlags().getOrDefault("ALLY_HOME", true);
+        boolean current = faction.getFactionFlags().getOrDefault(permName, false);
+        if (permName.equals("ALLY_HOME")) current = faction.getFactionFlags().getOrDefault("ALLY_HOME", true);
 
-        faction.getFlags().put(permName, !current);
+        faction.getFactionFlags().put(permName, !current);
         player.sendMessage("§aOption " + permName + " passée à: " + (!current));
         fr.jules.faction.gui.FactionGUI.openPermissionsMenu(player, faction);
     }

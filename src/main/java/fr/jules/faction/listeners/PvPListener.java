@@ -1,6 +1,7 @@
 package fr.jules.faction.listeners;
 
 import fr.jules.faction.FactionPlugin;
+import fr.jules.faction.model.Claim;
 import fr.jules.faction.model.Faction;
 import fr.jules.faction.model.PlayerData;
 import fr.jules.faction.utils.MessageUtils;
@@ -35,13 +36,32 @@ public class PvPListener implements Listener {
         Faction attackerFaction = plugin.getFactionManager().getFaction(attackerData.getFactionId());
         Faction targetFaction = plugin.getFactionManager().getFaction(targetData.getFactionId());
 
+        // SafeZone check
+        Claim targetClaim = plugin.getClaimManager().getClaim(target.getWorld().getName(), target.getLocation().getChunk().getX(), target.getLocation().getChunk().getZ());
+        if (targetClaim != null) {
+            Faction owner = plugin.getFactionManager().getFaction(targetClaim.getFactionId());
+            if (owner != null && owner.getType() == fr.jules.faction.model.FactionType.SAFEZONE) {
+                MessageUtils.sendMessage(attacker, "pvp-denied-safezone");
+                event.setCancelled(true);
+                return;
+            }
+        }
+
         String rel1 = attackerFaction.getRelations().get(targetData.getFactionId());
         String rel2 = targetFaction.getRelations().get(attackerData.getFactionId());
 
         if (("ALLY".equals(rel1) && "ALLY".equals(rel2)) || ("TRUCE".equals(rel1) && "TRUCE".equals(rel2))) {
-            MessageUtils.sendMessage(attacker, "pvp-denied-relation");
-            event.setCancelled(true);
+            // Check friendly fire flag
+            if (!attackerFaction.getFactionFlags().getOrDefault("friendlyFire", false)) {
+                MessageUtils.sendMessage(attacker, "pvp-denied-relation");
+                event.setCancelled(true);
+                return;
+            }
         }
+
+        // Combat tagging
+        attackerData.setCombatLoggedTime(System.currentTimeMillis());
+        targetData.setCombatLoggedTime(System.currentTimeMillis());
     }
 
     @EventHandler

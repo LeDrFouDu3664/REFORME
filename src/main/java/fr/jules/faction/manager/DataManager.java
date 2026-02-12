@@ -29,6 +29,7 @@ public class DataManager {
         YamlConfiguration config = new YamlConfiguration();
         config.set("id", faction.getId().toString());
         config.set("name", faction.getName());
+        config.set("tag", faction.getTag());
         config.set("description", faction.getDescription());
         config.set("motd", faction.getMotd());
         config.set("leader", faction.getLeader().toString());
@@ -47,7 +48,10 @@ public class DataManager {
         Map<String, List<String>> perms = new HashMap<>();
         faction.getPermissions().forEach((k, v) -> perms.put(k, v.stream().map(Grade::name).toList()));
         config.set("permissions", perms);
-        config.set("flags", faction.getFlags());
+        config.set("flags", faction.getFactionFlags());
+        config.set("balance", faction.getBalance());
+        config.set("tntStock", faction.getTntStock());
+        config.set("type", faction.getType().name());
 
         try {
             config.save(file);
@@ -65,6 +69,7 @@ public class DataManager {
             UUID id = UUID.fromString(config.getString("id"));
             Faction faction = new Faction(id);
             faction.setName(config.getString("name"));
+            faction.setTag(config.getString("tag"));
             faction.setDescription(config.getString("description"));
             faction.setMotd(config.getString("motd"));
             faction.setLeader(UUID.fromString(config.getString("leader")));
@@ -111,9 +116,12 @@ public class DataManager {
             ConfigurationSection flagSection = config.getConfigurationSection("flags");
             if (flagSection != null) {
                 for (String key : flagSection.getKeys(false)) {
-                    faction.getFlags().put(key, flagSection.getBoolean(key));
+                    faction.getFactionFlags().put(key, flagSection.getBoolean(key));
                 }
             }
+            faction.setBalance(config.getDouble("balance", 0));
+            faction.setTntStock(config.getInt("tntStock", 0));
+            faction.setType(FactionType.valueOf(config.getString("type", "NORMAL")));
 
             factionManager.addFaction(faction);
         }
@@ -130,6 +138,7 @@ public class DataManager {
         config.set("maxPower", data.getMaxPower());
         config.set("title", data.getTitle());
         config.set("lastJoin", data.getLastJoin());
+        config.set("powerBoost", data.getPowerBoost());
         config.set("ignoredPlayers", data.getIgnoredPlayers().stream().map(UUID::toString).toList());
 
         ConfigurationSection homesSection = config.createSection("homes");
@@ -155,6 +164,7 @@ public class DataManager {
         data.setMaxPower(config.getDouble("maxPower", 10.0));
         data.setTitle(config.getString("title", ""));
         data.setLastJoin(config.getLong("lastJoin"));
+        data.setPowerBoost(config.getDouble("powerBoost", 0));
 
         List<String> ignored = config.getStringList("ignoredPlayers");
         ignored.forEach(i -> data.getIgnoredPlayers().add(UUID.fromString(i)));

@@ -38,11 +38,17 @@ public class FactionGUI {
     public static void openPermissionsMenu(Player player, Faction faction) {
         Inventory inv = Bukkit.createInventory(null, 27, "§6Permissions: " + faction.getName());
 
-        boolean allyHome = faction.getFlags().getOrDefault("ALLY_HOME", true);
+        boolean allyHome = faction.getFactionFlags().getOrDefault("ALLY_HOME", true);
         inv.setItem(10, createItem(allyHome ? Material.LIME_DYE : Material.GRAY_DYE, "§eALLY_HOME", "§7Autoriser les alliés au home", "§7Statut: " + (allyHome ? "§aActivé" : "§cDésactivé")));
 
-        boolean openInvites = faction.getFlags().getOrDefault("OPEN_INVITES", false);
+        boolean openInvites = faction.getFactionFlags().getOrDefault("OPEN_INVITES", false);
         inv.setItem(11, createItem(openInvites ? Material.LIME_DYE : Material.GRAY_DYE, "§eOPEN_INVITES", "§7Tout le monde peut rejoindre", "§7Statut: " + (openInvites ? "§aActivé" : "§cDésactivé")));
+
+        boolean pvp = faction.getFactionFlags().getOrDefault("pvp", true);
+        inv.setItem(12, createItem(pvp ? Material.IRON_SWORD : Material.WOODEN_SWORD, "§epvp", "§7PVP activé", "§7Statut: " + (pvp ? "§aActivé" : "§cDésactivé")));
+
+        boolean explosions = faction.getFactionFlags().getOrDefault("explosions", true);
+        inv.setItem(13, createItem(explosions ? Material.TNT : Material.GUNPOWDER, "§eexplosions", "§7TNT activé", "§7Statut: " + (explosions ? "§aActivé" : "§cDésactivé")));
 
         inv.setItem(22, createItem(Material.NAME_TAG, "§ePermissions par Grade", "§7Gérer les actions autorisées"));
 
@@ -52,9 +58,10 @@ public class FactionGUI {
     public static void openGradePermissionsMenu(Player player, Faction faction, fr.jules.faction.model.Grade targetGrade) {
         Inventory inv = Bukkit.createInventory(null, 36, "§6Grade: " + targetGrade.name() + " (" + faction.getName() + ")");
 
-        String[] actions = {"CLAIM", "UNCLAIM", "SETHOME", "UNSETHOME", "PROMOTE", "DEMOTE", "KICK", "INVITE", "DESC", "MOTD", "RENAME", "TITLE"};
+        String[] actions = {"CLAIM", "UNCLAIM", "SETHOME", "UNSETHOME", "PROMOTE", "DEMOTE", "KICK", "INVITE", "DESC", "MOTD", "RENAME", "TITLE", "BUILD", "DESTROY", "USE"};
         int slot = 0;
         for (String action : actions) {
+            if (slot >= 31) break;
             boolean allowed = faction.hasPermission(targetGrade, action);
             inv.setItem(slot++, createItem(allowed ? Material.LIME_STAINED_GLASS_PANE : Material.RED_STAINED_GLASS_PANE, "§e" + action, "§7Autorisé: " + (allowed ? "§aOui" : "§cNon")));
         }
@@ -66,8 +73,10 @@ public class FactionGUI {
 
     public static void openGradeSelectorMenu(Player player, Faction faction) {
         Inventory inv = Bukkit.createInventory(null, 27, "§6Sélecteur de Grade");
-        inv.setItem(11, createItem(Material.LEATHER_HELMET, "§eMEMBER"));
-        inv.setItem(15, createItem(Material.IRON_HELMET, "§eOFFICER"));
+        inv.setItem(10, createItem(Material.LEATHER_HELMET, "§eRECRUIT"));
+        inv.setItem(12, createItem(Material.CHAINMAIL_HELMET, "§eMEMBER"));
+        inv.setItem(14, createItem(Material.GOLDEN_HELMET, "§eMODERATOR"));
+        inv.setItem(16, createItem(Material.IRON_HELMET, "§eOFFICER"));
         inv.setItem(22, createItem(Material.ARROW, "§7Retour"));
         player.openInventory(inv);
     }

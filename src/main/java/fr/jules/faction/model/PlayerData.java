@@ -20,6 +20,9 @@ public class PlayerData {
     private String chatMode = "PUBLIC";
     private boolean bypass = false;
     private boolean autoClaim = false;
+    private double powerBoost = 0;
+    private long lastDeathTime = 0;
+    private long combatLoggedTime = 0;
 
     public void addPower(double amount) {
         this.power = Math.min(maxPower, this.power + amount);

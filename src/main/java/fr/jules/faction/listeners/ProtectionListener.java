@@ -63,7 +63,13 @@ public class ProtectionListener implements Listener {
         if (claim == null) return true;
 
         Faction owner = plugin.getFactionManager().getFaction(claim.getFactionId());
-        if (owner != null && owner.getPower() < owner.getClaims().size()) {
+        if (owner == null) return true;
+
+        if (owner.getType() == fr.jules.faction.model.FactionType.SAFEZONE || owner.getType() == fr.jules.faction.model.FactionType.WARZONE) {
+            return player.hasPermission("faction.admin.build");
+        }
+
+        if (owner.getPower() < owner.getClaims().size()) {
             return true; // Territory is raidable
         }
 

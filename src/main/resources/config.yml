@@ -83,3 +83,4 @@ messages:
   # Admin
   admin-faction-disbanded: "§aFaction %name% dissoute par un administrateur."
   bypass-mode: "§aMode bypass: %status%"
+  pvp-denied-safezone: "§cLe PVP est désactivé dans cette SafeZone."

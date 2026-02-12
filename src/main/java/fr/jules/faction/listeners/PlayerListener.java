@@ -3,11 +3,13 @@ package fr.jules.faction.listeners;
 import fr.jules.faction.FactionPlugin;
 import fr.jules.faction.model.Faction;
 import fr.jules.faction.model.PlayerData;
+import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.PlayerTeleportEvent;
 
 public class PlayerListener implements Listener {
     private final FactionPlugin plugin;
@@ -38,8 +40,26 @@ public class PlayerListener implements Listener {
     @EventHandler
     public void onQuit(PlayerQuitEvent event) {
         PlayerData data = plugin.getPlayerManager().getPlayerData(event.getPlayer().getUniqueId());
+
+        // Anti-combat log
+        if (System.currentTimeMillis() - data.getCombatLoggedTime() < 15000) {
+            event.getPlayer().setHealth(0);
+            Bukkit.broadcastMessage("§c" + event.getPlayer().getName() + " s'est déconnecté en combat !");
+        }
+
         plugin.getDataManager().savePlayerData(data);
         plugin.getPlayerManager().removePlayerData(event.getPlayer().getUniqueId());
+    }
+
+    @EventHandler
+    public void onTeleport(PlayerTeleportEvent event) {
+        PlayerData data = plugin.getPlayerManager().getPlayerData(event.getPlayer().getUniqueId());
+        if (System.currentTimeMillis() - data.getCombatLoggedTime() < 15000) {
+            if (event.getCause() == PlayerTeleportEvent.TeleportCause.COMMAND || event.getCause() == PlayerTeleportEvent.TeleportCause.PLUGIN) {
+                event.setCancelled(true);
+                event.getPlayer().sendMessage("§cVous ne pouvez pas vous téléporter en combat !");
+            }
+        }
     }
 
     @EventHandler
