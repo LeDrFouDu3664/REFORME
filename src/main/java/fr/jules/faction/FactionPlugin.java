@@ -10,14 +10,18 @@ import lombok.Getter;
 @Getter
 public class FactionPlugin extends JavaPlugin {
     private FactionManager factionManager;
+    @Getter private org.bukkit.Location chateauLocation;
+    @Getter private org.bukkit.Location forteresseLocation;
     private PlayerManager playerManager;
     private ClaimManager claimManager;
     private TeleportManager teleportManager;
     private DataManager dataManager;
+    @Getter private EconomyManager economyManager;
 
     @Override
     public void onEnable() {
         saveDefaultConfig();
+        loadLocations();
         fr.jules.faction.utils.MessageUtils.init(this);
 
         this.factionManager = new FactionManager();
@@ -25,6 +29,7 @@ public class FactionPlugin extends JavaPlugin {
         this.claimManager = new ClaimManager();
         this.teleportManager = new TeleportManager();
         this.dataManager = new DataManager(this);
+        this.economyManager = new EconomyManager(this);
 
         dataManager.loadFactions(factionManager, claimManager);
 
@@ -69,18 +74,17 @@ public class FactionPlugin extends JavaPlugin {
     }
 
     private void startTasks() {
+        double powerGain = getConfig().getDouble("settings.power.per-interval", 0.2);
+        int interval = getConfig().getInt("settings.power.interval-minutes", 5);
+
         Bukkit.getScheduler().runTaskTimer(this, () -> {
             Bukkit.getOnlinePlayers().forEach(p -> {
-                playerManager.getPlayerData(p.getUniqueId()).addPower(0.2);
+                playerManager.getPlayerData(p.getUniqueId()).addPower(powerGain);
             });
             factionManager.getAllFactions().forEach(f -> {
-                double totalPower = 0;
-                for (java.util.UUID mid : f.getMembers()) {
-                    totalPower += playerManager.getPlayerData(mid).getPower();
-                }
-                f.setPower(totalPower);
+                factionManager.recalculatePower(f, playerManager);
             });
-        }, 20 * 60 * 5, 20 * 60 * 5); // Toutes les 5 minutes
+        }, 20 * 60 * interval, 20 * 60 * interval);
     }
 
     @Override
@@ -91,6 +95,28 @@ public class FactionPlugin extends JavaPlugin {
         if (playerManager != null) {
             playerManager.getAllPlayerData().forEach(dataManager::savePlayerData);
         }
+        saveLocations();
         getLogger().info("FactionPlugin a été désactivé !");
+    }
+
+    public void setChateauLocation(org.bukkit.Location loc) {
+        this.chateauLocation = loc;
+        saveLocations();
+    }
+
+    public void setForteresseLocation(org.bukkit.Location loc) {
+        this.forteresseLocation = loc;
+        saveLocations();
+    }
+
+    private void loadLocations() {
+        if (getConfig().contains("locations.chateau")) chateauLocation = getConfig().getLocation("locations.chateau");
+        if (getConfig().contains("locations.forteresse")) forteresseLocation = getConfig().getLocation("locations.forteresse");
+    }
+
+    private void saveLocations() {
+        getConfig().set("locations.chateau", chateauLocation);
+        getConfig().set("locations.forteresse", forteresseLocation);
+        saveConfig();
     }
 }

@@ -49,4 +49,12 @@ public class FactionManager {
         factions.put(faction.getId(), faction);
         factionNames.put(faction.getName().toLowerCase(), faction.getId());
     }
+
+    public void recalculatePower(Faction faction, PlayerManager playerManager) {
+        double totalPower = 0;
+        for (UUID mid : faction.getMembers()) {
+            totalPower += playerManager.getPlayerData(mid).getPower();
+        }
+        faction.setPower(totalPower);
+    }
 }

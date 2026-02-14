@@ -38,15 +38,14 @@ public class MiscCommands implements CommandExecutor {
                 MessageUtils.sendMessage(player, "spawn-teleport");
                 break;
             case "chateau":
-                player.sendMessage("§cVous ne possédez pas le château.");
+                handleChateau(player);
                 break;
             case "forteresse":
-                player.sendMessage("§cVous ne possédez pas la forteresse.");
+                handleForteresse(player);
                 break;
             case "money":
-                // In production, integrate with Vault API
-                MessageUtils.sendMessage(player, "money-status", "%amount%", "1250.50");
-                player.sendMessage("§7(Note: Intégrez Vault pour l'économie réelle)");
+                double bal = plugin.getEconomyManager().getBalance(player);
+                MessageUtils.sendMessage(player, "money-status", "%amount%", String.format("%.2f", bal));
                 break;
             case "power":
                 handlePower(player, args);
@@ -66,20 +65,31 @@ public class MiscCommands implements CommandExecutor {
 
     private void handleShop(Player player) {
         Inventory shop = Bukkit.createInventory(null, 27, "§6Boutique Faction");
-        shop.setItem(11, new ItemStack(org.bukkit.Material.DIAMOND_SWORD));
-        shop.setItem(13, new ItemStack(org.bukkit.Material.GOLDEN_APPLE));
-        shop.setItem(15, new ItemStack(org.bukkit.Material.OBSIDIAN, 16));
+        shop.setItem(11, createShopItem(org.bukkit.Material.DIAMOND_SWORD, "§bÉpée en Diamant", "§7Prix: §e500$"));
+        shop.setItem(13, createShopItem(org.bukkit.Material.GOLDEN_APPLE, "§6Pomme Dorée", "§7Prix: §e250$"));
+        shop.setItem(15, createShopItem(org.bukkit.Material.OBSIDIAN, "§8Obsidienne x16", "§7Prix: §e100$"));
         player.openInventory(shop);
         MessageUtils.sendMessage(player, "shop-open");
     }
 
     private void handleBoutique(Player player) {
         Inventory boutique = Bukkit.createInventory(null, 27, "§6Boutique Me's");
-        boutique.setItem(11, new ItemStack(org.bukkit.Material.NETHER_STAR));
-        boutique.setItem(13, new ItemStack(org.bukkit.Material.EXPERIENCE_BOTTLE, 64));
-        boutique.setItem(15, new ItemStack(org.bukkit.Material.ENCHANTED_GOLDEN_APPLE));
+        boutique.setItem(11, createShopItem(org.bukkit.Material.NETHER_STAR, "§fÉtoile du Nether", "§7Prix: §e1000 Me's"));
+        boutique.setItem(13, createShopItem(org.bukkit.Material.EXPERIENCE_BOTTLE, "§aBouteille d'XP x64", "§7Prix: §e500 Me's"));
+        boutique.setItem(15, createShopItem(org.bukkit.Material.ENCHANTED_GOLDEN_APPLE, "§dPomme Notch", "§7Prix: §e750 Me's"));
         player.openInventory(boutique);
         MessageUtils.sendMessage(player, "boutique-open");
+    }
+
+    private ItemStack createShopItem(org.bukkit.Material material, String name, String lore) {
+        ItemStack item = new ItemStack(material);
+        org.bukkit.inventory.meta.ItemMeta meta = item.getItemMeta();
+        if (meta != null) {
+            meta.setDisplayName(name);
+            meta.setLore(java.util.Collections.singletonList(lore));
+            item.setItemMeta(meta);
+        }
+        return item;
     }
 
     private void handlePower(Player player, String[] args) {
@@ -103,5 +113,43 @@ public class MiscCommands implements CommandExecutor {
             data.getIgnoredPlayers().add(targetUUID);
             player.sendMessage("§aVous ignorez désormais " + args[0] + ".");
         }
+    }
+
+    private void handleChateau(Player player) {
+        org.bukkit.Location loc = plugin.getChateauLocation();
+        if (loc == null) {
+            player.sendMessage("§cLa localisation du château n'est pas définie.");
+            return;
+        }
+        if (canTeleportToObjective(player, loc)) {
+            player.teleport(loc);
+            player.sendMessage("§aTéléportation au château !");
+        } else {
+            player.sendMessage("§cVotre faction ne possède pas le château actuellement (contrôlez le territoire du château).");
+        }
+    }
+
+    private void handleForteresse(Player player) {
+        org.bukkit.Location loc = plugin.getForteresseLocation();
+        if (loc == null) {
+            player.sendMessage("§cLa localisation de la forteresse n'est pas définie.");
+            return;
+        }
+        if (canTeleportToObjective(player, loc)) {
+            player.teleport(loc);
+            player.sendMessage("§aTéléportation à la forteresse !");
+        } else {
+            player.sendMessage("§cVotre faction ne possède pas la forteresse actuellement (contrôlez le territoire de la forteresse).");
+        }
+    }
+
+    private boolean canTeleportToObjective(Player player, org.bukkit.Location objectiveLoc) {
+        PlayerData data = plugin.getPlayerManager().getPlayerData(player.getUniqueId());
+        if (data.getFactionId() == null) return false;
+
+        fr.jules.faction.model.Claim claim = plugin.getClaimManager().getClaim(objectiveLoc.getWorld().getName(), objectiveLoc.getChunk().getX(), objectiveLoc.getChunk().getZ());
+        if (claim == null) return false;
+
+        return claim.getFactionId().equals(data.getFactionId());
     }
 }

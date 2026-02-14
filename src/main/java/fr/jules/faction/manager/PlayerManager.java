@@ -8,7 +8,13 @@ public class PlayerManager {
     private final Map<UUID, PlayerData> players = new ConcurrentHashMap<>();
 
     public PlayerData getPlayerData(UUID uuid) {
-        return players.computeIfAbsent(uuid, PlayerData::new);
+        PlayerData data = players.get(uuid);
+        if (data == null) {
+            data = new PlayerData(uuid);
+            // Default values from potential config (handled in Plugin)
+            players.put(uuid, data);
+        }
+        return data;
     }
 
     public void removePlayerData(UUID uuid) {

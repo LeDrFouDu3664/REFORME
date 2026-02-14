@@ -50,7 +50,10 @@ public class PvPListener implements Listener {
         String rel1 = attackerFaction.getRelations().get(targetData.getFactionId());
         String rel2 = targetFaction.getRelations().get(attackerData.getFactionId());
 
-        if (("ALLY".equals(rel1) && "ALLY".equals(rel2)) || ("TRUCE".equals(rel1) && "TRUCE".equals(rel2))) {
+        String ally = fr.jules.faction.model.Relation.ALLY.name();
+        String truce = fr.jules.faction.model.Relation.TRUCE.name();
+
+        if ((ally.equals(rel1) && ally.equals(rel2)) || (truce.equals(rel1) && truce.equals(rel2))) {
             // Check friendly fire flag
             if (!attackerFaction.getFactionFlags().getOrDefault("friendlyFire", false)) {
                 MessageUtils.sendMessage(attacker, "pvp-denied-relation");
@@ -68,10 +71,17 @@ public class PvPListener implements Listener {
     public void onDeath(PlayerDeathEvent event) {
         Player player = event.getEntity();
         PlayerData data = plugin.getPlayerManager().getPlayerData(player.getUniqueId());
-        double loss = 2.0;
-        data.removePower(loss); // Perd 2 de power à chaque mort
+        double loss = plugin.getConfig().getDouble("settings.power.per-death", 2.0);
+        data.removePower(loss);
         MessageUtils.sendMessage(player, "power-loss",
                 "%amount%", String.valueOf(loss),
                 "%current%", String.format("%.1f", data.getPower()));
+
+        if (data.getFactionId() != null) {
+            Faction f = plugin.getFactionManager().getFaction(data.getFactionId());
+            if (f != null) {
+                plugin.getFactionManager().recalculatePower(f, plugin.getPlayerManager());
+            }
+        }
     }
 }

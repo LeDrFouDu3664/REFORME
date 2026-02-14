@@ -15,11 +15,17 @@ public class FactionGUI {
         Inventory inv = Bukkit.createInventory(null, 27, "§6Gestion: " + faction.getName());
         fillBorder(inv);
 
-        inv.setItem(10, createItem(Material.BOOK, "§eInformations", "§7Voir les infos de la faction"));
-        inv.setItem(11, createItem(Material.PLAYER_HEAD, "§eMembres", "§7Gérer les membres"));
-        inv.setItem(13, createItem(Material.GRASS_BLOCK, "§eClaims", "§7Gérer les parcelles"));
-        inv.setItem(15, createItem(Material.REDSTONE, "§eRelations", "§7Gérer les relations"));
-        inv.setItem(16, createItem(Material.COMPARATOR, "§ePermissions", "§7Gérer les permissions"));
+        inv.setItem(10, createItem(Material.BOOK, "§eStatistiques",
+            "§7• §fPower: §b" + String.format("%.1f", faction.getPower()),
+            "§7• §fTerritoires: §b" + faction.getClaims().size(),
+            "§7• §fBanque: §a" + faction.getBalance() + "$",
+            "§7• §fMembres: §b" + faction.getMembers().size()));
+
+        inv.setItem(11, createItem(Material.PLAYER_HEAD, "§eMembres", "§7Gérer les membres et grades"));
+        inv.setItem(12, createItem(Material.GRASS_BLOCK, "§eTerritoires", "§7Voir les parcelles et auto-claim"));
+        inv.setItem(14, createItem(Material.MAP, "§eRelations", "§7Gérer les Alliés et Ennemis"));
+        inv.setItem(15, createItem(Material.COMPARATOR, "§eParamètres", "§7Flags de faction (TNT, PVP, etc)"));
+        inv.setItem(16, createItem(Material.REDSTONE_TORCH, "§ePermissions", "§7Actions autorisées par grade"));
 
         player.openInventory(inv);
     }
@@ -41,7 +47,7 @@ public class FactionGUI {
     }
 
     public static void openPermissionsMenu(Player player, Faction faction) {
-        Inventory inv = Bukkit.createInventory(null, 27, "§6Permissions: " + faction.getName());
+        Inventory inv = Bukkit.createInventory(null, 27, "§6Paramètres: " + faction.getName());
         fillBorder(inv);
         inv.setItem(22, createItem(Material.SHEARS, "§7Retour", "§8Clic pour revenir"));
 
@@ -57,7 +63,8 @@ public class FactionGUI {
         boolean explosions = faction.getFactionFlags().getOrDefault("explosions", true);
         inv.setItem(13, createItem(explosions ? Material.TNT : Material.GUNPOWDER, "§eexplosions", "§7TNT activé", "§7Statut: " + (explosions ? "§aActivé" : "§cDésactivé")));
 
-        inv.setItem(16, createItem(Material.NAME_TAG, "§ePermissions par Grade", "§7Gérer les actions autorisées"));
+        inv.setItem(15, createItem(Material.OAK_SIGN, "§eDescription", "§7Modifier la description", "§7Actuel: §f" + faction.getDescription()));
+        inv.setItem(16, createItem(Material.PAPER, "§eMOTD", "§7Modifier le message de connexion", "§7Actuel: §f" + faction.getMotd()));
 
         player.openInventory(inv);
     }
@@ -84,10 +91,36 @@ public class FactionGUI {
         fillBorder(inv);
         inv.setItem(22, createItem(Material.SHEARS, "§7Retour", "§8Clic pour revenir"));
 
-        inv.setItem(10, createItem(Material.LEATHER_HELMET, "§eRECRUIT"));
-        inv.setItem(12, createItem(Material.CHAINMAIL_HELMET, "§eMEMBER"));
-        inv.setItem(14, createItem(Material.GOLDEN_HELMET, "§eMODERATOR"));
-        inv.setItem(16, createItem(Material.IRON_HELMET, "§eOFFICER"));
+        inv.setItem(10, createItem(Material.LEATHER_HELMET, "§eRECRUIT", "§7Modifier les perms des Recrues"));
+        inv.setItem(12, createItem(Material.CHAINMAIL_HELMET, "§eMEMBER", "§7Modifier les perms des Membres"));
+        inv.setItem(14, createItem(Material.GOLDEN_HELMET, "§eMODERATOR", "§7Modifier les perms des Modérateurs"));
+        inv.setItem(16, createItem(Material.IRON_HELMET, "§eOFFICER", "§7Modifier les perms des Officiers"));
+        player.openInventory(inv);
+    }
+
+    public static void openRelationsMenu(Player player, Faction faction) {
+        Inventory inv = Bukkit.createInventory(null, 27, "§6Relations: " + faction.getName());
+        fillBorder(inv);
+        inv.setItem(22, createItem(Material.SHEARS, "§7Retour", "§8Clic pour revenir"));
+
+        inv.setItem(11, createItem(Material.PINK_DYE, "§dAlliés", "§7Voir vos alliés actuels"));
+        inv.setItem(13, createItem(Material.ORANGE_DYE, "§6Trêves", "§7Voir vos trêves actuelles"));
+        inv.setItem(15, createItem(Material.RED_DYE, "§cEnnemis", "§7Voir vos ennemis actuels"));
+
+        player.openInventory(inv);
+    }
+
+    public static void openClaimsMenu(Player player, Faction faction) {
+        Inventory inv = Bukkit.createInventory(null, 27, "§6Territoires: " + faction.getName());
+        fillBorder(inv);
+        inv.setItem(22, createItem(Material.SHEARS, "§7Retour", "§8Clic pour revenir"));
+
+        inv.setItem(10, createItem(Material.GRASS_BLOCK, "§aClaim", "§7Revendiquer le chunk actuel"));
+        inv.setItem(11, createItem(Material.DIRT, "§cUnclaim", "§7Libérer le chunk actuel"));
+        inv.setItem(13, createItem(Material.MAP, "§eCarte", "§7Afficher la carte dans le chat"));
+        inv.setItem(15, createItem(Material.BEACON, "§bAuto-Claim", "§7Activer/Désactiver l'auto-claim"));
+        inv.setItem(16, createItem(Material.BARRIER, "§cUnclaim All", "§7Libérer tous les territoires"));
+
         player.openInventory(inv);
     }
 

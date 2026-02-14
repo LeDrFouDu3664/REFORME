@@ -104,7 +104,7 @@ public class PlayerListener implements Listener {
             Faction faction = plugin.getFactionManager().getFaction(data.getFactionId());
             if (faction != null && faction.isOfficer(event.getPlayer().getUniqueId())) {
                 fr.jules.faction.commands.FactionCommand cmd = (fr.jules.faction.commands.FactionCommand) plugin.getCommand("f").getExecutor();
-                cmd.performClaim(event.getPlayer(), faction, event.getTo().getWorld().getName(), event.getTo().getChunk().getX(), event.getTo().getChunk().getZ());
+                cmd.performClaim(event.getPlayer(), faction, event.getTo().getWorld().getName(), event.getTo().getChunk().getX(), event.getTo().getChunk().getZ(), false);
             }
         }
     }

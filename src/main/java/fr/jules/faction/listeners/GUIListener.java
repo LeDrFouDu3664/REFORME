@@ -10,6 +10,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 
 import java.util.UUID;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class GUIListener implements Listener {
     private final FactionPlugin plugin;
@@ -25,6 +27,7 @@ public class GUIListener implements Listener {
 
         if (title.startsWith("§6Gestion: ") || title.startsWith("§6Membres: ") || title.startsWith("§6Permissions: ") ||
             title.startsWith("§6Grade: ") || title.startsWith("§6Sélecteur de Grade") ||
+            title.startsWith("§6Relations: ") || title.startsWith("§6Territoires: ") ||
             title.equals("§6Boutique Faction") || title.equals("§6Boutique Me's")) {
             event.setCancelled(true);
 
@@ -39,12 +42,20 @@ public class GUIListener implements Listener {
                 handleMainMenuClick(player, name, faction);
             } else if (title.startsWith("§6Membres: ")) {
                 handleMembersMenuClick(player, name, faction, event);
-            } else if (title.startsWith("§6Permissions: ")) {
+            } else if (title.startsWith("§6Permissions: ") || title.startsWith("§6Paramètres: ")) {
                 handlePermissionsMenuClick(player, name, faction);
             } else if (title.startsWith("§6Sélecteur de Grade")) {
                 handleGradeSelectorClick(player, name, faction);
             } else if (title.startsWith("§6Grade: ")) {
                 handleGradePermissionsClick(player, name, faction, title);
+            } else if (title.startsWith("§6Relations: ")) {
+                handleRelationsMenuClick(player, name, faction);
+            } else if (title.startsWith("§6Territoires: ")) {
+                handleTerritoriesMenuClick(player, name, faction);
+            } else if (title.equals("§6Boutique Faction")) {
+                handleShopClick(player, event, faction);
+            } else if (title.equals("§6Boutique Me's")) {
+                handleBoutiqueClick(player, event);
             }
         }
     }
@@ -52,14 +63,17 @@ public class GUIListener implements Listener {
     private void handleMainMenuClick(Player player, String name, Faction faction) {
         if (name.equalsIgnoreCase("Membres")) {
             fr.jules.faction.gui.FactionGUI.openMembersMenu(player, faction);
-        } else if (name.equalsIgnoreCase("Informations")) {
+        } else if (name.equalsIgnoreCase("Statistiques")) {
             player.performCommand("f faction");
             player.closeInventory();
-        } else if (name.equalsIgnoreCase("Claims")) {
-            player.performCommand("f map");
-            player.closeInventory();
-        } else if (name.equalsIgnoreCase("Permissions")) {
+        } else if (name.equalsIgnoreCase("Territoires")) {
+            fr.jules.faction.gui.FactionGUI.openClaimsMenu(player, faction);
+        } else if (name.equalsIgnoreCase("Relations")) {
+            fr.jules.faction.gui.FactionGUI.openRelationsMenu(player, faction);
+        } else if (name.equalsIgnoreCase("Paramètres")) {
             fr.jules.faction.gui.FactionGUI.openPermissionsMenu(player, faction);
+        } else if (name.equalsIgnoreCase("Permissions")) {
+            fr.jules.faction.gui.FactionGUI.openGradeSelectorMenu(player, faction);
         }
     }
 
@@ -91,8 +105,14 @@ public class GUIListener implements Listener {
             player.sendMessage("§cSeuls les officiers peuvent gérer les permissions.");
             return;
         }
-        if (permName.equalsIgnoreCase("Permissions par Grade")) {
-            fr.jules.faction.gui.FactionGUI.openGradeSelectorMenu(player, faction);
+        if (permName.equalsIgnoreCase("Description")) {
+            player.sendMessage("§eUtilisez /f desc [texte] pour changer la description.");
+            player.closeInventory();
+            return;
+        }
+        if (permName.equalsIgnoreCase("MOTD")) {
+            player.sendMessage("§eUtilisez /f motd [texte] pour changer le message du jour.");
+            player.closeInventory();
             return;
         }
 
@@ -131,5 +151,90 @@ public class GUIListener implements Listener {
         }
         player.sendMessage("§aPermission " + action + " pour " + gradeName + " modifiée.");
         fr.jules.faction.gui.FactionGUI.openGradePermissionsMenu(player, faction, grade);
+    }
+
+    private void handleRelationsMenuClick(Player player, String name, Faction faction) {
+        if (name.equalsIgnoreCase("Retour")) {
+            fr.jules.faction.gui.FactionGUI.openMainMenu(player, faction);
+            return;
+        }
+        if (name.equalsIgnoreCase("Alliés")) {
+            player.sendMessage("§dVos alliés: " + String.join(", ", faction.getRelations().entrySet().stream().filter(e -> e.getValue().equals("ALLY")).map(e -> {
+                Faction f = plugin.getFactionManager().getFaction(e.getKey());
+                return f != null ? f.getName() : "Inconnu";
+            }).toList()));
+        } else if (name.equalsIgnoreCase("Trêves")) {
+            player.sendMessage("§6Vos trêves: " + String.join(", ", faction.getRelations().entrySet().stream().filter(e -> e.getValue().equals("TRUCE")).map(e -> {
+                Faction f = plugin.getFactionManager().getFaction(e.getKey());
+                return f != null ? f.getName() : "Inconnu";
+            }).toList()));
+        } else if (name.equalsIgnoreCase("Ennemis")) {
+            player.sendMessage("§cVos ennemis: " + String.join(", ", faction.getRelations().entrySet().stream().filter(e -> e.getValue().equals("ENEMY")).map(e -> {
+                Faction f = plugin.getFactionManager().getFaction(e.getKey());
+                return f != null ? f.getName() : "Inconnu";
+            }).toList()));
+        }
+    }
+
+    private void handleTerritoriesMenuClick(Player player, String name, Faction faction) {
+        if (name.equalsIgnoreCase("Retour")) {
+            fr.jules.faction.gui.FactionGUI.openMainMenu(player, faction);
+            return;
+        }
+        if (name.equalsIgnoreCase("Claim")) {
+            player.performCommand("f claim");
+        } else if (name.equalsIgnoreCase("Unclaim")) {
+            player.performCommand("f unclaim");
+        } else if (name.equalsIgnoreCase("Carte")) {
+            player.performCommand("f map");
+        } else if (name.equalsIgnoreCase("Auto-Claim")) {
+            player.performCommand("f claim auto");
+        } else if (name.equalsIgnoreCase("Unclaim All")) {
+            player.performCommand("f unclaim all");
+        }
+        player.closeInventory();
+    }
+
+    private void handleShopClick(Player player, InventoryClickEvent event, Faction faction) {
+        int slot = event.getRawSlot();
+        double price = 0;
+        org.bukkit.Material mat = null;
+        int amount = 1;
+
+        if (slot == 11) { price = 500; mat = org.bukkit.Material.DIAMOND_SWORD; }
+        else if (slot == 13) { price = 250; mat = org.bukkit.Material.GOLDEN_APPLE; }
+        else if (slot == 15) { price = 100; mat = org.bukkit.Material.OBSIDIAN; amount = 16; }
+
+        if (mat == null) return;
+
+        if (plugin.getEconomyManager().has(player, price)) {
+            plugin.getEconomyManager().withdraw(player, price);
+            player.getInventory().addItem(new org.bukkit.inventory.ItemStack(mat, amount));
+            player.sendMessage("§aAchat réussi !");
+        } else {
+            player.sendMessage("§cVous n'avez pas assez d'argent.");
+        }
+    }
+
+    private void handleBoutiqueClick(Player player, InventoryClickEvent event) {
+        int slot = event.getRawSlot();
+        // Pour la boutique Me's, on pourrait utiliser une autre monnaie.
+        // Ici on utilise aussi l'économie pour l'exemple.
+        double price = 0;
+        org.bukkit.Material mat = null;
+
+        if (slot == 11) { price = 1000; mat = org.bukkit.Material.NETHER_STAR; }
+        else if (slot == 13) { price = 500; mat = org.bukkit.Material.EXPERIENCE_BOTTLE; }
+        else if (slot == 15) { price = 750; mat = org.bukkit.Material.ENCHANTED_GOLDEN_APPLE; }
+
+        if (mat == null) return;
+
+        if (plugin.getEconomyManager().has(player, price)) {
+            plugin.getEconomyManager().withdraw(player, price);
+            player.getInventory().addItem(new org.bukkit.inventory.ItemStack(mat, slot == 13 ? 64 : 1));
+            player.sendMessage("§bAchat boutique réussi !");
+        } else {
+            player.sendMessage("§cVous n'avez pas assez de Me's.");
+        }
     }
 }

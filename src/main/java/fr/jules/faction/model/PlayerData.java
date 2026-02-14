@@ -18,6 +18,7 @@ public class PlayerData {
     private long lastJoin;
     private String title = "";
     private String chatMode = "PUBLIC";
+    private double balance = 0.0;
     private boolean bypass = false;
     private boolean autoClaim = false;
     private double powerBoost = 0;
@@ -25,10 +26,18 @@ public class PlayerData {
     private long combatLoggedTime = 0;
 
     public void addPower(double amount) {
-        this.power = Math.min(maxPower, this.power + amount);
+        this.power = Math.min(this.maxPower, this.power + amount);
     }
 
     public void removePower(double amount) {
         this.power = Math.max(-10.0, this.power - amount);
+    }
+
+    public void addBalance(double amount) {
+        this.balance += amount;
+    }
+
+    public void removeBalance(double amount) {
+        this.balance -= amount;
     }
 }

@@ -57,16 +57,16 @@ public class FactionCommand implements CommandExecutor {
             case "show": case "who": case "faction": case "f": handleFactionInfo(player, args); break;
             case "player": handlePlayerInfo(player, args); break;
             case "power": case "p": handlePower(player, args); break;
-            case "claim": case "c": handleClaim(player, args); break;
+            case "claim": handleClaim(player, args); break;
             case "unclaim": handleUnclaim(player, args); break;
             case "claims": handleClaimsCount(player); break;
             case "map": handleMap(player); break;
             case "seechunk": handleSeechunk(player); break;
-            case "neutral": handleRelation(player, args, "NEUTRAL"); break;
-            case "enemy": case "e": handleRelation(player, args, "ENEMY"); break;
-            case "truce": case "t": handleRelation(player, args, "TRUCE"); break;
-            case "ally": case "a": handleRelation(player, args, "ALLY"); break;
-            case "chat": handleChat(player, args); break;
+            case "neutral": handleRelation(player, args, Relation.NEUTRAL.name()); break;
+            case "enemy": case "e": handleRelation(player, args, Relation.ENEMY.name()); break;
+            case "truce": case "t": handleRelation(player, args, Relation.TRUCE.name()); break;
+            case "ally": case "a": handleRelation(player, args, Relation.ALLY.name()); break;
+            case "chat": case "c": handleChat(player, args); break;
             case "gui": case "perm": handleGui(player); break;
             case "unstuck": handleUnstuck(player); break;
             case "help": displayHelp(player); break;
@@ -154,13 +154,13 @@ public class FactionCommand implements CommandExecutor {
         if (args.length < 3) { player.sendMessage("§cPrécisez un pseudo."); return; }
         String action = args[1].toLowerCase();
         String targetName = args[2];
-        if (action.equals("add")) {
+        if (action.equals("add") || action.equals("a")) {
             Player target = Bukkit.getPlayer(targetName);
             UUID targetUUID = target != null ? target.getUniqueId() : Bukkit.getOfflinePlayer(targetName).getUniqueId();
             faction.getInvites().add(targetUUID);
             MessageUtils.sendMessage(player, "invited", "%target%", targetName);
             if (target != null) MessageUtils.sendMessage(target, "invite-received", "%name%", faction.getName());
-        } else {
+        } else if (action.equals("revoke") || action.equals("r")) {
             UUID targetUUID = Bukkit.getOfflinePlayer(targetName).getUniqueId();
             faction.getInvites().remove(targetUUID);
             player.sendMessage("§aInvitation révoquée.");
@@ -187,12 +187,26 @@ public class FactionCommand implements CommandExecutor {
         PlayerData data = plugin.getPlayerManager().getPlayerData(player.getUniqueId());
         if (data.getFactionId() == null) { MessageUtils.sendMessage(player, "not-in-faction"); return; }
         Faction faction = plugin.getFactionManager().getFaction(data.getFactionId());
-        if (!faction.hasPermission(data.getRole(), "PROMOTE")) { MessageUtils.sendMessage(player, "no-permission", "%perm%", "PROMOTE (Faction)"); return; }
+        if (!faction.hasPermission(data.getRole(), "PROMOTE")) { MessageUtils.sendMessage(player, "no-permission", "%perm%", "PROMOTE"); return; }
+
         PlayerData target = plugin.getPlayerManager().getPlayerDataByName(args[1]);
-        if (target != null && target.getRole() != Grade.LEADER && target.getRole() != Grade.OFFICER) {
-            target.setRole(Grade.OFFICER);
-            faction.getOfficers().add(target.getUuid());
-            MessageUtils.sendMessage(player, "promoted", "%target%", args[1]);
+        if (target == null || !faction.getMembers().contains(target.getUuid())) {
+            player.sendMessage("§cCe joueur n'est pas dans votre faction.");
+            return;
+        }
+
+        Grade current = target.getRole();
+        Grade next = null;
+        if (current == Grade.RECRUIT) next = Grade.MEMBER;
+        else if (current == Grade.MEMBER) next = Grade.MODERATOR;
+        else if (current == Grade.MODERATOR) next = Grade.OFFICER;
+
+        if (next != null) {
+            target.setRole(next);
+            if (next == Grade.OFFICER) faction.getOfficers().add(target.getUuid());
+            player.sendMessage("§a" + target.getName() + " a été promu au grade " + next.name() + ".");
+        } else {
+            player.sendMessage("§cCe joueur a déjà le grade maximum (hors Chef).");
         }
     }
 
@@ -201,12 +215,26 @@ public class FactionCommand implements CommandExecutor {
         PlayerData data = plugin.getPlayerManager().getPlayerData(player.getUniqueId());
         if (data.getFactionId() == null) { MessageUtils.sendMessage(player, "not-in-faction"); return; }
         Faction faction = plugin.getFactionManager().getFaction(data.getFactionId());
-        if (!faction.hasPermission(data.getRole(), "DEMOTE")) { MessageUtils.sendMessage(player, "no-permission", "%perm%", "DEMOTE (Faction)"); return; }
+        if (!faction.hasPermission(data.getRole(), "DEMOTE")) { MessageUtils.sendMessage(player, "no-permission", "%perm%", "DEMOTE"); return; }
+
         PlayerData target = plugin.getPlayerManager().getPlayerDataByName(args[1]);
-        if (target != null && target.getRole() == Grade.OFFICER) {
-            target.setRole(Grade.MEMBER);
-            faction.getOfficers().remove(target.getUuid());
-            MessageUtils.sendMessage(player, "demoted", "%target%", args[1]);
+        if (target == null || !faction.getMembers().contains(target.getUuid())) {
+            player.sendMessage("§cCe joueur n'est pas dans votre faction.");
+            return;
+        }
+
+        Grade current = target.getRole();
+        Grade prev = null;
+        if (current == Grade.OFFICER) prev = Grade.MODERATOR;
+        else if (current == Grade.MODERATOR) prev = Grade.MEMBER;
+        else if (current == Grade.MEMBER) prev = Grade.RECRUIT;
+
+        if (prev != null) {
+            if (current == Grade.OFFICER) faction.getOfficers().remove(target.getUuid());
+            target.setRole(prev);
+            player.sendMessage("§a" + target.getName() + " a été rétrogradé au grade " + prev.name() + ".");
+        } else {
+            player.sendMessage("§cCe joueur a déjà le grade minimum.");
         }
     }
 
@@ -297,13 +325,60 @@ public class FactionCommand implements CommandExecutor {
             f = plugin.getFactionManager().getFactionByName(args[1]);
         }
         if (f == null) { MessageUtils.sendMessage(player, "faction-not-found"); return; }
-        player.sendMessage("§6§l--- Information Faction: " + f.getName() + " ---");
-        player.sendMessage("§eDescription: §f" + f.getDescription());
-        player.sendMessage("§eChef: §f" + Bukkit.getOfflinePlayer(f.getLeader()).getName());
-        player.sendMessage("§eMembres: §f" + f.getMembers().size());
-        player.sendMessage("§ePower: §f" + String.format("%.1f", f.getPower()));
-        player.sendMessage("§eClaims: §f" + f.getClaims().size());
-        player.sendMessage("§eBanque: §f" + f.getBalance() + "$");
+
+        player.sendMessage("§8§m---------------------------------------");
+        player.sendMessage("   §6§lFACTION: §e§l" + f.getName());
+        player.sendMessage("   §7\"" + f.getDescription() + "\"");
+        player.sendMessage("");
+
+        // Membres par grades
+        String leaderName = Bukkit.getOfflinePlayer(f.getLeader()).getName();
+        player.sendMessage(" §6§l▶ §eChef: §f" + (Bukkit.getPlayer(f.getLeader()) != null ? "§a" : "§7") + leaderName);
+
+        if (!f.getOfficers().isEmpty()) {
+            List<String> officerNames = new ArrayList<>();
+            for (UUID id : f.getOfficers()) {
+                String name = Bukkit.getOfflinePlayer(id).getName();
+                officerNames.add((Bukkit.getPlayer(id) != null ? "§a" : "§7") + name);
+            }
+            player.sendMessage(" §6§l▶ §eOfficiers: §f" + String.join("§7, §f", officerNames));
+        }
+
+        List<String> memberNames = new ArrayList<>();
+        for (UUID id : f.getMembers()) {
+            if (id.equals(f.getLeader()) || f.getOfficers().contains(id)) continue;
+            String name = Bukkit.getOfflinePlayer(id).getName();
+            memberNames.add((Bukkit.getPlayer(id) != null ? "§a" : "§7") + name);
+        }
+        if (!memberNames.isEmpty()) {
+            player.sendMessage(" §6§l▶ §eMembres: §f" + String.join("§7, §f", memberNames));
+        }
+
+        player.sendMessage("");
+        player.sendMessage(" §6§l▶ §eStatistiques:");
+        player.sendMessage("    §7• §fPower: §b" + String.format("%.1f", f.getPower()) + " §7/ §b" + String.format("%.1f", f.getMembers().size() * 10.0));
+        player.sendMessage("    §7• §fTerritoires: §b" + f.getClaims().size() + " §7(Ratio: " + (f.getPower() >= f.getClaims().size() ? "§aStable" : "§cRaidable") + "§7)");
+        player.sendMessage("    §7• §fBanque: §a" + f.getBalance() + "$");
+
+        // Relations
+        List<String> allies = new ArrayList<>();
+        List<String> enemies = new ArrayList<>();
+        List<String> truces = new ArrayList<>();
+
+        for (Map.Entry<UUID, String> entry : f.getRelations().entrySet()) {
+            Faction other = plugin.getFactionManager().getFaction(entry.getKey());
+            if (other == null) continue;
+            String rel = entry.getValue();
+            if (Relation.ALLY.name().equals(rel)) allies.add("§d" + other.getName());
+            else if (Relation.ENEMY.name().equals(rel)) enemies.add("§c" + other.getName());
+            else if (Relation.TRUCE.name().equals(rel)) truces.add("§6" + other.getName());
+        }
+
+        if (!allies.isEmpty()) player.sendMessage(" §6§l▶ §dAlliés: §f" + String.join("§7, ", allies));
+        if (!truces.isEmpty()) player.sendMessage(" §6§l▶ §6Trêves: §f" + String.join("§7, ", truces));
+        if (!enemies.isEmpty()) player.sendMessage(" §6§l▶ §cEnnemis: §f" + String.join("§7, ", enemies));
+
+        player.sendMessage("§8§m---------------------------------------");
     }
 
     private void handlePlayerInfo(Player player, String[] args) {
@@ -324,31 +399,59 @@ public class FactionCommand implements CommandExecutor {
         PlayerData data = plugin.getPlayerManager().getPlayerData(player.getUniqueId());
         Faction f = plugin.getFactionManager().getFaction(data.getFactionId());
         if (f == null || !f.hasPermission(data.getRole(), "CLAIM")) { MessageUtils.sendMessage(player, "no-permission"); return; }
+
         if (args.length > 1 && args[1].equalsIgnoreCase("auto")) {
             data.setAutoClaim(!data.isAutoClaim());
             player.sendMessage("§aAuto-claim: " + (data.isAutoClaim() ? "§aOn" : "§cOff"));
             return;
         }
-        if (args.length > 1 && args[1].equalsIgnoreCase("radius") && args.length > 2) {
-            int r = Integer.parseInt(args[2]);
+
+        if (args.length > 2 && args[1].equalsIgnoreCase("radius")) {
+            int r;
+            try { r = Integer.parseInt(args[2]); } catch (NumberFormatException e) { player.sendMessage("§cRayon invalide."); return; }
             if (r > 5) r = 5;
-            for (int x = -r; x <= r; x++) for (int z = -r; z <= r; z++) performClaim(player, f, player.getWorld().getName(), player.getLocation().getChunk().getX() + x, player.getLocation().getChunk().getZ() + z);
+            int count = 0;
+            // On commence par le centre pour s'assurer de l'adjacence au début
+            int centerX = player.getLocation().getChunk().getX();
+            int centerZ = player.getLocation().getChunk().getZ();
+
+            for (int x = -r; x <= r; x++) {
+                for (int z = -r; z <= r; z++) {
+                    if (performClaim(player, f, player.getWorld().getName(), centerX + x, centerZ + z, true)) {
+                        count++;
+                    }
+                }
+            }
+            player.sendMessage("§a" + count + " parcelles revendiquées avec succès.");
             return;
         }
-        performClaim(player, f, player.getWorld().getName(), player.getLocation().getChunk().getX(), player.getLocation().getChunk().getZ());
+        performClaim(player, f, player.getWorld().getName(), player.getLocation().getChunk().getX(), player.getLocation().getChunk().getZ(), false);
     }
 
-    public void performClaim(Player player, Faction faction, String world, int x, int z) {
-        if (plugin.getClaimManager().isClaimed(world, x, z)) return;
-        if (!faction.getClaims().isEmpty() && !player.hasPermission("faction.admin")) {
-            boolean adj = faction.getClaims().contains(world + "," + (x + 1) + "," + z) || faction.getClaims().contains(world + "," + (x - 1) + "," + z) || faction.getClaims().contains(world + "," + x + "," + (z + 1)) || faction.getClaims().contains(world + "," + x + "," + (z - 1));
-            if (!adj) { player.sendMessage("§cPas adjacent."); return; }
+    public boolean performClaim(Player player, Faction faction, String world, int x, int z, boolean ignoreAdjacencyCheck) {
+        if (plugin.getClaimManager().isClaimed(world, x, z)) return false;
+
+        if (!faction.getClaims().isEmpty() && !player.hasPermission("faction.admin") && !ignoreAdjacencyCheck) {
+            boolean adj = faction.getClaims().contains(world + "," + (x + 1) + "," + z) ||
+                          faction.getClaims().contains(world + "," + (x - 1) + "," + z) ||
+                          faction.getClaims().contains(world + "," + x + "," + (z + 1)) ||
+                          faction.getClaims().contains(world + "," + x + "," + (z - 1));
+            if (!adj) {
+                player.sendMessage("§cLa parcelle en " + x + "," + z + " n'est pas adjacente à votre territoire.");
+                return false;
+            }
         }
-        if (faction.getPower() < faction.getClaims().size() + 1 && !player.hasPermission("faction.admin")) { MessageUtils.sendMessage(player, "claim-not-enough-power"); return; }
+
+        if (faction.getPower() < faction.getClaims().size() + 1 && !player.hasPermission("faction.admin")) {
+            MessageUtils.sendMessage(player, "claim-not-enough-power");
+            return false;
+        }
+
         Claim c = new Claim(world, x, z, faction.getId());
         plugin.getClaimManager().addClaim(c);
         faction.getClaims().add(c.toString());
-        player.sendMessage("§aClaim réussi.");
+        if (!ignoreAdjacencyCheck) player.sendMessage("§aParcelle revendiquée !");
+        return true;
     }
 
     private void handleUnclaim(Player player, String[] args) {
@@ -442,19 +545,19 @@ public class FactionCommand implements CommandExecutor {
         f.getRelations().put(target.getId(), rel);
         String otherRel = target.getRelations().get(f.getId());
 
-        if (rel.equals("ENEMY")) {
+        if (rel.equals(Relation.ENEMY.name())) {
             MessageUtils.sendMessage(player, "relation-updated", "%target%", target.getName(), "%relation%", "§cEnnemi");
             broadcastToFaction(target, "§cLa faction " + f.getName() + " vous a déclaré la guerre !");
-        } else if (rel.equals("ALLY")) {
-            if ("ALLY".equals(otherRel)) {
+        } else if (rel.equals(Relation.ALLY.name())) {
+            if (Relation.ALLY.name().equals(otherRel)) {
                 MessageUtils.sendMessage(player, "relation-updated", "%target%", target.getName(), "%relation%", "§dAllié (Mutuel)");
                 broadcastToFaction(target, "§dVous êtes désormais alliés avec " + f.getName() + " !");
             } else {
                 MessageUtils.sendMessage(player, "relation-updated", "%target%", target.getName(), "%relation%", "§dDemande d'alliance envoyée");
                 broadcastToFaction(target, "§dLa faction " + f.getName() + " souhaite devenir votre alliée. Utilisez /f ally " + f.getName() + " pour accepter.");
             }
-        } else if (rel.equals("TRUCE")) {
-            if ("TRUCE".equals(otherRel)) {
+        } else if (rel.equals(Relation.TRUCE.name())) {
+            if (Relation.TRUCE.name().equals(otherRel)) {
                 MessageUtils.sendMessage(player, "relation-updated", "%target%", target.getName(), "%relation%", "§6Trêve (Mutuelle)");
                 broadcastToFaction(target, "§6Vous êtes désormais en trêve avec " + f.getName() + " !");
             } else {
@@ -495,10 +598,21 @@ public class FactionCommand implements CommandExecutor {
 
     private void handleAdmin(Player player, String[] args) {
         if (!player.hasPermission("faction.admin")) return;
-        if (args.length > 1 && args[1].equalsIgnoreCase("bypass")) {
+        if (args.length < 2) {
+            player.sendMessage("§c/f admin bypass/setchateau/setforteresse");
+            return;
+        }
+        String sub = args[1].toLowerCase();
+        if (sub.equalsIgnoreCase("bypass")) {
             PlayerData pd = plugin.getPlayerManager().getPlayerData(player.getUniqueId());
             pd.setBypass(!pd.isBypass());
             player.sendMessage("§aBypass: " + pd.isBypass());
+        } else if (sub.equalsIgnoreCase("setchateau")) {
+            plugin.setChateauLocation(player.getLocation());
+            player.sendMessage("§aLocalisation du château définie !");
+        } else if (sub.equalsIgnoreCase("setforteresse")) {
+            plugin.setForteresseLocation(player.getLocation());
+            player.sendMessage("§aLocalisation de la forteresse définie !");
         }
     }
 
@@ -534,9 +648,38 @@ public class FactionCommand implements CommandExecutor {
 
     private void handleMoney(Player player, String[] args) {
         PlayerData pd = plugin.getPlayerManager().getPlayerData(player.getUniqueId());
-        if (pd.getFactionId() == null) return;
+        if (pd.getFactionId() == null) { MessageUtils.sendMessage(player, "not-in-faction"); return; }
         Faction f = plugin.getFactionManager().getFaction(pd.getFactionId());
-        player.sendMessage("§aBanque: " + f.getBalance());
+
+        if (args == null || args.length < 2) {
+            player.sendMessage("§aBanque de faction: §e" + String.format("%.2f", f.getBalance()) + "$");
+            player.sendMessage("§7Utilisez /f money deposit/withdraw [montant]");
+            return;
+        }
+
+        String sub = args[1].toLowerCase();
+        if (args.length < 3) { player.sendMessage("§cSpécifiez un montant."); return; }
+        double amount;
+        try { amount = Double.parseDouble(args[2]); } catch (NumberFormatException e) { player.sendMessage("§cMontant invalide."); return; }
+        if (amount <= 0) { player.sendMessage("§cLe montant doit être positif."); return; }
+
+        if (sub.equals("deposit") || sub.equals("d")) {
+            if (plugin.getEconomyManager().has(player, amount)) {
+                plugin.getEconomyManager().withdraw(player, amount);
+                f.setBalance(f.getBalance() + amount);
+                player.sendMessage("§aVous avez déposé " + amount + "$ dans la banque de faction.");
+            } else {
+                player.sendMessage("§cVous n'avez pas assez d'argent.");
+            }
+        } else if (sub.equals("withdraw") || sub.equals("w")) {
+            if (f.getBalance() >= amount) {
+                f.setBalance(f.getBalance() - amount);
+                plugin.getEconomyManager().deposit(player, amount);
+                player.sendMessage("§aVous avez retiré " + amount + "$ de la banque de faction.");
+            } else {
+                player.sendMessage("§cLa faction n'a pas assez d'argent.");
+            }
+        }
     }
 
     private void handleBalance(Player player) { handleMoney(player, null); }
@@ -553,7 +696,7 @@ public class FactionCommand implements CommandExecutor {
         if (!player.hasPermission("faction.admin")) return;
         Faction f = plugin.getFactionManager().getFactionByName(type.name());
         if (f == null) { f = plugin.getFactionManager().createFaction(type.name(), UUID.randomUUID()); f.setType(type); }
-        performClaim(player, f, player.getWorld().getName(), player.getLocation().getChunk().getX(), player.getLocation().getChunk().getZ());
+        performClaim(player, f, player.getWorld().getName(), player.getLocation().getChunk().getX(), player.getLocation().getChunk().getZ(), true);
     }
 
     private void handleSetPower(Player player, String[] args) {
