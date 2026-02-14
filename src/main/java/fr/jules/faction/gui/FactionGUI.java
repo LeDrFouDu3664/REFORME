@@ -9,6 +9,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.Arrays;
+import java.util.Map;
 
 public class FactionGUI {
     public static void openMainMenu(Player player, Faction faction) {
@@ -27,6 +28,48 @@ public class FactionGUI {
         inv.setItem(14, createItem(Material.MAP, "§eRelations", "§7Gérer les Alliés et Ennemis"));
         inv.setItem(15, createItem(Material.COMPARATOR, "§eParamètres", "§7Flags de faction (TNT, PVP, etc)"));
         inv.setItem(16, createItem(Material.REDSTONE_TORCH, "§ePermissions", "§7Actions autorisées par grade"));
+
+        inv.setItem(21, createItem(Material.IRON_SWORD, "§eMétiers", "§7Choisir un métier"));
+        inv.setItem(23, createItem(Material.WRITABLE_BOOK, "§eQuêtes", "§7Voir les quêtes"));
+
+        player.openInventory(inv);
+    }
+
+    public static void openQuestsMenu(Player player, fr.jules.faction.model.PlayerData data, fr.jules.faction.manager.QuestManager qm) {
+        Inventory inv = Bukkit.createInventory(null, 27, "§6Quêtes");
+        fillBorder(inv);
+        inv.setItem(22, createItem(Material.SHEARS, "§7Retour", "§8Clic pour revenir"));
+
+        int slot = 10;
+        for (Map.Entry<String, fr.jules.faction.manager.QuestManager.QuestInfo> entry : qm.getQuests().entrySet()) {
+            String qid = entry.getKey();
+            fr.jules.faction.manager.QuestManager.QuestInfo info = entry.getValue();
+            int progress = data.getQuestProgress().getOrDefault(qid, 0);
+            boolean done = progress >= info.goal;
+
+            inv.setItem(slot++, createItem(done ? Material.ENCHANTED_BOOK : Material.BOOK,
+                "§e" + info.name,
+                "§7" + info.description,
+                "§7Progrès: §f" + Math.min(progress, info.goal) + " / " + info.goal,
+                "§7Récompense: §e" + info.reward + "$",
+                done ? "§aTerminée !" : "§cEn cours..."));
+            if (slot == 17) break;
+        }
+
+        player.openInventory(inv);
+    }
+
+    public static void openJobsMenu(Player player, fr.jules.faction.model.PlayerData data) {
+        Inventory inv = Bukkit.createInventory(null, 27, "§6Métiers");
+        fillBorder(inv);
+        inv.setItem(22, createItem(Material.SHEARS, "§7Retour", "§8Clic pour revenir"));
+
+        inv.setItem(10, createItem(Material.DIAMOND_PICKAXE, "§eMineur", "§7Gagnez de l'XP en minant.", "§7Statut: " + (data.getJob().equals("MINEUR") ? "§aActif" : "§cInactif")));
+        inv.setItem(12, createItem(Material.IRON_AXE, "§eBûcheron", "§7Gagnez de l'XP en coupant du bois.", "§7Statut: " + (data.getJob().equals("BUCHERON") ? "§aActif" : "§cInactif")));
+        inv.setItem(14, createItem(Material.IRON_HOE, "§eFermier", "§7Gagnez de l'XP en cultivant.", "§7Statut: " + (data.getJob().equals("FERMIER") ? "§aActif" : "§cInactif")));
+        inv.setItem(16, createItem(Material.DIAMOND_SWORD, "§eGuerrier", "§7Gagnez de l'XP en combattant.", "§7Statut: " + (data.getJob().equals("GUERRIER") ? "§aActif" : "§cInactif")));
+
+        inv.setItem(22, createItem(Material.BOOK, "§6Vos Stats", "§7Métier: §f" + data.getJob(), "§7Niveau: §f" + data.getJobLevel(), "§7Exp: §f" + String.format("%.1f", data.getJobExp()) + " / " + (data.getJobLevel() * 100 * 1.5)));
 
         player.openInventory(inv);
     }

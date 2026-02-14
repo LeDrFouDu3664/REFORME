@@ -17,6 +17,7 @@ public class FactionPlugin extends JavaPlugin {
     private TeleportManager teleportManager;
     private DataManager dataManager;
     @Getter private EconomyManager economyManager;
+    @Getter private QuestManager questManager;
 
     @Override
     public void onEnable() {
@@ -25,13 +26,15 @@ public class FactionPlugin extends JavaPlugin {
         fr.jules.faction.utils.MessageUtils.init(this);
 
         this.factionManager = new FactionManager();
-        this.playerManager = new PlayerManager();
+        this.playerManager = new PlayerManager(this);
         this.claimManager = new ClaimManager();
         this.teleportManager = new TeleportManager();
         this.dataManager = new DataManager(this);
         this.economyManager = new EconomyManager(this);
+        this.questManager = new QuestManager(this);
 
         dataManager.loadFactions(factionManager, claimManager);
+        factionManager.getAllFactions().forEach(f -> factionManager.recalculatePower(f, playerManager));
 
         registerCommands();
         registerListeners();
@@ -62,6 +65,8 @@ public class FactionPlugin extends JavaPlugin {
         getCommand("ignore").setExecutor(misc);
         getCommand("shop").setExecutor(misc);
         getCommand("boutique").setExecutor(misc);
+        getCommand("jobs").setExecutor(new JobCommand(this));
+        getCommand("quests").setExecutor(new QuestCommand(this));
     }
 
     private void registerListeners() {
@@ -71,6 +76,8 @@ public class FactionPlugin extends JavaPlugin {
         Bukkit.getPluginManager().registerEvents(new ChatListener(this), this);
         Bukkit.getPluginManager().registerEvents(new GUIListener(this), this);
         Bukkit.getPluginManager().registerEvents(new EntityListener(this), this);
+        Bukkit.getPluginManager().registerEvents(new JobListener(this), this);
+        Bukkit.getPluginManager().registerEvents(new QuestListener(this), this);
     }
 
     private void startTasks() {

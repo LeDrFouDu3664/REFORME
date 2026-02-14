@@ -138,6 +138,10 @@ public class DataManager {
         config.set("maxPower", data.getMaxPower());
         config.set("title", data.getTitle());
         config.set("lastJoin", data.getLastJoin());
+        config.set("job", data.getJob());
+        config.set("jobExp", data.getJobExp());
+        config.set("jobLevel", data.getJobLevel());
+        config.set("questProgress", data.getQuestProgress());
         config.set("powerBoost", data.getPowerBoost());
         config.set("ignoredPlayers", data.getIgnoredPlayers().stream().map(UUID::toString).toList());
 
@@ -164,6 +168,15 @@ public class DataManager {
         data.setMaxPower(config.getDouble("maxPower", 10.0));
         data.setTitle(config.getString("title", ""));
         data.setLastJoin(config.getLong("lastJoin"));
+        data.setJob(config.getString("job", "NONE"));
+        data.setJobExp(config.getDouble("jobExp", 0));
+        data.setJobLevel(config.getInt("jobLevel", 1));
+        ConfigurationSection questSec = config.getConfigurationSection("questProgress");
+        if (questSec != null) {
+            for (String key : questSec.getKeys(false)) {
+                data.getQuestProgress().put(key, questSec.getInt(key));
+            }
+        }
         data.setPowerBoost(config.getDouble("powerBoost", 0));
 
         List<String> ignored = config.getStringList("ignoredPlayers");

@@ -34,6 +34,10 @@ commands:
     description: Ouvrir la boutique du Faction.
   boutique:
     description: Ouvrir la boutique Me's.
+  jobs:
+    description: Choisir et voir son métier.
+  quests:
+    description: Voir ses quêtes en cours.
 
 permissions:
   faction.command.*:

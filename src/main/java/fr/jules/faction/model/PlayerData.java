@@ -19,6 +19,10 @@ public class PlayerData {
     private String title = "";
     private String chatMode = "PUBLIC";
     private double balance = 0.0;
+    private String job = "NONE";
+    private double jobExp = 0;
+    private int jobLevel = 1;
+    private Map<String, Integer> questProgress = new HashMap<>(); // QuestID -> Progress
     private boolean bypass = false;
     private boolean autoClaim = false;
     private double powerBoost = 0;

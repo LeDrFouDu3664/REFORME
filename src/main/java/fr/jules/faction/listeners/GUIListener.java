@@ -29,6 +29,7 @@ public class GUIListener implements Listener {
             title.startsWith("§6Grade: ") || title.startsWith("§6Sélecteur de Grade") ||
             title.startsWith("§6Relations: ") || title.startsWith("§6Territoires: ") ||
             title.startsWith("§6Banque: ") || title.startsWith("§6Liste des Factions") ||
+            title.equals("§6Métiers") || title.equals("§6Quêtes") ||
             title.equals("§6Boutique Faction") || title.equals("§6Boutique Me's")) {
             event.setCancelled(true);
 
@@ -36,27 +37,30 @@ public class GUIListener implements Listener {
             String name = org.bukkit.ChatColor.stripColor(event.getCurrentItem().getItemMeta().getDisplayName());
 
             PlayerData data = plugin.getPlayerManager().getPlayerData(player.getUniqueId());
-            if (data.getFactionId() == null) return;
-            Faction faction = plugin.getFactionManager().getFaction(data.getFactionId());
+            Faction faction = data.getFactionId() != null ? plugin.getFactionManager().getFaction(data.getFactionId()) : null;
 
-            if (title.startsWith("§6Gestion: ")) {
+            if (title.startsWith("§6Gestion: ") && faction != null) {
                 handleMainMenuClick(player, name, faction);
-            } else if (title.startsWith("§6Membres: ")) {
+            } else if (title.startsWith("§6Membres: ") && faction != null) {
                 handleMembersMenuClick(player, name, faction, event);
-            } else if (title.startsWith("§6Permissions: ") || title.startsWith("§6Paramètres: ")) {
+            } else if ((title.startsWith("§6Permissions: ") || title.startsWith("§6Paramètres: ")) && faction != null) {
                 handlePermissionsMenuClick(player, name, faction);
-            } else if (title.startsWith("§6Sélecteur de Grade")) {
+            } else if (title.startsWith("§6Sélecteur de Grade") && faction != null) {
                 handleGradeSelectorClick(player, name, faction);
-            } else if (title.startsWith("§6Grade: ")) {
+            } else if (title.startsWith("§6Grade: ") && faction != null) {
                 handleGradePermissionsClick(player, name, faction, title);
-            } else if (title.startsWith("§6Relations: ")) {
+            } else if (title.startsWith("§6Relations: ") && faction != null) {
                 handleRelationsMenuClick(player, name, faction);
-            } else if (title.startsWith("§6Liste des Factions")) {
+            } else if (title.startsWith("§6Liste des Factions") && faction != null) {
                 handleFactionsListMenuClick(player, name, faction, event);
-            } else if (title.startsWith("§6Territoires: ")) {
+            } else if (title.startsWith("§6Territoires: ") && faction != null) {
                 handleTerritoriesMenuClick(player, name, faction);
-            } else if (title.startsWith("§6Banque: ")) {
+            } else if (title.startsWith("§6Banque: ") && faction != null) {
                 handleBankMenuClick(player, name, faction, event.getRawSlot());
+            } else if (title.equals("§6Métiers")) {
+                handleJobsMenuClick(player, name, data, faction);
+            } else if (title.equals("§6Quêtes")) {
+                handleQuestsMenuClick(player, name, faction);
             } else if (title.equals("§6Boutique Faction")) {
                 handleShopClick(player, event, faction);
             } else if (title.equals("§6Boutique Me's")) {
@@ -81,6 +85,10 @@ public class GUIListener implements Listener {
             fr.jules.faction.gui.FactionGUI.openPermissionsMenu(player, faction);
         } else if (name.equalsIgnoreCase("Permissions")) {
             fr.jules.faction.gui.FactionGUI.openGradeSelectorMenu(player, faction);
+        } else if (name.equalsIgnoreCase("Métiers")) {
+            fr.jules.faction.gui.FactionGUI.openJobsMenu(player, plugin.getPlayerManager().getPlayerData(player.getUniqueId()));
+        } else if (name.equalsIgnoreCase("Quêtes")) {
+            fr.jules.faction.gui.FactionGUI.openQuestsMenu(player, plugin.getPlayerManager().getPlayerData(player.getUniqueId()), plugin.getQuestManager());
         }
     }
 
@@ -242,6 +250,29 @@ public class GUIListener implements Listener {
         else if (slot == 15) player.performCommand("f money withdraw 1000");
 
         fr.jules.faction.gui.FactionGUI.openBankMenu(player, faction);
+    }
+
+    private void handleJobsMenuClick(Player player, String name, PlayerData data, Faction faction) {
+        if (name.equalsIgnoreCase("Retour")) {
+            if (faction != null) fr.jules.faction.gui.FactionGUI.openMainMenu(player, faction);
+            else player.closeInventory();
+            return;
+        }
+        if (name.contains("Mineur")) data.setJob("MINEUR");
+        else if (name.contains("Bûcheron")) data.setJob("BUCHERON");
+        else if (name.contains("Fermier")) data.setJob("FERMIER");
+        else if (name.contains("Guerrier")) data.setJob("GUERRIER");
+        else return;
+
+        player.sendMessage("§b§l[Métier] §aVous avez choisi le métier: §e" + data.getJob());
+        fr.jules.faction.gui.FactionGUI.openJobsMenu(player, data);
+    }
+
+    private void handleQuestsMenuClick(Player player, String name, Faction faction) {
+        if (name.equalsIgnoreCase("Retour")) {
+            if (faction != null) fr.jules.faction.gui.FactionGUI.openMainMenu(player, faction);
+            else player.closeInventory();
+        }
     }
 
     private void handleShopClick(Player player, InventoryClickEvent event, Faction faction) {

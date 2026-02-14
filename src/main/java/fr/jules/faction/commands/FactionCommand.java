@@ -33,6 +33,8 @@ public class FactionCommand implements CommandExecutor {
 
         String sub = args[0].toLowerCase();
         String perm = "faction.command." + sub;
+        if (sub.equals("admin")) perm = "faction.admin";
+
         if (!player.hasPermission(perm)) {
             MessageUtils.sendMessage(player, "no-permission", "%perm%", perm);
             return true;
@@ -476,6 +478,7 @@ public class FactionCommand implements CommandExecutor {
         Claim c = new Claim(world, x, z, faction.getId());
         plugin.getClaimManager().addClaim(c);
         faction.getClaims().add(c.toString());
+        plugin.getQuestManager().progressQuest(player, "CLAIM_5", 1);
         if (!ignoreAdjacencyCheck) player.sendMessage("§aParcelle revendiquée !");
         return true;
     }
@@ -503,32 +506,49 @@ public class FactionCommand implements CommandExecutor {
     }
 
     private void handleMap(Player player) {
-        int rx = 16, rz = 8;
+        int rx = 24, rz = 10;
         PlayerData pd = plugin.getPlayerManager().getPlayerData(player.getUniqueId());
-        player.sendMessage("§6§l--- Carte ---");
+        player.sendMessage("§8§m---------------------------------------");
+        player.sendMessage("   §6§lCARTE DE TERRITOIRE");
+        int centerX = player.getLocation().getChunk().getX();
+        int centerZ = player.getLocation().getChunk().getZ();
+        player.sendMessage("   §7Position: §f" + centerX + ", " + centerZ);
+        player.sendMessage("");
+
         for (int z = -rz; z <= rz; z++) {
             net.kyori.adventure.text.TextComponent.Builder line = net.kyori.adventure.text.Component.text();
+            line.append(net.kyori.adventure.text.Component.text("  "));
             for (int x = -rx; x <= rx; x++) {
-                if (x == 0 && z == 0) line.append(net.kyori.adventure.text.Component.text("§b+"));
-                else {
+                if (x == 0 && z == 0) {
+                    line.append(net.kyori.adventure.text.Component.text("§b✚").hoverEvent(net.kyori.adventure.text.event.HoverEvent.showText(net.kyori.adventure.text.Component.text("§bVous êtes ici"))));
+                } else {
                     Claim c = plugin.getClaimManager().getClaim(player.getWorld().getName(), player.getLocation().getChunk().getX() + x, player.getLocation().getChunk().getZ() + z);
-                    if (c == null) line.append(net.kyori.adventure.text.Component.text("§7-"));
-                    else {
+                    if (c == null) {
+                        line.append(net.kyori.adventure.text.Component.text("§7-"));
+                    } else {
                         Faction o = plugin.getFactionManager().getFaction(c.getFactionId());
                         String color = "§f";
-                        if (pd.getFactionId() != null) {
+                        if (o.getType() == FactionType.SAFEZONE) color = "§b";
+                        else if (o.getType() == FactionType.WARZONE) color = "§4";
+                        else if (pd.getFactionId() != null) {
                             if (o.getId().equals(pd.getFactionId())) color = "§a";
                             else {
                                 String r = plugin.getFactionManager().getFaction(pd.getFactionId()).getRelations().get(o.getId());
-                                if ("ALLY".equals(r)) color = "§d"; else if ("ENEMY".equals(r)) color = "§c";
+                                if (Relation.ALLY.name().equals(r)) color = "§d";
+                                else if (Relation.ENEMY.name().equals(r)) color = "§c";
+                                else if (Relation.TRUCE.name().equals(r)) color = "§6";
                             }
                         }
-                        line.append(net.kyori.adventure.text.Component.text(color + "#").hoverEvent(net.kyori.adventure.text.event.HoverEvent.showText(net.kyori.adventure.text.Component.text(color + o.getName()))));
+                        line.append(net.kyori.adventure.text.Component.text(color + "■")
+                            .hoverEvent(net.kyori.adventure.text.event.HoverEvent.showText(net.kyori.adventure.text.Component.text(color + o.getName() + "\n§7(" + (centerX + x) + ", " + (centerZ + z) + ")"))));
                     }
                 }
             }
             player.sendMessage(line.build());
         }
+        player.sendMessage("");
+        player.sendMessage(" §a■ §7Vôtre  §d■ §7Allié  §c■ §7Ennemi  §6■ §7Trêve  §b■ §7Safe  §7- §7Libre");
+        player.sendMessage("§8§m---------------------------------------");
     }
 
     private void handleSeechunk(Player player) {
@@ -642,20 +662,49 @@ public class FactionCommand implements CommandExecutor {
     private void handleAdmin(Player player, String[] args) {
         if (!player.hasPermission("faction.admin")) return;
         if (args.length < 2) {
-            player.sendMessage("§c/f admin bypass/setchateau/setforteresse");
+            player.sendMessage("§6--- Commandes Admin ---");
+            player.sendMessage("§e/f admin bypass §7- Mode bypass");
+            player.sendMessage("§e/f admin setchateau §7- Définir le château");
+            player.sendMessage("§e/f admin setforteresse §7- Définir la forteresse");
+            player.sendMessage("§e/f admin setpower [joueur] [valeur] §7- Modifier le power");
+            player.sendMessage("§e/f admin disband [faction] §7- Dissoudre une faction");
+            player.sendMessage("§e/f admin reload §7- Recharger la config");
             return;
         }
         String sub = args[1].toLowerCase();
         if (sub.equalsIgnoreCase("bypass")) {
             PlayerData pd = plugin.getPlayerManager().getPlayerData(player.getUniqueId());
             pd.setBypass(!pd.isBypass());
-            player.sendMessage("§aBypass: " + pd.isBypass());
+            player.sendMessage("§aMode bypass: " + (pd.isBypass() ? "§aActivé" : "§cDésactivé"));
         } else if (sub.equalsIgnoreCase("setchateau")) {
             plugin.setChateauLocation(player.getLocation());
             player.sendMessage("§aLocalisation du château définie !");
         } else if (sub.equalsIgnoreCase("setforteresse")) {
             plugin.setForteresseLocation(player.getLocation());
             player.sendMessage("§aLocalisation de la forteresse définie !");
+        } else if (sub.equalsIgnoreCase("setpower")) {
+            if (args.length < 4) { player.sendMessage("§cUsage: /f admin setpower [joueur] [valeur]"); return; }
+            PlayerData td = plugin.getPlayerManager().getPlayerDataByName(args[2]);
+            if (td == null) { player.sendMessage("§cJoueur introuvable."); return; }
+            try {
+                double val = Double.parseDouble(args[3]);
+                td.setPower(val);
+                player.sendMessage("§aPower de " + td.getName() + " mis à " + val);
+            } catch (NumberFormatException e) { player.sendMessage("§cValeur invalide."); }
+        } else if (sub.equalsIgnoreCase("disband")) {
+            if (args.length < 3) { player.sendMessage("§cUsage: /f admin disband [faction]"); return; }
+            Faction f = plugin.getFactionManager().getFactionByName(args[2]);
+            if (f == null) { player.sendMessage("§cFaction introuvable."); return; }
+            for (UUID mid : f.getMembers()) {
+                PlayerData md = plugin.getPlayerManager().getPlayerData(mid);
+                md.setFactionId(null); md.setRole(Grade.MEMBER);
+            }
+            plugin.getClaimManager().removeAllFactionClaims(f.getId());
+            plugin.getFactionManager().disbandFaction(f.getId());
+            player.sendMessage("§aFaction " + f.getName() + " dissoute.");
+        } else if (sub.equalsIgnoreCase("reload")) {
+            plugin.reloadConfig();
+            player.sendMessage("§aConfiguration rechargée.");
         }
     }
 
