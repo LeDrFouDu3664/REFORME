@@ -30,7 +30,30 @@ public class FactionGUI {
         inv.setItem(16, createItem(Material.REDSTONE_TORCH, "§ePermissions", "§7Actions autorisées par grade"));
 
         inv.setItem(21, createItem(Material.IRON_SWORD, "§eMétiers", "§7Choisir un métier"));
+        inv.setItem(22, createItem(Material.BLAZE_POWDER, "§ePouvoirs", "§7Débloquer des capacités"));
         inv.setItem(23, createItem(Material.WRITABLE_BOOK, "§eQuêtes", "§7Voir les quêtes"));
+
+        player.openInventory(inv);
+    }
+
+    public static void openPowersMenu(Player player, fr.jules.faction.model.PlayerData data, fr.jules.faction.manager.PowerManager pm) {
+        Inventory inv = Bukkit.createInventory(null, 36, "§6Pouvoirs de Faction");
+        fillBorder(inv);
+        inv.setItem(31, createItem(Material.SHEARS, "§7Retour", "§8Clic pour revenir"));
+
+        int slot = 10;
+        for (Map.Entry<String, fr.jules.faction.manager.PowerManager.PowerInfo> entry : pm.getPowers().entrySet()) {
+            String pid = entry.getKey();
+            fr.jules.faction.manager.PowerManager.PowerInfo info = entry.getValue();
+            boolean has = data.getPowers().contains(pid);
+
+            inv.setItem(slot++, createItem(has ? Material.ENCHANTED_BOOK : Material.BOOK,
+                "§e" + info.name,
+                "§7" + info.description,
+                has ? "§aActivé" : "§cCliquez pour débloquer (5000$)"));
+            if (slot % 9 == 8) slot += 2;
+            if (slot >= 26) break;
+        }
 
         player.openInventory(inv);
     }
@@ -106,7 +129,7 @@ public class FactionGUI {
         player.openInventory(inv);
     }
 
-    public static void openPermissionsMenu(Player player, Faction faction) {
+    public static void openParametersMenu(Player player, Faction faction) {
         Inventory inv = Bukkit.createInventory(null, 27, "§6Paramètres: " + faction.getName());
         fillBorder(inv);
         inv.setItem(22, createItem(Material.SHEARS, "§7Retour", "§8Clic pour revenir"));
@@ -117,11 +140,14 @@ public class FactionGUI {
         boolean openInvites = faction.getFactionFlags().getOrDefault("OPEN_INVITES", false);
         inv.setItem(11, createItem(openInvites ? Material.LIME_DYE : Material.GRAY_DYE, "§eOPEN_INVITES", "§7Tout le monde peut rejoindre", "§7Statut: " + (openInvites ? "§aActivé" : "§cDésactivé")));
 
-        boolean pvp = faction.getFactionFlags().getOrDefault("pvp", true);
-        inv.setItem(12, createItem(pvp ? Material.IRON_SWORD : Material.WOODEN_SWORD, "§epvp", "§7PVP activé", "§7Statut: " + (pvp ? "§aActivé" : "§cDésactivé")));
+        boolean ff = faction.getFactionFlags().getOrDefault("friendlyFire", false);
+        inv.setItem(12, createItem(ff ? Material.IRON_SWORD : Material.WOODEN_SWORD, "§efriendlyFire", "§7Feu ami activé", "§7Statut: " + (ff ? "§aActivé" : "§cDésactivé")));
 
         boolean explosions = faction.getFactionFlags().getOrDefault("explosions", true);
-        inv.setItem(13, createItem(explosions ? Material.TNT : Material.GUNPOWDER, "§eexplosions", "§7TNT activé", "§7Statut: " + (explosions ? "§aActivé" : "§cDésactivé")));
+        inv.setItem(13, createItem(explosions ? Material.TNT : Material.GUNPOWDER, "§eexplosions", "§7Explosions activées", "§7Statut: " + (explosions ? "§aActivé" : "§cDésactivé")));
+
+        boolean monsters = faction.getFactionFlags().getOrDefault("monsters", true);
+        inv.setItem(14, createItem(monsters ? Material.ZOMBIE_HEAD : Material.SKELETON_SKULL, "§emonsters", "§7Apparition monstres", "§7Statut: " + (monsters ? "§aActivé" : "§cDésactivé")));
 
         inv.setItem(15, createItem(Material.OAK_SIGN, "§eDescription", "§7Modifier la description", "§7Actuel: §f" + faction.getDescription()));
         inv.setItem(16, createItem(Material.PAPER, "§eMOTD", "§7Modifier le message de connexion", "§7Actuel: §f" + faction.getMotd()));
@@ -129,8 +155,8 @@ public class FactionGUI {
         player.openInventory(inv);
     }
 
-    public static void openGradePermissionsMenu(Player player, Faction faction, fr.jules.faction.model.Grade targetGrade) {
-        Inventory inv = Bukkit.createInventory(null, 45, "§6Grade: " + targetGrade.name() + " (" + faction.getName() + ")");
+    public static void openRankPermissionsMenu(Player player, Faction faction, String target) {
+        Inventory inv = Bukkit.createInventory(null, 45, "§6Perms: " + target + " (" + faction.getName() + ")");
         fillBorder(inv);
         inv.setItem(40, createItem(Material.SHEARS, "§7Retour", "§8Clic pour revenir"));
 
@@ -139,22 +165,30 @@ public class FactionGUI {
         for (String action : actions) {
             if (slot >= 35) break;
             if (slot % 9 == 0 || slot % 9 == 8) slot++;
-            boolean allowed = faction.hasPermission(targetGrade, action);
+
+            boolean allowed;
+            if (target.equals("ALLY")) {
+                allowed = faction.getFactionFlags().getOrDefault("ALLY_" + action, false);
+            } else {
+                allowed = faction.hasPermission(fr.jules.faction.model.Grade.valueOf(target), action);
+            }
+
             inv.setItem(slot++, createItem(allowed ? Material.LIME_STAINED_GLASS_PANE : Material.RED_STAINED_GLASS_PANE, "§e" + action, "§7Autorisé: " + (allowed ? "§aOui" : "§cNon")));
         }
 
         player.openInventory(inv);
     }
 
-    public static void openGradeSelectorMenu(Player player, Faction faction) {
-        Inventory inv = Bukkit.createInventory(null, 27, "§6Sélecteur de Grade");
+    public static void openPermissionsMenu(Player player, Faction faction) {
+        Inventory inv = Bukkit.createInventory(null, 27, "§6Permissions: " + faction.getName());
         fillBorder(inv);
         inv.setItem(22, createItem(Material.SHEARS, "§7Retour", "§8Clic pour revenir"));
 
         inv.setItem(10, createItem(Material.LEATHER_HELMET, "§eRECRUIT", "§7Modifier les perms des Recrues"));
-        inv.setItem(12, createItem(Material.CHAINMAIL_HELMET, "§eMEMBER", "§7Modifier les perms des Membres"));
-        inv.setItem(14, createItem(Material.GOLDEN_HELMET, "§eMODERATOR", "§7Modifier les perms des Modérateurs"));
-        inv.setItem(16, createItem(Material.IRON_HELMET, "§eOFFICER", "§7Modifier les perms des Officiers"));
+        inv.setItem(11, createItem(Material.CHAINMAIL_HELMET, "§eMEMBER", "§7Modifier les perms des Membres"));
+        inv.setItem(12, createItem(Material.GOLDEN_HELMET, "§eMODERATOR", "§7Modifier les perms des Modérateurs"));
+        inv.setItem(13, createItem(Material.IRON_HELMET, "§eOFFICER", "§7Modifier les perms des Officiers"));
+        inv.setItem(16, createItem(Material.PINK_DYE, "§dALLY", "§7Modifier les perms des Alliés"));
         player.openInventory(inv);
     }
 

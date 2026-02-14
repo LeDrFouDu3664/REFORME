@@ -3,6 +3,7 @@ package fr.jules.faction;
 import fr.jules.faction.commands.*;
 import fr.jules.faction.listeners.*;
 import fr.jules.faction.manager.*;
+import fr.jules.faction.model.*;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 import lombok.Getter;
@@ -18,6 +19,7 @@ public class FactionPlugin extends JavaPlugin {
     private DataManager dataManager;
     @Getter private EconomyManager economyManager;
     @Getter private QuestManager questManager;
+    @Getter private PowerManager powerManager;
 
     @Override
     public void onEnable() {
@@ -32,6 +34,7 @@ public class FactionPlugin extends JavaPlugin {
         this.dataManager = new DataManager(this);
         this.economyManager = new EconomyManager(this);
         this.questManager = new QuestManager(this);
+        this.powerManager = new PowerManager(this);
 
         dataManager.loadFactions(factionManager, claimManager);
         factionManager.getAllFactions().forEach(f -> factionManager.recalculatePower(f, playerManager));
@@ -81,6 +84,14 @@ public class FactionPlugin extends JavaPlugin {
     }
 
     private void startTasks() {
+        // Task for Power Effects
+        Bukkit.getScheduler().runTaskTimer(this, () -> {
+            Bukkit.getOnlinePlayers().forEach(p -> {
+                powerManager.applyEffects(p);
+                updateCompass(p);
+            });
+        }, 20, 20);
+
         double powerGain = getConfig().getDouble("settings.power.per-interval", 0.2);
         int interval = getConfig().getInt("settings.power.interval-minutes", 5);
 
@@ -125,5 +136,15 @@ public class FactionPlugin extends JavaPlugin {
         getConfig().set("locations.chateau", chateauLocation);
         getConfig().set("locations.forteresse", forteresseLocation);
         saveConfig();
+    }
+
+    private void updateCompass(org.bukkit.entity.Player player) {
+        PlayerData data = playerManager.getPlayerData(player.getUniqueId());
+        if (data.getFactionId() != null) {
+            Faction f = factionManager.getFaction(data.getFactionId());
+            if (f != null && f.getHome() != null) {
+                player.setCompassTarget(f.getHome());
+            }
+        }
     }
 }

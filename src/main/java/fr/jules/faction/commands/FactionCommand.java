@@ -121,6 +121,7 @@ public class FactionCommand implements CommandExecutor {
         faction.addMember(player.getUniqueId());
         data.setFactionId(faction.getId());
         data.setRole(Grade.MEMBER);
+        plugin.getFactionManager().recalculatePower(faction, plugin.getPlayerManager());
         MessageUtils.sendMessage(player, "joined-faction", "%name%", faction.getName());
     }
 
@@ -132,6 +133,7 @@ public class FactionCommand implements CommandExecutor {
         faction.removeMember(player.getUniqueId());
         data.setFactionId(null);
         data.setRole(Grade.MEMBER);
+        plugin.getFactionManager().recalculatePower(faction, plugin.getPlayerManager());
         MessageUtils.sendMessage(player, "left-faction");
     }
 
@@ -183,6 +185,7 @@ public class FactionCommand implements CommandExecutor {
         faction.removeMember(targetUUID);
         PlayerData td = plugin.getPlayerManager().getPlayerData(targetUUID);
         td.setFactionId(null); td.setRole(Grade.MEMBER);
+        plugin.getFactionManager().recalculatePower(faction, plugin.getPlayerManager());
         MessageUtils.sendMessage(player, "kicked", "%target%", args[1]);
     }
 
@@ -457,7 +460,29 @@ public class FactionCommand implements CommandExecutor {
     }
 
     public boolean performClaim(Player player, Faction faction, String world, int x, int z, boolean ignoreAdjacencyCheck) {
-        if (plugin.getClaimManager().isClaimed(world, x, z)) return false;
+        Claim existing = plugin.getClaimManager().getClaim(world, x, z);
+        if (existing != null) {
+            if (existing.getFactionId().equals(faction.getId())) return false;
+
+            Faction owner = plugin.getFactionManager().getFaction(existing.getFactionId());
+            if (owner != null && owner.getType() == FactionType.NORMAL) {
+                // Overclaim logic
+                boolean isEnemy = "ENEMY".equals(faction.getRelations().get(owner.getId()));
+                boolean isRaidable = owner.getPower() < owner.getClaims().size();
+
+                if (isEnemy && isRaidable) {
+                    player.sendMessage("§eSur-revendication en cours sur le territoire de " + owner.getName() + " !");
+                    owner.getClaims().remove(world + "," + x + "," + z);
+                    plugin.getClaimManager().removeClaim(world, x, z);
+                    // continue to claim below
+                } else {
+                    player.sendMessage("§cCette parcelle appartient déjà à " + owner.getName() + ".");
+                    return false;
+                }
+            } else {
+                return false;
+            }
+        }
 
         if (!faction.getClaims().isEmpty() && !player.hasPermission("faction.admin") && !ignoreAdjacencyCheck) {
             boolean adj = faction.getClaims().contains(world + "," + (x + 1) + "," + z) ||
@@ -478,7 +503,7 @@ public class FactionCommand implements CommandExecutor {
         Claim c = new Claim(world, x, z, faction.getId());
         plugin.getClaimManager().addClaim(c);
         faction.getClaims().add(c.toString());
-        plugin.getQuestManager().progressQuest(player, "CLAIM_5", 1);
+        plugin.getQuestManager().progressQuest(player, "CLAIM_MASTER", 1);
         if (!ignoreAdjacencyCheck) player.sendMessage("§aParcelle revendiquée !");
         return true;
     }
@@ -513,11 +538,15 @@ public class FactionCommand implements CommandExecutor {
         int centerX = player.getLocation().getChunk().getX();
         int centerZ = player.getLocation().getChunk().getZ();
         player.sendMessage("   §7Position: §f" + centerX + ", " + centerZ);
+        player.sendMessage("   §7Direction: §e" + player.getFacing().name());
         player.sendMessage("");
 
+        player.sendMessage("           §e[ NORD ]");
         for (int z = -rz; z <= rz; z++) {
             net.kyori.adventure.text.TextComponent.Builder line = net.kyori.adventure.text.Component.text();
-            line.append(net.kyori.adventure.text.Component.text("  "));
+            if (z == 0) line.append(net.kyori.adventure.text.Component.text("§e[O] "));
+            else line.append(net.kyori.adventure.text.Component.text("    "));
+
             for (int x = -rx; x <= rx; x++) {
                 if (x == 0 && z == 0) {
                     line.append(net.kyori.adventure.text.Component.text("§b✚").hoverEvent(net.kyori.adventure.text.event.HoverEvent.showText(net.kyori.adventure.text.Component.text("§bVous êtes ici"))));
@@ -544,8 +573,10 @@ public class FactionCommand implements CommandExecutor {
                     }
                 }
             }
+            if (z == 0) line.append(net.kyori.adventure.text.Component.text(" §e[E]"));
             player.sendMessage(line.build());
         }
+        player.sendMessage("           §e[ SUD ]");
         player.sendMessage("");
         player.sendMessage(" §a■ §7Vôtre  §d■ §7Allié  §c■ §7Ennemi  §6■ §7Trêve  §b■ §7Safe  §7- §7Libre");
         player.sendMessage("§8§m---------------------------------------");

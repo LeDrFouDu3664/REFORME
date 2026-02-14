@@ -20,6 +20,7 @@ public class QuestCommand implements CommandExecutor {
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         if (!(sender instanceof Player player)) return true;
         PlayerData data = plugin.getPlayerManager().getPlayerData(player.getUniqueId());
+        plugin.getQuestManager().checkRefresh(player);
         FactionGUI.openQuestsMenu(player, data, plugin.getQuestManager());
         return true;
     }

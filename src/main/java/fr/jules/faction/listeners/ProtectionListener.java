@@ -73,8 +73,15 @@ public class ProtectionListener implements Listener {
             return true; // Territory is raidable
         }
 
-        if (data.getFactionId() != null && data.getFactionId().equals(claim.getFactionId())) {
-            return owner.hasPermission(data.getRole(), action);
+        if (data.getFactionId() != null) {
+            if (data.getFactionId().equals(claim.getFactionId())) {
+                return owner.hasPermission(data.getRole(), action);
+            }
+
+            String rel = owner.getRelations().get(data.getFactionId());
+            if (fr.jules.faction.model.Relation.ALLY.name().equals(rel)) {
+                return owner.getFactionFlags().getOrDefault("ALLY_" + action, false);
+            }
         }
 
         return false;

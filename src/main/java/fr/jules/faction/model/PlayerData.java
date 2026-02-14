@@ -23,6 +23,8 @@ public class PlayerData {
     private double jobExp = 0;
     private int jobLevel = 1;
     private Map<String, Integer> questProgress = new HashMap<>(); // QuestID -> Progress
+    private long lastQuestRefresh = 0;
+    private Set<String> powers = new HashSet<>();
     private boolean bypass = false;
     private boolean autoClaim = false;
     private double powerBoost = 0;

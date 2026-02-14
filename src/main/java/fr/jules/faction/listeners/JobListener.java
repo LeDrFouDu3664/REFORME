@@ -55,6 +55,9 @@ public class JobListener implements Listener {
     }
 
     private void awardExp(Player player, PlayerData data, double amount) {
+        if (data.getPowers().contains("LUCK_MINER") && data.getJob().equals("MINEUR")) {
+            amount *= 1.5;
+        }
         data.setJobExp(data.getJobExp() + amount);
         double nextLevelExp = data.getJobLevel() * 100 * 1.5;
         if (data.getJobExp() >= nextLevelExp) {

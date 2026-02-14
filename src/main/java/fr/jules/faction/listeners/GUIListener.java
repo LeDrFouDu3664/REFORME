@@ -26,10 +26,11 @@ public class GUIListener implements Listener {
         if (!(event.getWhoClicked() instanceof Player player)) return;
 
         if (title.startsWith("§6Gestion: ") || title.startsWith("§6Membres: ") || title.startsWith("§6Permissions: ") ||
-            title.startsWith("§6Grade: ") || title.startsWith("§6Sélecteur de Grade") ||
+            title.startsWith("§6Perms: ") ||
             title.startsWith("§6Relations: ") || title.startsWith("§6Territoires: ") ||
             title.startsWith("§6Banque: ") || title.startsWith("§6Liste des Factions") ||
-            title.equals("§6Métiers") || title.equals("§6Quêtes") ||
+            title.startsWith("§6Paramètres: ") ||
+            title.equals("§6Métiers") || title.equals("§6Quêtes") || title.equals("§6Pouvoirs de Faction") ||
             title.equals("§6Boutique Faction") || title.equals("§6Boutique Me's")) {
             event.setCancelled(true);
 
@@ -43,12 +44,12 @@ public class GUIListener implements Listener {
                 handleMainMenuClick(player, name, faction);
             } else if (title.startsWith("§6Membres: ") && faction != null) {
                 handleMembersMenuClick(player, name, faction, event);
-            } else if ((title.startsWith("§6Permissions: ") || title.startsWith("§6Paramètres: ")) && faction != null) {
-                handlePermissionsMenuClick(player, name, faction);
-            } else if (title.startsWith("§6Sélecteur de Grade") && faction != null) {
-                handleGradeSelectorClick(player, name, faction);
-            } else if (title.startsWith("§6Grade: ") && faction != null) {
-                handleGradePermissionsClick(player, name, faction, title);
+            } else if (title.startsWith("§6Paramètres: ") && faction != null) {
+                handleParametersMenuClick(player, name, faction);
+            } else if (title.startsWith("§6Permissions: ") && faction != null) {
+                handlePermissionsSelectorClick(player, name, faction);
+            } else if (title.startsWith("§6Perms: ") && faction != null) {
+                handleRankPermissionsClick(player, name, faction, title);
             } else if (title.startsWith("§6Relations: ") && faction != null) {
                 handleRelationsMenuClick(player, name, faction);
             } else if (title.startsWith("§6Liste des Factions") && faction != null) {
@@ -61,6 +62,8 @@ public class GUIListener implements Listener {
                 handleJobsMenuClick(player, name, data, faction);
             } else if (title.equals("§6Quêtes")) {
                 handleQuestsMenuClick(player, name, faction);
+            } else if (title.equals("§6Pouvoirs de Faction")) {
+                handlePowersMenuClick(player, name, data, faction);
             } else if (title.equals("§6Boutique Faction")) {
                 handleShopClick(player, event, faction);
             } else if (title.equals("§6Boutique Me's")) {
@@ -82,13 +85,15 @@ public class GUIListener implements Listener {
         } else if (name.equalsIgnoreCase("Relations")) {
             fr.jules.faction.gui.FactionGUI.openRelationsMenu(player, faction);
         } else if (name.equalsIgnoreCase("Paramètres")) {
-            fr.jules.faction.gui.FactionGUI.openPermissionsMenu(player, faction);
+            fr.jules.faction.gui.FactionGUI.openParametersMenu(player, faction);
         } else if (name.equalsIgnoreCase("Permissions")) {
-            fr.jules.faction.gui.FactionGUI.openGradeSelectorMenu(player, faction);
+            fr.jules.faction.gui.FactionGUI.openPermissionsMenu(player, faction);
         } else if (name.equalsIgnoreCase("Métiers")) {
             fr.jules.faction.gui.FactionGUI.openJobsMenu(player, plugin.getPlayerManager().getPlayerData(player.getUniqueId()));
         } else if (name.equalsIgnoreCase("Quêtes")) {
             fr.jules.faction.gui.FactionGUI.openQuestsMenu(player, plugin.getPlayerManager().getPlayerData(player.getUniqueId()), plugin.getQuestManager());
+        } else if (name.equalsIgnoreCase("Pouvoirs")) {
+            fr.jules.faction.gui.FactionGUI.openPowersMenu(player, plugin.getPlayerManager().getPlayerData(player.getUniqueId()), plugin.getPowerManager());
         }
     }
 
@@ -111,13 +116,13 @@ public class GUIListener implements Listener {
         fr.jules.faction.gui.FactionGUI.openMembersMenu(player, faction);
     }
 
-    private void handlePermissionsMenuClick(Player player, String permName, Faction faction) {
+    private void handleParametersMenuClick(Player player, String permName, Faction faction) {
         if (permName.equalsIgnoreCase("Retour")) {
             fr.jules.faction.gui.FactionGUI.openMainMenu(player, faction);
             return;
         }
         if (!faction.isOfficer(player.getUniqueId())) {
-            player.sendMessage("§cSeuls les officiers peuvent gérer les permissions.");
+            player.sendMessage("§cSeuls les officiers peuvent gérer les paramètres.");
             return;
         }
         if (permName.equalsIgnoreCase("Description")) {
@@ -136,36 +141,48 @@ public class GUIListener implements Listener {
 
         faction.getFactionFlags().put(permName, !current);
         player.sendMessage("§aOption " + permName + " passée à: " + (!current));
-        fr.jules.faction.gui.FactionGUI.openPermissionsMenu(player, faction);
+        fr.jules.faction.gui.FactionGUI.openParametersMenu(player, faction);
     }
 
-    private void handleGradeSelectorClick(Player player, String name, Faction faction) {
+    private void handlePermissionsSelectorClick(Player player, String name, Faction faction) {
         if (name.equalsIgnoreCase("Retour")) {
+            fr.jules.faction.gui.FactionGUI.openMainMenu(player, faction);
+            return;
+        }
+        if (name.equalsIgnoreCase("ALLY")) {
+            fr.jules.faction.gui.FactionGUI.openRankPermissionsMenu(player, faction, "ALLY");
+        } else {
+            try {
+                fr.jules.faction.model.Grade grade = fr.jules.faction.model.Grade.valueOf(name.toUpperCase());
+                fr.jules.faction.gui.FactionGUI.openRankPermissionsMenu(player, faction, grade.name());
+            } catch (IllegalArgumentException ignored) {}
+        }
+    }
+
+    private void handleRankPermissionsClick(Player player, String action, Faction faction, String title) {
+        if (action.equalsIgnoreCase("Retour")) {
             fr.jules.faction.gui.FactionGUI.openPermissionsMenu(player, faction);
             return;
         }
-        try {
-            fr.jules.faction.model.Grade grade = fr.jules.faction.model.Grade.valueOf(name.toUpperCase());
-            fr.jules.faction.gui.FactionGUI.openGradePermissionsMenu(player, faction, grade);
-        } catch (IllegalArgumentException ignored) {}
-    }
+        // Title: §6Perms: RANK (Fac)
+        String target = title.split(" ")[1];
 
-    private void handleGradePermissionsClick(Player player, String action, Faction faction, String title) {
-        if (action.equalsIgnoreCase("Retour")) {
-            fr.jules.faction.gui.FactionGUI.openGradeSelectorMenu(player, faction);
-            return;
-        }
-        String gradeName = title.split(" ")[1];
-        fr.jules.faction.model.Grade grade = fr.jules.faction.model.Grade.valueOf(gradeName);
-
-        java.util.Set<fr.jules.faction.model.Grade> allowed = faction.getPermissions().computeIfAbsent(action, k -> new java.util.HashSet<>());
-        if (allowed.contains(grade)) {
-            allowed.remove(grade);
+        if (target.equals("ALLY")) {
+            String flagKey = "ALLY_" + action;
+            boolean current = faction.getFactionFlags().getOrDefault(flagKey, false);
+            faction.getFactionFlags().put(flagKey, !current);
+            player.sendMessage("§aPermission " + action + " pour les ALLIES modifiée.");
         } else {
-            allowed.add(grade);
+            fr.jules.faction.model.Grade grade = fr.jules.faction.model.Grade.valueOf(target);
+            java.util.Set<fr.jules.faction.model.Grade> allowed = faction.getPermissions().computeIfAbsent(action, k -> new java.util.HashSet<>());
+            if (allowed.contains(grade)) {
+                allowed.remove(grade);
+            } else {
+                allowed.add(grade);
+            }
+            player.sendMessage("§aPermission " + action + " pour " + target + " modifiée.");
         }
-        player.sendMessage("§aPermission " + action + " pour " + gradeName + " modifiée.");
-        fr.jules.faction.gui.FactionGUI.openGradePermissionsMenu(player, faction, grade);
+        fr.jules.faction.gui.FactionGUI.openRankPermissionsMenu(player, faction, target);
     }
 
     private void handleRelationsMenuClick(Player player, String name, Faction faction) {
@@ -272,6 +289,37 @@ public class GUIListener implements Listener {
         if (name.equalsIgnoreCase("Retour")) {
             if (faction != null) fr.jules.faction.gui.FactionGUI.openMainMenu(player, faction);
             else player.closeInventory();
+        }
+    }
+
+    private void handlePowersMenuClick(Player player, String name, PlayerData data, Faction faction) {
+        if (name.equalsIgnoreCase("Retour")) {
+            if (faction != null) fr.jules.faction.gui.FactionGUI.openMainMenu(player, faction);
+            else player.closeInventory();
+            return;
+        }
+
+        String powerId = null;
+        for (Map.Entry<String, fr.jules.faction.manager.PowerManager.PowerInfo> entry : plugin.getPowerManager().getPowers().entrySet()) {
+            if (entry.getValue().name.equalsIgnoreCase(name)) {
+                powerId = entry.getKey();
+                break;
+            }
+        }
+
+        if (powerId == null) return;
+        if (data.getPowers().contains(powerId)) {
+            player.sendMessage("§cVous possédez déjà ce pouvoir.");
+            return;
+        }
+
+        if (plugin.getEconomyManager().has(player, 5000)) {
+            plugin.getEconomyManager().withdraw(player, 5000);
+            data.getPowers().add(powerId);
+            player.sendMessage("§aPouvoir §e" + name + " §adébloqué !");
+            fr.jules.faction.gui.FactionGUI.openPowersMenu(player, data, plugin.getPowerManager());
+        } else {
+            player.sendMessage("§cPas assez d'argent (5000$).");
         }
     }
 
