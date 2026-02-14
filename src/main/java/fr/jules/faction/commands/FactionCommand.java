@@ -47,6 +47,7 @@ public class FactionCommand implements CommandExecutor {
             case "kick": handleKick(player, args); break;
             case "promote": handlePromote(player, args); break;
             case "demote": handleDemote(player, args); break;
+            case "officer": handleOfficer(player, args); break;
             case "leader": handleLeader(player, args); break;
             case "description": case "desc": handleDesc(player, args); break;
             case "motd": handleMotd(player, args); break;
@@ -66,6 +67,7 @@ public class FactionCommand implements CommandExecutor {
             case "enemy": case "e": handleRelation(player, args, Relation.ENEMY.name()); break;
             case "truce": case "t": handleRelation(player, args, Relation.TRUCE.name()); break;
             case "ally": case "a": handleRelation(player, args, Relation.ALLY.name()); break;
+            case "relation": handleRelationSub(player, args); break;
             case "chat": case "c": handleChat(player, args); break;
             case "gui": case "perm": handleGui(player); break;
             case "unstuck": handleUnstuck(player); break;
@@ -235,6 +237,30 @@ public class FactionCommand implements CommandExecutor {
             player.sendMessage("§a" + target.getName() + " a été rétrogradé au grade " + prev.name() + ".");
         } else {
             player.sendMessage("§cCe joueur a déjà le grade minimum.");
+        }
+    }
+
+    private void handleOfficer(Player player, String[] args) {
+        if (args.length < 2) { player.sendMessage("§cUtilisation: /f officer [pseudo]"); return; }
+        PlayerData data = plugin.getPlayerManager().getPlayerData(player.getUniqueId());
+        if (data.getFactionId() == null) { MessageUtils.sendMessage(player, "not-in-faction"); return; }
+        Faction faction = plugin.getFactionManager().getFaction(data.getFactionId());
+        if (!faction.getLeader().equals(player.getUniqueId())) { MessageUtils.sendMessage(player, "not-leader"); return; }
+
+        PlayerData target = plugin.getPlayerManager().getPlayerDataByName(args[1]);
+        if (target == null || !faction.getMembers().contains(target.getUuid())) {
+            player.sendMessage("§cCe joueur n'est pas dans votre faction.");
+            return;
+        }
+
+        if (target.getRole() == Grade.OFFICER) {
+            target.setRole(Grade.MEMBER);
+            faction.getOfficers().remove(target.getUuid());
+            player.sendMessage("§a" + target.getName() + " n'est plus officier.");
+        } else {
+            target.setRole(Grade.OFFICER);
+            faction.getOfficers().add(target.getUuid());
+            player.sendMessage("§a" + target.getName() + " est maintenant officier.");
         }
     }
 
@@ -573,6 +599,23 @@ public class FactionCommand implements CommandExecutor {
         for (UUID memberId : faction.getMembers()) {
             Player p = Bukkit.getPlayer(memberId);
             if (p != null) p.sendMessage(message);
+        }
+    }
+
+    private void handleRelationSub(Player player, String[] args) {
+        if (args.length < 3) {
+            player.sendMessage("§cUtilisation: /f relation [faction] [ally|enemy|truce|neutral]");
+            return;
+        }
+        String targetFaction = args[1];
+        String relType = args[2].toUpperCase();
+
+        try {
+            Relation rel = Relation.valueOf(relType);
+            String[] newArgs = new String[]{args[0], targetFaction};
+            handleRelation(player, newArgs, rel.name());
+        } catch (IllegalArgumentException e) {
+            player.sendMessage("§cRelation invalide. Utilisez: ally, enemy, truce ou neutral.");
         }
     }
 

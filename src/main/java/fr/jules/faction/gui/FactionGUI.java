@@ -23,9 +23,26 @@ public class FactionGUI {
 
         inv.setItem(11, createItem(Material.PLAYER_HEAD, "§eMembres", "§7Gérer les membres et grades"));
         inv.setItem(12, createItem(Material.GRASS_BLOCK, "§eTerritoires", "§7Voir les parcelles et auto-claim"));
+        inv.setItem(13, createItem(Material.GOLD_INGOT, "§eBanque", "§7Gérer l'argent de la faction"));
         inv.setItem(14, createItem(Material.MAP, "§eRelations", "§7Gérer les Alliés et Ennemis"));
         inv.setItem(15, createItem(Material.COMPARATOR, "§eParamètres", "§7Flags de faction (TNT, PVP, etc)"));
         inv.setItem(16, createItem(Material.REDSTONE_TORCH, "§ePermissions", "§7Actions autorisées par grade"));
+
+        player.openInventory(inv);
+    }
+
+    public static void openBankMenu(Player player, Faction faction) {
+        Inventory inv = Bukkit.createInventory(null, 27, "§6Banque: " + faction.getName());
+        fillBorder(inv);
+        inv.setItem(22, createItem(Material.SHEARS, "§7Retour", "§8Clic pour revenir"));
+
+        inv.setItem(4, createItem(Material.GOLD_BLOCK, "§6Solde: §e" + String.format("%.2f", faction.getBalance()) + "$"));
+
+        inv.setItem(11, createItem(Material.GOLD_NUGGET, "§aDéposer 100$", "§7Clic pour déposer 100$"));
+        inv.setItem(12, createItem(Material.GOLD_INGOT, "§aDéposer 1000$", "§7Clic pour déposer 1000$"));
+
+        inv.setItem(14, createItem(Material.IRON_NUGGET, "§cRetirer 100$", "§7Clic pour retirer 100$"));
+        inv.setItem(15, createItem(Material.IRON_INGOT, "§cRetirer 1000$", "§7Clic pour retirer 1000$"));
 
         player.openInventory(inv);
     }
@@ -103,10 +120,34 @@ public class FactionGUI {
         fillBorder(inv);
         inv.setItem(22, createItem(Material.SHEARS, "§7Retour", "§8Clic pour revenir"));
 
-        inv.setItem(11, createItem(Material.PINK_DYE, "§dAlliés", "§7Voir vos alliés actuels"));
-        inv.setItem(13, createItem(Material.ORANGE_DYE, "§6Trêves", "§7Voir vos trêves actuelles"));
-        inv.setItem(15, createItem(Material.RED_DYE, "§cEnnemis", "§7Voir vos ennemis actuels"));
+        inv.setItem(10, createItem(Material.PINK_DYE, "§dAlliés", "§7Voir vos alliés actuels"));
+        inv.setItem(12, createItem(Material.ORANGE_DYE, "§6Trêves", "§7Voir vos trêves actuelles"));
+        inv.setItem(14, createItem(Material.RED_DYE, "§cEnnemis", "§7Voir vos ennemis actuels"));
+        inv.setItem(16, createItem(Material.COMPASS, "§eToutes les Factions", "§7Gérer les relations avec les autres"));
 
+        player.openInventory(inv);
+    }
+
+    public static void openFactionsListMenu(Player player, Faction playerFaction, java.util.Collection<Faction> allFactions) {
+        Inventory inv = Bukkit.createInventory(null, 54, "§6Liste des Factions");
+        fillBorder(inv);
+        inv.setItem(49, createItem(Material.SHEARS, "§7Retour", "§8Clic pour revenir"));
+
+        int slot = 10;
+        for (Faction f : allFactions) {
+            if (f.getId().equals(playerFaction.getId())) continue;
+            if (f.getType() != fr.jules.faction.model.FactionType.NORMAL) continue;
+            if (slot >= 44) break;
+            if (slot % 9 == 0 || slot % 9 == 8) slot++;
+
+            String rel = playerFaction.getRelations().getOrDefault(f.getId(), "NEUTRAL");
+            inv.setItem(slot++, createItem(Material.PAPER, "§e" + f.getName(),
+                "§7Relation: §f" + rel,
+                "§7Clic Gauche: §dAllié",
+                "§7Clic Droit: §cEnnemi",
+                "§7Shift+Clic Gauche: §6Trêve",
+                "§7Shift+Clic Droit: §fNeutre"));
+        }
         player.openInventory(inv);
     }
 

@@ -22,7 +22,7 @@ public class ProtectionListener implements Listener {
 
     @EventHandler
     public void onBlockBreak(BlockBreakEvent event) {
-        if (!canInteract(event.getPlayer(), event.getBlock().getLocation())) {
+        if (!canPerformAction(event.getPlayer(), event.getBlock().getLocation(), "DESTROY")) {
             event.setCancelled(true);
             MessageUtils.sendMessage(event.getPlayer(), "claim-protection");
         }
@@ -30,7 +30,7 @@ public class ProtectionListener implements Listener {
 
     @EventHandler
     public void onBlockPlace(BlockPlaceEvent event) {
-        if (!canInteract(event.getPlayer(), event.getBlock().getLocation())) {
+        if (!canPerformAction(event.getPlayer(), event.getBlock().getLocation(), "BUILD")) {
             event.setCancelled(true);
             MessageUtils.sendMessage(event.getPlayer(), "claim-protection");
         }
@@ -39,7 +39,7 @@ public class ProtectionListener implements Listener {
     @EventHandler
     public void onInteract(PlayerInteractEvent event) {
         if (event.getClickedBlock() == null) return;
-        if (!canInteract(event.getPlayer(), event.getClickedBlock().getLocation())) {
+        if (!canPerformAction(event.getPlayer(), event.getClickedBlock().getLocation(), "USE")) {
             if (event.getClickedBlock().getType().name().contains("CHEST") ||
                 event.getClickedBlock().getType().name().contains("DOOR") ||
                 event.getClickedBlock().getType().name().contains("BUTTON") ||
@@ -51,7 +51,7 @@ public class ProtectionListener implements Listener {
         }
     }
 
-    private boolean canInteract(Player player, Location loc) {
+    private boolean canPerformAction(Player player, Location loc, String action) {
         PlayerData data = plugin.getPlayerManager().getPlayerData(player.getUniqueId());
         if (data.isBypass()) return true;
 
@@ -73,6 +73,10 @@ public class ProtectionListener implements Listener {
             return true; // Territory is raidable
         }
 
-        return data.getFactionId() != null && data.getFactionId().equals(claim.getFactionId());
+        if (data.getFactionId() != null && data.getFactionId().equals(claim.getFactionId())) {
+            return owner.hasPermission(data.getRole(), action);
+        }
+
+        return false;
     }
 }
