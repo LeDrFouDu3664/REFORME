@@ -76,7 +76,7 @@ public class FactionCommand implements CommandExecutor {
             case "toggle": handleToggle(player); break;
             case "gui": case "perm": handleGui(player); break;
             case "unstuck": handleUnstuck(player); break;
-            case "help": displayHelp(player); break;
+            case "help": displayHelp(player, args); break;
             case "admin": handleAdmin(player, args); break;
             case "sethome": handleFactionSetHome(player); break;
             case "unsethome": handleFactionUnsetHome(player); break;
