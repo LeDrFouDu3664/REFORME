@@ -468,6 +468,7 @@ public class FactionCommand implements CommandExecutor {
     }
 
     public boolean performClaim(Player player, Faction faction, String world, int x, int z, boolean ignoreAdjacencyCheck) {
+        plugin.getFactionManager().recalculatePower(faction, plugin.getPlayerManager());
         Claim existing = plugin.getClaimManager().getClaim(world, x, z);
         if (existing != null) {
             if (existing.getFactionId().equals(faction.getId())) return false;
@@ -733,6 +734,10 @@ public class FactionCommand implements CommandExecutor {
             try {
                 double val = Double.parseDouble(args[3]);
                 td.setPower(val);
+                if (td.getFactionId() != null) {
+                    Faction f = plugin.getFactionManager().getFaction(td.getFactionId());
+                    if (f != null) plugin.getFactionManager().recalculatePower(f, plugin.getPlayerManager());
+                }
                 player.sendMessage("§aPower de " + td.getName() + " mis à " + val);
             } catch (NumberFormatException e) { player.sendMessage("§cValeur invalide."); }
         } else if (sub.equalsIgnoreCase("eco")) {
@@ -875,26 +880,29 @@ public class FactionCommand implements CommandExecutor {
         player.sendMessage("");
 
         if (page == 1) {
-            player.sendMessage(" §e/f create [nom] §7- Créer votre faction");
-            player.sendMessage(" §e/f join [nom] §7- Rejoindre une faction");
-            player.sendMessage(" §e/f leave §7- Quitter votre faction");
-            player.sendMessage(" §e/f show [nom] §7- Voir les infos d'une faction");
-            player.sendMessage(" §e/f list §7- Liste des factions par power");
-            player.sendMessage(" §e/f gui §7- Ouvrir le menu de gestion");
+            player.sendMessage(" §e/f create [nom] §8- §7Créer votre faction");
+            player.sendMessage(" §e/f join [nom] §8- §7Rejoindre une faction");
+            player.sendMessage(" §e/f leave §8- §7Quitter votre faction");
+            player.sendMessage(" §e/f show [nom] §8- §7Voir les infos d'une faction");
+            player.sendMessage(" §e/f list §8- §7Classement des factions");
+            player.sendMessage(" §e/f gui §8- §7Menu de gestion complet");
+            player.sendMessage(" §e/f chat [f|t|a|p] §8- §7Canaux de discussion");
         } else if (page == 2) {
-            player.sendMessage(" §e/f claim §7- Revendiquer le chunk actuel");
-            player.sendMessage(" §e/f unclaim §7- Libérer le chunk actuel");
-            player.sendMessage(" §e/f map §7- Afficher la carte des alentours");
-            player.sendMessage(" §e/f sethome §7- Définir le home de faction");
-            player.sendMessage(" §e/f home §7- Se téléporter au home");
-            player.sendMessage(" §e/f chat [f|t|a|p] §7- Changer de canal chat");
+            player.sendMessage(" §e/f claim [one|radius|auto] §8- §7Territoires");
+            player.sendMessage(" §e/f unclaim [one|all] §8- §7Libérer territoires");
+            player.sendMessage(" §e/f map §8- §7Carte interactive");
+            player.sendMessage(" §e/f relation [fac] [type] §8- §7Diplomatie");
+            player.sendMessage(" §e/f sethome §8- §7Point de téléportation");
+            player.sendMessage(" §e/f home §8- §7Retour à la base");
+            player.sendMessage(" §e/f toggle §8- §7Notifications écran ON/OFF");
         } else if (page == 3) {
-            player.sendMessage(" §e/jobs §7- Choisir et voir son métier");
-            player.sendMessage(" §e/quests §7- Liste des quêtes quotidiennes");
-            player.sendMessage(" §e/shop §7- Boutique administrative");
-            player.sendMessage(" §e/money §7- Voir son solde");
-            player.sendMessage(" §e/tpa [joueur] §7- Demande de téléportation");
-            player.sendMessage(" §e/f toggle §7- Masquer les titres de zone");
+            player.sendMessage(" §e/jobs §8- §7Métiers (Mineur, Bûcheron...)");
+            player.sendMessage(" §e/quests §8- §7Quêtes quotidiennes");
+            player.sendMessage(" §e/shop §8- §7Boutique & Économie");
+            player.sendMessage(" §e/money §8- §7Voir votre argent");
+            player.sendMessage(" §e/tpa [joueur] §8- §7Demande de téléport");
+            player.sendMessage(" §e/spawn §8- §7Retour au spawn");
+            player.sendMessage(" §e/chateau /forteresse §8- §7Objectifs");
         }
 
         player.sendMessage("");

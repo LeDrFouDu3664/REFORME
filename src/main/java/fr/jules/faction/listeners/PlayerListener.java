@@ -67,9 +67,14 @@ public class PlayerListener implements Listener {
 
     @EventHandler
     public void onMove(PlayerMoveEvent event) {
-        if (event.getFrom().getChunk().equals(event.getTo().getChunk())) return;
-
         PlayerData data = plugin.getPlayerManager().getPlayerData(event.getPlayer().getUniqueId());
+
+        // Power: Lava Speed
+        if (data.getPowers().contains("LAVA_SPEED") && event.getTo().getBlock().getType() == org.bukkit.Material.LAVA) {
+            event.getPlayer().addPotionEffect(new org.bukkit.potion.PotionEffect(org.bukkit.potion.PotionEffectType.SPEED, 40, 2, false, false));
+        }
+
+        if (event.getFrom().getChunk().equals(event.getTo().getChunk())) return;
 
         // Territory notification
         Claim oldClaim = plugin.getClaimManager().getClaim(event.getFrom().getWorld().getName(), event.getFrom().getChunk().getX(), event.getFrom().getChunk().getZ());

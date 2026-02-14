@@ -17,15 +17,57 @@ public class JobListener implements Listener {
         this.plugin = plugin;
     }
 
+    @EventHandler(priority = EventPriority.NORMAL)
+    public void onPlant(org.bukkit.event.player.PlayerInteractEvent event) {
+        if (event.getAction() != org.bukkit.event.block.Action.RIGHT_CLICK_BLOCK) return;
+        PlayerData data = plugin.getPlayerManager().getPlayerData(event.getPlayer().getUniqueId());
+        if (data.getPowers().contains("LUCK_FARMER") && Math.random() < 0.1) {
+            org.bukkit.block.Block b = event.getClickedBlock();
+            if (b == null) return;
+            org.bukkit.block.data.BlockData bd = b.getBlockData();
+            if (bd instanceof org.bukkit.block.data.Ageable ageable) {
+                if (ageable.getAge() < ageable.getMaximumAge()) {
+                    ageable.setAge(ageable.getMaximumAge());
+                    b.setBlockData(ageable);
+                    event.getPlayer().sendMessage("§aMagie ! La culture a poussé instantanément.");
+                }
+            }
+        }
+    }
+
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onBreak(BlockBreakEvent event) {
         Player player = event.getPlayer();
         PlayerData data = plugin.getPlayerManager().getPlayerData(player.getUniqueId());
+        org.bukkit.block.Block block = event.getBlock();
 
-        // Power: Telekinesis
-        if (data.getPowers().contains("TELEKINESIS")) {
-            // Simuler la télékinésie est complexe car il faut gérer les drops personnalisés.
-            // On se contente d'un message pour l'instant ou on pourrait annuler et drop à la main.
+        // Power: Telekinesis, Auto-Smelt, Luck Miner
+        boolean tele = data.getPowers().contains("TELEKINESIS");
+        boolean smelt = data.getPowers().contains("AUTO_SMELT");
+        boolean luck = data.getPowers().contains("LUCK_MINER") && Math.random() < 0.05;
+
+        if (tele || smelt || luck) {
+            java.util.Collection<org.bukkit.inventory.ItemStack> drops = block.getDrops(player.getInventory().getItemInMainHand());
+            for (org.bukkit.inventory.ItemStack item : drops) {
+                if (smelt) {
+                    Material cooked = getCookedMaterial(item.getType());
+                    if (cooked != null) item.setType(cooked);
+                }
+                if (luck && (item.getType().name().contains("RAW") || item.getType().name().contains("INGOT") || item.getType().name().contains("DIAMOND"))) {
+                    item.setAmount(item.getAmount() * 2);
+                }
+                if (tele) {
+                    java.util.Map<Integer, org.bukkit.inventory.ItemStack> left = player.getInventory().addItem(item);
+                    if (!left.isEmpty()) {
+                        for (org.bukkit.inventory.ItemStack l : left.values()) {
+                            block.getWorld().dropItemNaturally(block.getLocation(), l);
+                        }
+                    }
+                } else {
+                    block.getWorld().dropItemNaturally(block.getLocation(), item);
+                }
+            }
+            event.setDropItems(false);
         }
 
         String job = data.getJob();
@@ -52,6 +94,14 @@ public class JobListener implements Listener {
         if (killer == null) return;
 
         PlayerData data = plugin.getPlayerManager().getPlayerData(killer.getUniqueId());
+
+        // Power: Luck Loot
+        if (data.getPowers().contains("LUCK_LOOT")) {
+            for (org.bukkit.inventory.ItemStack item : event.getDrops()) {
+                item.setAmount(item.getAmount() * 2);
+            }
+        }
+
         if (data.getJob().equals("GUERRIER")) {
             if (event.getEntity() instanceof Player) {
                 awardExp(killer, data, 50);
@@ -59,6 +109,19 @@ public class JobListener implements Listener {
                 awardExp(killer, data, 5);
             }
         }
+    }
+
+    private Material getCookedMaterial(Material raw) {
+        if (raw.name().startsWith("RAW_")) {
+            try {
+                return Material.valueOf(raw.name().replace("RAW_", "") + "_INGOT");
+            } catch (Exception ignored) {}
+        }
+        if (raw == Material.COBBLESTONE) return Material.STONE;
+        if (raw == Material.IRON_ORE) return Material.IRON_INGOT;
+        if (raw == Material.GOLD_ORE) return Material.GOLD_INGOT;
+        if (raw == Material.COPPER_ORE) return Material.COPPER_INGOT;
+        return null;
     }
 
     private void awardExp(Player player, PlayerData data, double amount) {
