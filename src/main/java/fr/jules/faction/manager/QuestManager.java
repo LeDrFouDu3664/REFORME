@@ -50,6 +50,31 @@ public class QuestManager {
             player.sendMessage("§6§l[Quête] §aFélicitations ! Vous avez terminé la quête : §e" + info.name);
             plugin.getEconomyManager().deposit(player, info.reward);
             player.sendMessage("§7Récompense : §e" + info.reward + "$");
+
+            // XP de faction
+            if (data.getFactionId() != null) {
+                fr.jules.faction.model.Faction f = plugin.getFactionManager().getFaction(data.getFactionId());
+                if (f != null) {
+                    addFactionExp(f, info.reward * 0.1);
+                }
+            }
+        }
+    }
+
+    private void addFactionExp(fr.jules.faction.model.Faction f, double amount) {
+        f.setExp(f.getExp() + amount);
+        double nextLevelExp = f.getLevel() * 1000 * 1.5;
+        if (f.getExp() >= nextLevelExp) {
+            f.setExp(f.getExp() - nextLevelExp);
+            f.setLevel(f.getLevel() + 1);
+            for (java.util.UUID mid : f.getMembers()) {
+                Player member = org.bukkit.Bukkit.getPlayer(mid);
+                if (member != null) {
+                    plugin.getPlayerManager().getPlayerData(mid); // Rafraîchit le max power
+                    member.sendMessage("§6§l[Faction] §aVotre faction est passée au niveau §e" + f.getLevel() + "§a !");
+                    member.sendTitle("§6§lNiveau Faction Up !", "§aNiveau: " + f.getLevel(), 10, 40, 10);
+                }
+            }
         }
     }
 

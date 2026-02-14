@@ -29,7 +29,7 @@ public class GUIListener implements Listener {
             title.startsWith("§6Perms: ") ||
             title.startsWith("§6Relations: ") || title.startsWith("§6Territoires: ") ||
             title.startsWith("§6Banque: ") || title.startsWith("§6Liste des Factions") ||
-            title.startsWith("§6Paramètres: ") ||
+            title.startsWith("§6Paramètres: ") || title.startsWith("§6Récompenses de Niveau") ||
             title.equals("§6Métiers") || title.equals("§6Quêtes") || title.equals("§6Pouvoirs de Faction") ||
             title.equals("§6Boutique Faction") || title.equals("§6Boutique Me's")) {
             event.setCancelled(true);
@@ -58,6 +58,8 @@ public class GUIListener implements Listener {
                 handleTerritoriesMenuClick(player, name, faction);
             } else if (title.startsWith("§6Banque: ") && faction != null) {
                 handleBankMenuClick(player, name, faction, event.getRawSlot());
+            } else if (title.startsWith("§6Récompenses de Niveau") && faction != null) {
+                handleFactionLevelMenuClick(player, name, faction);
             } else if (title.equals("§6Métiers")) {
                 handleJobsMenuClick(player, name, data, faction);
             } else if (title.equals("§6Quêtes")) {
@@ -92,6 +94,8 @@ public class GUIListener implements Listener {
             fr.jules.faction.gui.FactionGUI.openJobsMenu(player, plugin.getPlayerManager().getPlayerData(player.getUniqueId()));
         } else if (name.equalsIgnoreCase("Quêtes")) {
             fr.jules.faction.gui.FactionGUI.openQuestsMenu(player, plugin.getPlayerManager().getPlayerData(player.getUniqueId()), plugin.getQuestManager());
+        } else if (name.equalsIgnoreCase("Niveaux Faction")) {
+            fr.jules.faction.gui.FactionGUI.openFactionLevelMenu(player, faction);
         } else if (name.equalsIgnoreCase("Pouvoirs")) {
             fr.jules.faction.gui.FactionGUI.openPowersMenu(player, plugin.getPlayerManager().getPlayerData(player.getUniqueId()), plugin.getPowerManager());
         }
@@ -267,6 +271,12 @@ public class GUIListener implements Listener {
         else if (slot == 15) player.performCommand("f money withdraw 1000");
 
         fr.jules.faction.gui.FactionGUI.openBankMenu(player, faction);
+    }
+
+    private void handleFactionLevelMenuClick(Player player, String name, Faction faction) {
+        if (name.equalsIgnoreCase("Retour")) {
+            fr.jules.faction.gui.FactionGUI.openMainMenu(player, faction);
+        }
     }
 
     private void handleJobsMenuClick(Player player, String name, PlayerData data, Faction faction) {

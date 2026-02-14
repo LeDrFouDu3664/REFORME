@@ -23,6 +23,8 @@ public class Faction {
     private Location home;
     private double power = 0;
     private double balance = 0;
+    private int level = 1;
+    private double exp = 0;
     private int tntStock = 0;
     private FactionType type = FactionType.NORMAL;
     private Set<String> claims = new HashSet<>(); // Format: "world,x,z"

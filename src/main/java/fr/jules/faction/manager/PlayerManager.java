@@ -24,7 +24,20 @@ public class PlayerManager {
             }
             players.put(uuid, data);
         }
+        updateMaxPower(data);
         return data;
+    }
+
+    private void updateMaxPower(PlayerData data) {
+        double base = 10.0;
+        if (data.getFactionId() != null) {
+            fr.jules.faction.model.Faction f = plugin.getFactionManager().getFaction(data.getFactionId());
+            if (f != null) {
+                base += plugin.getFactionLevelManager().getMaxPowerBoost(f);
+            }
+        }
+        base += data.getPowerBoost();
+        data.setMaxPower(base);
     }
 
     public void removePlayerData(UUID uuid) {

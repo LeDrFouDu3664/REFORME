@@ -59,13 +59,43 @@ public class JobListener implements Listener {
             amount *= 1.5;
         }
         data.setJobExp(data.getJobExp() + amount);
+
+        // Argent par action basé sur le niveau
+        double moneyReward = amount * (1 + (data.getJobLevel() * 0.2)); // ex: niv 5 -> +100%
+        plugin.getEconomyManager().deposit(player, moneyReward);
+
+        // XP pour la faction
+        if (data.getFactionId() != null) {
+            fr.jules.faction.model.Faction f = plugin.getFactionManager().getFaction(data.getFactionId());
+            if (f != null) {
+                addFactionExp(player, f, amount * 0.5);
+            }
+        }
+
         double nextLevelExp = data.getJobLevel() * 100 * 1.5;
         if (data.getJobExp() >= nextLevelExp) {
             data.setJobExp(data.getJobExp() - nextLevelExp);
             data.setJobLevel(data.getJobLevel() + 1);
             player.sendMessage("§b§l[Métier] §aFélicitations ! Vous passez au niveau §e" + data.getJobLevel() + " §aen tant que §e" + data.getJob() + "§a !");
-            plugin.getEconomyManager().deposit(player, data.getJobLevel() * 100);
-            player.sendMessage("§7Vous avez reçu §e" + (data.getJobLevel() * 100) + "$ §7en récompense.");
+            plugin.getEconomyManager().deposit(player, data.getJobLevel() * 1000); // Grosse récompense
+            player.sendMessage("§7Vous avez reçu §e" + (data.getJobLevel() * 1000) + "$ §7en récompense de niveau.");
+        }
+    }
+
+    private void addFactionExp(Player player, fr.jules.faction.model.Faction f, double amount) {
+        f.setExp(f.getExp() + amount);
+        double nextLevelExp = f.getLevel() * 1000 * 1.5;
+        if (f.getExp() >= nextLevelExp) {
+            f.setExp(f.getExp() - nextLevelExp);
+            f.setLevel(f.getLevel() + 1);
+            for (java.util.UUID mid : f.getMembers()) {
+                Player member = org.bukkit.Bukkit.getPlayer(mid);
+                if (member != null) {
+                    plugin.getPlayerManager().getPlayerData(mid); // Rafraîchit le max power
+                    member.sendMessage("§6§l[Faction] §aVotre faction est passée au niveau §e" + f.getLevel() + "§a !");
+                    member.sendTitle("§6§lNiveau Faction Up !", "§aNiveau: " + f.getLevel(), 10, 40, 10);
+                }
+            }
         }
     }
 }

@@ -39,6 +39,8 @@ public class DataManager {
         config.set("requests", faction.getRequests().stream().map(UUID::toString).toList());
         config.set("home", faction.getHome());
         config.set("power", faction.getPower());
+        config.set("level", faction.getLevel());
+        config.set("exp", faction.getExp());
         config.set("claims", new ArrayList<>(faction.getClaims()));
 
         Map<String, String> relations = new HashMap<>();
@@ -88,6 +90,8 @@ public class DataManager {
 
             faction.setHome(config.getLocation("home"));
             faction.setPower(config.getDouble("power"));
+            faction.setLevel(config.getInt("level", 1));
+            faction.setExp(config.getDouble("exp", 0));
 
             List<String> claims = config.getStringList("claims");
             faction.getClaims().addAll(claims);

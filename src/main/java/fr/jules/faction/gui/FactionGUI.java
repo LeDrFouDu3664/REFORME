@@ -17,6 +17,8 @@ public class FactionGUI {
         fillBorder(inv);
 
         inv.setItem(10, createItem(Material.BOOK, "§eStatistiques",
+            "§7• §fNiveau: §6" + faction.getLevel(),
+            "§7• §fExp: §7" + String.format("%.1f", faction.getExp()) + " / " + (faction.getLevel() * 1000 * 1.5),
             "§7• §fPower: §b" + String.format("%.1f", faction.getPower()),
             "§7• §fTerritoires: §b" + faction.getClaims().size(),
             "§7• §fBanque: §a" + faction.getBalance() + "$",
@@ -29,6 +31,8 @@ public class FactionGUI {
         inv.setItem(15, createItem(Material.COMPARATOR, "§eParamètres", "§7Flags de faction (TNT, PVP, etc)"));
         inv.setItem(16, createItem(Material.REDSTONE_TORCH, "§ePermissions", "§7Actions autorisées par grade"));
 
+        inv.setItem(21, createItem(Material.IRON_SWORD, "§eMétiers", "§7Choisir un métier"));
+        inv.setItem(20, createItem(Material.EXPERIENCE_BOTTLE, "§eNiveaux Faction", "§7Voir les récompenses de niveau"));
         inv.setItem(21, createItem(Material.IRON_SWORD, "§eMétiers", "§7Choisir un métier"));
         inv.setItem(22, createItem(Material.BLAZE_POWDER, "§ePouvoirs", "§7Débloquer des capacités"));
         inv.setItem(23, createItem(Material.WRITABLE_BOOK, "§eQuêtes", "§7Voir les quêtes"));
@@ -54,6 +58,20 @@ public class FactionGUI {
             if (slot % 9 == 8) slot += 2;
             if (slot >= 26) break;
         }
+
+        player.openInventory(inv);
+    }
+
+    public static void openFactionLevelMenu(Player player, Faction faction) {
+        Inventory inv = Bukkit.createInventory(null, 27, "§6Récompenses de Niveau");
+        fillBorder(inv);
+        inv.setItem(22, createItem(Material.SHEARS, "§7Retour", "§8Clic pour revenir"));
+
+        inv.setItem(10, createItem(Material.IRON_CHESTPLATE, "§eNiveau 2", "§7• §f+2 Max Power / membre", faction.getLevel() >= 2 ? "§aDébloqué" : "§cVerrouillé"));
+        inv.setItem(11, createItem(Material.GOLDEN_CHESTPLATE, "§eNiveau 5", "§7• §f+4 Max Power / membre", faction.getLevel() >= 5 ? "§aDébloqué" : "§cVerrouillé"));
+        inv.setItem(12, createItem(Material.DIAMOND_CHESTPLATE, "§eNiveau 10", "§7• §f+7 Max Power / membre", "§7• §f+5 slots membres", faction.getLevel() >= 10 ? "§aDébloqué" : "§cVerrouillé"));
+        inv.setItem(13, createItem(Material.NETHERITE_CHESTPLATE, "§eNiveau 15", "§7• §f+10 Max Power / membre", "§7• §f+10 slots membres", faction.getLevel() >= 15 ? "§aDébloqué" : "§cVerrouillé"));
+        inv.setItem(14, createItem(Material.BEACON, "§eNiveau 20", "§7• §f+15 Max Power / membre", "§7• §f+20 slots membres", faction.getLevel() >= 20 ? "§aDébloqué" : "§cVerrouillé"));
 
         player.openInventory(inv);
     }

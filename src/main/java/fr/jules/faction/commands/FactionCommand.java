@@ -118,6 +118,13 @@ public class FactionCommand implements CommandExecutor {
             return;
         }
         faction.getInvites().remove(player.getUniqueId());
+
+        int max = 10 + plugin.getFactionLevelManager().getMaxMembersBoost(faction);
+        if (faction.getMembers().size() >= max) {
+            player.sendMessage("§cCette faction est pleine (" + max + " membres max).");
+            return;
+        }
+
         faction.addMember(player.getUniqueId());
         data.setFactionId(faction.getId());
         data.setRole(Grade.MEMBER);

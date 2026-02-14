@@ -20,6 +20,7 @@ public class FactionPlugin extends JavaPlugin {
     @Getter private EconomyManager economyManager;
     @Getter private QuestManager questManager;
     @Getter private PowerManager powerManager;
+    @Getter private FactionLevelManager factionLevelManager;
 
     @Override
     public void onEnable() {
@@ -35,6 +36,7 @@ public class FactionPlugin extends JavaPlugin {
         this.economyManager = new EconomyManager(this);
         this.questManager = new QuestManager(this);
         this.powerManager = new PowerManager(this);
+        this.factionLevelManager = new FactionLevelManager(this);
 
         dataManager.loadFactions(factionManager, claimManager);
         factionManager.getAllFactions().forEach(f -> factionManager.recalculatePower(f, playerManager));
