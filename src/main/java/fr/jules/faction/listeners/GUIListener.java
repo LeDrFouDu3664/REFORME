@@ -23,60 +23,69 @@ public class GUIListener implements Listener {
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
-        String title = event.getView().getTitle();
         if (!(event.getWhoClicked() instanceof Player player)) return;
+        if (!(event.getInventory().getHolder() instanceof fr.jules.faction.gui.FactionInventoryHolder holder)) return;
 
-        if (title.startsWith("§6Gestion: ") || title.startsWith("§6Membres: ") || title.startsWith("§6Permissions: ") ||
-            title.startsWith("§6Perms: ") ||
-            title.startsWith("§6Relations: ") || title.startsWith("§6Territoires: ") ||
-            title.startsWith("§6Banque: ") || title.startsWith("§6Liste des Factions") ||
-            title.startsWith("§6Paramètres: ") || title.startsWith("§6Récompenses de Niveau") ||
-            title.startsWith("§6Boutique: ") || title.equals("§6Boutique Administrative") ||
-            title.equals("§6Métiers") || title.equals("§6Quêtes") || title.equals("§6Pouvoirs de Faction") ||
-            title.equals("§6Boutique Faction") || title.equals("§6Boutique Me's")) {
-            event.setCancelled(true);
+        event.setCancelled(true);
+        if (event.getCurrentItem() == null || !event.getCurrentItem().hasItemMeta()) return;
+        String name = org.bukkit.ChatColor.stripColor(event.getCurrentItem().getItemMeta().getDisplayName());
 
-            if (event.getCurrentItem() == null || !event.getCurrentItem().hasItemMeta()) return;
-            String name = org.bukkit.ChatColor.stripColor(event.getCurrentItem().getItemMeta().getDisplayName());
+        PlayerData data = plugin.getPlayerManager().getPlayerData(player.getUniqueId());
+        Faction faction = data.getFactionId() != null ? plugin.getFactionManager().getFaction(data.getFactionId()) : null;
 
-            PlayerData data = plugin.getPlayerManager().getPlayerData(player.getUniqueId());
-            Faction faction = data.getFactionId() != null ? plugin.getFactionManager().getFaction(data.getFactionId()) : null;
-
-            if (title.startsWith("§6Gestion: ") && faction != null) {
-                handleMainMenuClick(player, name, faction);
-            } else if (title.startsWith("§6Membres: ") && faction != null) {
-                handleMembersMenuClick(player, name, faction, event);
-            } else if (title.startsWith("§6Paramètres: ") && faction != null) {
-                handleParametersMenuClick(player, name, faction);
-            } else if (title.startsWith("§6Permissions: ") && faction != null) {
-                handlePermissionsSelectorClick(player, name, faction);
-            } else if (title.startsWith("§6Perms: ") && faction != null) {
-                handleRankPermissionsClick(player, name, faction, title);
-            } else if (title.startsWith("§6Relations: ") && faction != null) {
-                handleRelationsMenuClick(player, name, faction);
-            } else if (title.startsWith("§6Liste des Factions") && faction != null) {
-                handleFactionsListMenuClick(player, name, faction, event);
-            } else if (title.startsWith("§6Territoires: ") && faction != null) {
-                handleTerritoriesMenuClick(player, name, faction);
-            } else if (title.startsWith("§6Banque: ") && faction != null) {
-                handleBankMenuClick(player, name, faction, event.getRawSlot());
-            } else if (title.startsWith("§6Récompenses de Niveau") && faction != null) {
-                handleFactionLevelMenuClick(player, name, faction);
-            } else if (title.equals("§6Métiers")) {
+        String type = holder.getType();
+        switch (type) {
+            case "MAIN":
+                if (faction != null) handleMainMenuClick(player, name, faction);
+                break;
+            case "MEMBERS":
+                if (faction != null) handleMembersMenuClick(player, name, faction, event);
+                break;
+            case "PARAMETERS":
+                if (faction != null) handleParametersMenuClick(player, name, faction);
+                break;
+            case "PERMISSIONS":
+                if (faction != null) handlePermissionsSelectorClick(player, name, faction);
+                break;
+            case "RANK_PERMS":
+                if (faction != null) handleRankPermissionsClick(player, name, faction, (String) holder.getData());
+                break;
+            case "RELATIONS":
+                if (faction != null) handleRelationsMenuClick(player, name, faction);
+                break;
+            case "FACTIONS_LIST":
+                if (faction != null) handleFactionsListMenuClick(player, name, faction, event);
+                break;
+            case "CLAIMS":
+                if (faction != null) handleTerritoriesMenuClick(player, name, faction);
+                break;
+            case "BANK":
+                if (faction != null) handleBankMenuClick(player, name, faction, event.getRawSlot());
+                break;
+            case "LEVELS":
+                if (faction != null) handleFactionLevelMenuClick(player, name, faction);
+                break;
+            case "JOBS":
                 handleJobsMenuClick(player, name, data, faction);
-            } else if (title.equals("§6Quêtes")) {
+                break;
+            case "QUESTS":
                 handleQuestsMenuClick(player, name, faction);
-            } else if (title.equals("§6Pouvoirs de Faction")) {
+                break;
+            case "POWERS":
                 handlePowersMenuClick(player, name, data, faction);
-            } else if (title.equals("§6Boutique Administrative")) {
+                break;
+            case "PETS":
+                handlePetMenuClick(player, name, faction);
+                break;
+            case "SHOP_MAIN":
                 handleAdminShopMainClick(player, name);
-            } else if (title.startsWith("§6Boutique: ")) {
-                handleAdminShopCategoryClick(player, event, title.replace("§6Boutique: ", ""));
-            } else if (title.equals("§6Boutique Faction")) {
-                handleShopClick(player, event, faction);
-            } else if (title.equals("§6Boutique Me's")) {
+                break;
+            case "SHOP_CATEGORY":
+                handleAdminShopCategoryClick(player, event, (String) holder.getData());
+                break;
+            case "BOUTIQUE":
                 handleBoutiqueClick(player, event);
-            }
+                break;
         }
     }
 
@@ -100,6 +109,8 @@ public class GUIListener implements Listener {
             fr.jules.faction.gui.FactionGUI.openJobsMenu(player, plugin.getPlayerManager().getPlayerData(player.getUniqueId()));
         } else if (name.equalsIgnoreCase("Quêtes")) {
             fr.jules.faction.gui.FactionGUI.openQuestsMenu(player, plugin.getPlayerManager().getPlayerData(player.getUniqueId()), plugin.getQuestManager());
+        } else if (name.equalsIgnoreCase("Compagnon")) {
+            fr.jules.faction.gui.FactionGUI.openPetMenu(player);
         } else if (name.equalsIgnoreCase("Niveaux Faction")) {
             fr.jules.faction.gui.FactionGUI.openFactionLevelMenu(player, faction);
         } else if (name.equalsIgnoreCase("Pouvoirs")) {
@@ -169,13 +180,11 @@ public class GUIListener implements Listener {
         }
     }
 
-    private void handleRankPermissionsClick(Player player, String action, Faction faction, String title) {
+    private void handleRankPermissionsClick(Player player, String action, Faction faction, String target) {
         if (action.equalsIgnoreCase("Retour")) {
             fr.jules.faction.gui.FactionGUI.openPermissionsMenu(player, faction);
             return;
         }
-        // Title: §6Perms: RANK (Fac)
-        String target = title.split(" ")[1];
 
         if (target.equals("ALLY")) {
             String flagKey = "ALLY_" + action;
@@ -308,6 +317,30 @@ public class GUIListener implements Listener {
         }
     }
 
+    private void handlePetMenuClick(Player player, String name, Faction faction) {
+        if (name.equalsIgnoreCase("Retour")) {
+            if (faction != null) fr.jules.faction.gui.FactionGUI.openMainMenu(player, faction);
+            else player.closeInventory();
+            return;
+        }
+        if (name.equalsIgnoreCase("Renvoyer")) {
+            plugin.getPetManager().despawnPet(player);
+            player.sendMessage("§aAnimal renvoyé.");
+            return;
+        }
+
+        String type = null;
+        if (name.contains("Loup")) type = "LOUP";
+        else if (name.contains("Chat")) type = "CHAT";
+        else if (name.contains("Perroquet")) type = "PERROQUET";
+        else if (name.contains("Renard")) type = "RENARD";
+
+        if (type != null) {
+            plugin.getPetManager().spawnPet(player, type);
+            player.closeInventory();
+        }
+    }
+
     private void handlePowersMenuClick(Player player, String name, PlayerData data, Faction faction) {
         if (name.equalsIgnoreCase("Retour")) {
             if (faction != null) fr.jules.faction.gui.FactionGUI.openMainMenu(player, faction);
@@ -339,27 +372,6 @@ public class GUIListener implements Listener {
             fr.jules.faction.gui.FactionGUI.openPowersMenu(player, data, plugin.getPowerManager());
         } else {
             player.sendMessage("§cPas assez d'argent (" + String.format("%.0f", cost) + "$).");
-        }
-    }
-
-    private void handleShopClick(Player player, InventoryClickEvent event, Faction faction) {
-        int slot = event.getRawSlot();
-        double price = 0;
-        org.bukkit.Material mat = null;
-        int amount = 1;
-
-        if (slot == 11) { price = 500; mat = org.bukkit.Material.DIAMOND_SWORD; }
-        else if (slot == 13) { price = 250; mat = org.bukkit.Material.GOLDEN_APPLE; }
-        else if (slot == 15) { price = 100; mat = org.bukkit.Material.OBSIDIAN; amount = 16; }
-
-        if (mat == null) return;
-
-        if (plugin.getEconomyManager().has(player, price)) {
-            plugin.getEconomyManager().withdraw(player, price);
-            player.getInventory().addItem(new org.bukkit.inventory.ItemStack(mat, amount));
-            player.sendMessage("§aAchat réussi !");
-        } else {
-            player.sendMessage("§cVous n'avez pas assez d'argent.");
         }
     }
 

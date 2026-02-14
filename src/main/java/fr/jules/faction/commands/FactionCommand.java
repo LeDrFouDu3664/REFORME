@@ -70,6 +70,8 @@ public class FactionCommand implements CommandExecutor {
             case "truce": case "t": handleRelation(player, args, Relation.TRUCE.name()); break;
             case "ally": case "a": handleRelation(player, args, Relation.ALLY.name()); break;
             case "relation": handleRelationSub(player, args); break;
+            case "pet": handlePet(player); break;
+            case "chest": handleChest(player); break;
             case "chat": case "c": handleChat(player, args); break;
             case "toggle": handleToggle(player); break;
             case "gui": case "perm": handleGui(player); break;
@@ -104,6 +106,8 @@ public class FactionCommand implements CommandExecutor {
         if (faction == null) { MessageUtils.sendMessage(player, "name-taken"); return; }
         data.setFactionId(faction.getId());
         data.setRole(Grade.LEADER);
+        plugin.getDataManager().saveFaction(faction);
+        plugin.getDataManager().savePlayerData(data);
         MessageUtils.sendMessage(player, "faction-created", "%name%", name);
     }
 
@@ -130,6 +134,8 @@ public class FactionCommand implements CommandExecutor {
         data.setFactionId(faction.getId());
         data.setRole(Grade.MEMBER);
         plugin.getFactionManager().recalculatePower(faction, plugin.getPlayerManager());
+        plugin.getDataManager().saveFaction(faction);
+        plugin.getDataManager().savePlayerData(data);
         MessageUtils.sendMessage(player, "joined-faction", "%name%", faction.getName());
     }
 
@@ -142,6 +148,8 @@ public class FactionCommand implements CommandExecutor {
         data.setFactionId(null);
         data.setRole(Grade.MEMBER);
         plugin.getFactionManager().recalculatePower(faction, plugin.getPlayerManager());
+        plugin.getDataManager().saveFaction(faction);
+        plugin.getDataManager().savePlayerData(data);
         MessageUtils.sendMessage(player, "left-faction");
     }
 
@@ -156,6 +164,7 @@ public class FactionCommand implements CommandExecutor {
         }
         plugin.getClaimManager().removeAllFactionClaims(faction.getId());
         plugin.getFactionManager().disbandFaction(faction.getId());
+        plugin.getDataManager().deleteFaction(faction.getId());
         MessageUtils.sendMessage(player, "faction-disbanded");
     }
 
@@ -296,10 +305,11 @@ public class FactionCommand implements CommandExecutor {
         if (args.length < 2) return;
         PlayerData data = plugin.getPlayerManager().getPlayerData(player.getUniqueId());
         Faction f = plugin.getFactionManager().getFaction(data.getFactionId());
-        if (f == null || !f.hasPermission(data.getRole(), "DESC")) { MessageUtils.sendMessage(player, "no-permission"); return; }
+        if (f == null || !f.hasPermission(data.getRole(), "DESC")) { MessageUtils.sendMessage(player, "no-permission", "%perm%", "DESC"); return; }
         StringBuilder sb = new StringBuilder();
         for (int i = 1; i < args.length; i++) sb.append(args[i]).append(" ");
         f.setDescription(sb.toString().trim());
+        plugin.getDataManager().saveFaction(f);
         player.sendMessage("§aDescription mise à jour.");
     }
 
@@ -307,10 +317,11 @@ public class FactionCommand implements CommandExecutor {
         if (args.length < 2) return;
         PlayerData data = plugin.getPlayerManager().getPlayerData(player.getUniqueId());
         Faction f = plugin.getFactionManager().getFaction(data.getFactionId());
-        if (f == null || !f.hasPermission(data.getRole(), "MOTD")) { MessageUtils.sendMessage(player, "no-permission"); return; }
+        if (f == null || !f.hasPermission(data.getRole(), "MOTD")) { MessageUtils.sendMessage(player, "no-permission", "%perm%", "MOTD"); return; }
         StringBuilder sb = new StringBuilder();
         for (int i = 1; i < args.length; i++) sb.append(args[i]).append(" ");
         f.setMotd(sb.toString().trim());
+        plugin.getDataManager().saveFaction(f);
         player.sendMessage("§aMOTD mis à jour.");
     }
 
@@ -327,8 +338,9 @@ public class FactionCommand implements CommandExecutor {
         if (args.length < 2) return;
         PlayerData data = plugin.getPlayerManager().getPlayerData(player.getUniqueId());
         Faction f = plugin.getFactionManager().getFaction(data.getFactionId());
-        if (f == null || !f.hasPermission(data.getRole(), "RENAME")) { MessageUtils.sendMessage(player, "no-permission"); return; }
+        if (f == null || !f.hasPermission(data.getRole(), "RENAME")) { MessageUtils.sendMessage(player, "no-permission", "%perm%", "RENAME"); return; }
         plugin.getFactionManager().renameFaction(f, args[1]);
+        plugin.getDataManager().saveFaction(f);
         MessageUtils.sendMessage(player, "renamed-faction", "%name%", args[1]);
     }
 
@@ -505,7 +517,7 @@ public class FactionCommand implements CommandExecutor {
         }
 
         if (faction.getPower() < faction.getClaims().size() + 1 && !player.hasPermission("faction.admin")) {
-            MessageUtils.sendMessage(player, "claim-not-enough-power");
+            player.sendMessage("§cPas assez de Power (Requis: " + (faction.getClaims().size() + 1) + ", Actuel: " + String.format("%.1f", faction.getPower()) + ")");
             return false;
         }
 
@@ -513,6 +525,7 @@ public class FactionCommand implements CommandExecutor {
         plugin.getClaimManager().addClaim(c);
         faction.getClaims().add(c.toString());
         plugin.getQuestManager().progressQuest(player, "CLAIM_MASTER", 1);
+        plugin.getDataManager().saveFaction(faction);
         if (!ignoreAdjacencyCheck) player.sendMessage("§aParcelle revendiquée !");
         return true;
     }
@@ -527,10 +540,13 @@ public class FactionCommand implements CommandExecutor {
                 plugin.getClaimManager().removeClaim(c.getWorld(), c.getX(), c.getZ());
             }
             f.getClaims().clear();
+            plugin.getDataManager().saveFaction(f);
             player.sendMessage("§aUnclaim total.");
             return;
         }
         plugin.getClaimManager().removeClaim(player.getWorld().getName(), player.getLocation().getChunk().getX(), player.getLocation().getChunk().getZ());
+        f.getClaims().remove(player.getWorld().getName() + "," + player.getLocation().getChunk().getX() + "," + player.getLocation().getChunk().getZ());
+        plugin.getDataManager().saveFaction(f);
         player.sendMessage("§aUnclaim.");
     }
 
@@ -589,8 +605,8 @@ public class FactionCommand implements CommandExecutor {
         org.bukkit.Chunk chunk = player.getLocation().getChunk();
         int mx = chunk.getX() * 16, mz = chunk.getZ() * 16;
         for (int y = player.getLocation().getBlockY() - 2; y < player.getLocation().getBlockY() + 5; y++) {
-            for (int x = mx; x <= mx + 16; x += 16) for (int z = mz; z <= mz + 16; z++) player.spawnParticle(org.bukkit.Particle.REDSTONE, x, y, z, 1, new org.bukkit.Particle.DustOptions(org.bukkit.Color.RED, 1));
-            for (int z = mz; z <= mz + 16; z += 16) for (int x = mx; x <= mx + 16; x++) player.spawnParticle(org.bukkit.Particle.REDSTONE, x, y, z, 1, new org.bukkit.Particle.DustOptions(org.bukkit.Color.RED, 1));
+            for (int x = mx; x <= mx + 16; x += 16) for (int z = mz; z <= mz + 16; z++) player.spawnParticle(org.bukkit.Particle.DUST, x, y, z, 1, new org.bukkit.Particle.DustOptions(org.bukkit.Color.RED, 1));
+            for (int z = mz; z <= mz + 16; z += 16) for (int x = mx; x <= mx + 16; x++) player.spawnParticle(org.bukkit.Particle.DUST, x, y, z, 1, new org.bukkit.Particle.DustOptions(org.bukkit.Color.RED, 1));
         }
         player.sendMessage("§eLimites affichées.");
     }
@@ -682,6 +698,23 @@ public class FactionCommand implements CommandExecutor {
         else if (m.startsWith("a")) pd.setChatMode("ALLY");
         else pd.setChatMode("PUBLIC");
         MessageUtils.sendMessage(player, "chat-mode-switched", "%mode%", pd.getChatMode());
+    }
+
+    private void handlePet(Player player) {
+        fr.jules.faction.gui.FactionGUI.openPetMenu(player);
+    }
+
+    private void handleChest(Player player) {
+        PlayerData data = plugin.getPlayerManager().getPlayerData(player.getUniqueId());
+        if (data.getFactionId() == null) {
+            MessageUtils.sendMessage(player, "not-in-faction");
+            return;
+        }
+        Faction f = plugin.getFactionManager().getFaction(data.getFactionId());
+        if (f.getFactionChest() == null) {
+            f.setFactionChest(Bukkit.createInventory(null, 54, "§c§lCoffre de Faction: " + f.getName()));
+        }
+        player.openInventory(f.getFactionChest());
     }
 
     private void handleGui(Player player) {

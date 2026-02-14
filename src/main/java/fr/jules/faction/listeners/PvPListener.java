@@ -79,7 +79,7 @@ public class PvPListener implements Listener {
         }
 
         if (attackerData.getPowers().contains("STUN") && Math.random() < 0.1) {
-            target.addPotionEffect(new org.bukkit.potion.PotionEffect(org.bukkit.potion.PotionEffectType.SLOW, 40, 2));
+            target.addPotionEffect(new org.bukkit.potion.PotionEffect(org.bukkit.potion.PotionEffectType.SLOWNESS, 40, 2));
             target.sendMessage("§cVous avez été étourdi !");
             attacker.sendMessage("§aVous avez étourdi votre cible !");
         }

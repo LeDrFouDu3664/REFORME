@@ -1,0 +1,81 @@
+name: FactionPlugin
+version: 1.0-SNAPSHOT
+main: fr.jules.faction.FactionPlugin
+api-version: 1.20
+commands:
+  tpa:
+    description: Envoyer une demande de téléportation.
+  tpahere:
+    description: Envoyer une demande pour qu'un joueur se téléporte à vous.
+  tpyes:
+    description: Accepter une demande de téléportation.
+  tpno:
+    description: Refuser une demande de téléportation.
+  sethome:
+    description: Définir une résidence.
+  home:
+    description: Se rendre à une résidence.
+  spawn:
+    description: Se rendre au spawn.
+  chateau:
+    description: Se rendre au château.
+  forteresse:
+    description: Se rendre à la forteresse.
+  f:
+    description: Commande principale des factions.
+    aliases: [faction]
+  money:
+    description: Voir son argent.
+  power:
+    description: Voir son power ou celui d'un autre.
+  ignore:
+    description: Ignorer un joueur.
+  shop:
+    description: Ouvrir la boutique du Faction.
+  boutique:
+    description: Ouvrir la boutique Me's.
+  jobs:
+    description: Choisir et voir son métier.
+  quests:
+    description: Voir ses quêtes en cours.
+
+permissions:
+  faction.command.*:
+    description: Accès à toutes les commandes faction.
+    children:
+      faction.command.create: true
+      faction.command.join: true
+      faction.command.leave: true
+      faction.command.disband: true
+      faction.command.invite: true
+      faction.command.kick: true
+      faction.command.promote: true
+      faction.command.demote: true
+      faction.command.leader: true
+      faction.command.claim: true
+      faction.command.unclaim: true
+      faction.command.map: true
+      faction.command.status: true
+      faction.command.faction: true
+      faction.command.player: true
+      faction.command.home: true
+      faction.command.sethome: true
+      faction.command.unsethome: true
+      faction.command.chat: true
+      faction.command.gui: true
+      faction.command.help: true
+      faction.command.seechunk: true
+      faction.command.unstuck: true
+      faction.command.tpa: true
+      faction.command.tpahere: true
+      faction.command.tpyes: true
+      faction.command.tpno: true
+      faction.command.spawn: true
+      faction.command.money: true
+      faction.command.power: true
+      faction.command.ignore: true
+      faction.command.shop: true
+      faction.command.boutique: true
+  faction.admin:
+    description: Accès aux commandes d'administration faction.
+    default: op

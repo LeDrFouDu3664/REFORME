@@ -13,7 +13,7 @@ import java.util.Map;
 
 public class FactionGUI {
     public static void openMainMenu(Player player, Faction faction) {
-        Inventory inv = Bukkit.createInventory(null, 27, "§6Gestion: " + faction.getName());
+        Inventory inv = Bukkit.createInventory(new FactionInventoryHolder("MAIN", faction), 27, "§c§lGestion: " + faction.getName());
         fillBorder(inv);
 
         inv.setItem(10, createItem(Material.BOOK, "§eStatistiques",
@@ -31,17 +31,17 @@ public class FactionGUI {
         inv.setItem(15, createItem(Material.COMPARATOR, "§eParamètres", "§7Flags de faction (TNT, PVP, etc)"));
         inv.setItem(16, createItem(Material.REDSTONE_TORCH, "§ePermissions", "§7Actions autorisées par grade"));
 
-        inv.setItem(21, createItem(Material.IRON_SWORD, "§eMétiers", "§7Choisir un métier"));
         inv.setItem(20, createItem(Material.EXPERIENCE_BOTTLE, "§eNiveaux Faction", "§7Voir les récompenses de niveau"));
         inv.setItem(21, createItem(Material.IRON_SWORD, "§eMétiers", "§7Choisir un métier"));
         inv.setItem(22, createItem(Material.BLAZE_POWDER, "§ePouvoirs", "§7Débloquer des capacités"));
         inv.setItem(23, createItem(Material.WRITABLE_BOOK, "§eQuêtes", "§7Voir les quêtes"));
+        inv.setItem(24, createItem(Material.BONE, "§eCompagnon", "§7Gérer votre familier"));
 
         player.openInventory(inv);
     }
 
     public static void openPowersMenu(Player player, fr.jules.faction.model.PlayerData data, fr.jules.faction.manager.PowerManager pm) {
-        Inventory inv = Bukkit.createInventory(null, 54, "§6Pouvoirs de Faction");
+        Inventory inv = Bukkit.createInventory(new FactionInventoryHolder("POWERS", data), 54, "§c§lPouvoirs de Faction");
         fillBorder(inv);
         inv.setItem(49, createItem(Material.SHEARS, "§7Retour", "§8Clic pour revenir"));
 
@@ -51,7 +51,6 @@ public class FactionGUI {
             fr.jules.faction.manager.PowerManager.PowerInfo info = entry.getValue();
             boolean has = data.getPowers().contains(pid);
 
-            // Prix équilibrés
             double cost = 5000;
             if (pid.contains("II") || pid.equals("VAMPIRE") || pid.equals("STRENGTH")) cost = 15000;
 
@@ -67,22 +66,8 @@ public class FactionGUI {
         player.openInventory(inv);
     }
 
-    public static void openFactionLevelMenu(Player player, Faction faction) {
-        Inventory inv = Bukkit.createInventory(null, 27, "§6Récompenses de Niveau");
-        fillBorder(inv);
-        inv.setItem(22, createItem(Material.SHEARS, "§7Retour", "§8Clic pour revenir"));
-
-        inv.setItem(10, createItem(Material.IRON_CHESTPLATE, "§eNiveau 2", "§7• §f+2 Max Power / membre", faction.getLevel() >= 2 ? "§aDébloqué" : "§cVerrouillé"));
-        inv.setItem(11, createItem(Material.GOLDEN_CHESTPLATE, "§eNiveau 5", "§7• §f+4 Max Power / membre", faction.getLevel() >= 5 ? "§aDébloqué" : "§cVerrouillé"));
-        inv.setItem(12, createItem(Material.DIAMOND_CHESTPLATE, "§eNiveau 10", "§7• §f+7 Max Power / membre", "§7• §f+5 slots membres", faction.getLevel() >= 10 ? "§aDébloqué" : "§cVerrouillé"));
-        inv.setItem(13, createItem(Material.NETHERITE_CHESTPLATE, "§eNiveau 15", "§7• §f+10 Max Power / membre", "§7• §f+10 slots membres", faction.getLevel() >= 15 ? "§aDébloqué" : "§cVerrouillé"));
-        inv.setItem(14, createItem(Material.BEACON, "§eNiveau 20", "§7• §f+15 Max Power / membre", "§7• §f+20 slots membres", faction.getLevel() >= 20 ? "§aDébloqué" : "§cVerrouillé"));
-
-        player.openInventory(inv);
-    }
-
     public static void openQuestsMenu(Player player, fr.jules.faction.model.PlayerData data, fr.jules.faction.manager.QuestManager qm) {
-        Inventory inv = Bukkit.createInventory(null, 27, "§6Quêtes");
+        Inventory inv = Bukkit.createInventory(new FactionInventoryHolder("QUESTS", data), 27, "§c§lQuêtes");
         fillBorder(inv);
         inv.setItem(22, createItem(Material.SHEARS, "§7Retour", "§8Clic pour revenir"));
 
@@ -106,7 +91,7 @@ public class FactionGUI {
     }
 
     public static void openJobsMenu(Player player, fr.jules.faction.model.PlayerData data) {
-        Inventory inv = Bukkit.createInventory(null, 27, "§6Métiers");
+        Inventory inv = Bukkit.createInventory(new FactionInventoryHolder("JOBS", data), 27, "§c§lMétiers");
         fillBorder(inv);
         inv.setItem(22, createItem(Material.SHEARS, "§7Retour", "§8Clic pour revenir"));
 
@@ -121,7 +106,7 @@ public class FactionGUI {
     }
 
     public static void openBankMenu(Player player, Faction faction) {
-        Inventory inv = Bukkit.createInventory(null, 27, "§6Banque: " + faction.getName());
+        Inventory inv = Bukkit.createInventory(new FactionInventoryHolder("BANK", faction), 27, "§c§lBanque: " + faction.getName());
         fillBorder(inv);
         inv.setItem(22, createItem(Material.SHEARS, "§7Retour", "§8Clic pour revenir"));
 
@@ -137,7 +122,7 @@ public class FactionGUI {
     }
 
     public static void openMembersMenu(Player player, Faction faction) {
-        Inventory inv = Bukkit.createInventory(null, 54, "§6Membres: " + faction.getName());
+        Inventory inv = Bukkit.createInventory(new FactionInventoryHolder("MEMBERS", faction), 54, "§c§lMembres: " + faction.getName());
         fillBorder(inv);
         inv.setItem(49, createItem(Material.SHEARS, "§7Retour", "§8Clic pour revenir"));
 
@@ -153,7 +138,7 @@ public class FactionGUI {
     }
 
     public static void openParametersMenu(Player player, Faction faction) {
-        Inventory inv = Bukkit.createInventory(null, 27, "§6Paramètres: " + faction.getName());
+        Inventory inv = Bukkit.createInventory(new FactionInventoryHolder("PARAMETERS", faction), 27, "§c§lParamètres: " + faction.getName());
         fillBorder(inv);
         inv.setItem(22, createItem(Material.SHEARS, "§7Retour", "§8Clic pour revenir"));
 
@@ -178,8 +163,22 @@ public class FactionGUI {
         player.openInventory(inv);
     }
 
+    public static void openFactionLevelMenu(Player player, Faction faction) {
+        Inventory inv = Bukkit.createInventory(new FactionInventoryHolder("LEVELS", faction), 27, "§c§lRécompenses de Niveau");
+        fillBorder(inv);
+        inv.setItem(22, createItem(Material.SHEARS, "§7Retour", "§8Clic pour revenir"));
+
+        inv.setItem(10, createItem(Material.IRON_CHESTPLATE, "§eNiveau 2", "§7• §f+2 Max Power / membre", faction.getLevel() >= 2 ? "§aDébloqué" : "§cVerrouillé"));
+        inv.setItem(11, createItem(Material.GOLDEN_CHESTPLATE, "§eNiveau 5", "§7• §f+4 Max Power / membre", faction.getLevel() >= 5 ? "§aDébloqué" : "§cVerrouillé"));
+        inv.setItem(12, createItem(Material.DIAMOND_CHESTPLATE, "§eNiveau 10", "§7• §f+7 Max Power / membre", "§7• §f+5 slots membres", faction.getLevel() >= 10 ? "§aDébloqué" : "§cVerrouillé"));
+        inv.setItem(13, createItem(Material.NETHERITE_CHESTPLATE, "§eNiveau 15", "§7• §f+10 Max Power / membre", "§7• §f+10 slots membres", faction.getLevel() >= 15 ? "§aDébloqué" : "§cVerrouillé"));
+        inv.setItem(14, createItem(Material.BEACON, "§eNiveau 20", "§7• §f+15 Max Power / membre", "§7• §f+20 slots membres", faction.getLevel() >= 20 ? "§aDébloqué" : "§cVerrouillé"));
+
+        player.openInventory(inv);
+    }
+
     public static void openRankPermissionsMenu(Player player, Faction faction, String target) {
-        Inventory inv = Bukkit.createInventory(null, 45, "§6Perms: " + target + " (" + faction.getName() + ")");
+        Inventory inv = Bukkit.createInventory(new FactionInventoryHolder("RANK_PERMS", target), 45, "§c§lPerms: " + target + " (" + faction.getName() + ")");
         fillBorder(inv);
         inv.setItem(40, createItem(Material.SHEARS, "§7Retour", "§8Clic pour revenir"));
 
@@ -203,7 +202,7 @@ public class FactionGUI {
     }
 
     public static void openPermissionsMenu(Player player, Faction faction) {
-        Inventory inv = Bukkit.createInventory(null, 27, "§6Permissions: " + faction.getName());
+        Inventory inv = Bukkit.createInventory(new FactionInventoryHolder("PERMISSIONS", faction), 27, "§c§lPermissions: " + faction.getName());
         fillBorder(inv);
         inv.setItem(22, createItem(Material.SHEARS, "§7Retour", "§8Clic pour revenir"));
 
@@ -216,7 +215,7 @@ public class FactionGUI {
     }
 
     public static void openRelationsMenu(Player player, Faction faction) {
-        Inventory inv = Bukkit.createInventory(null, 27, "§6Relations: " + faction.getName());
+        Inventory inv = Bukkit.createInventory(new FactionInventoryHolder("RELATIONS", faction), 27, "§c§lRelations: " + faction.getName());
         fillBorder(inv);
         inv.setItem(22, createItem(Material.SHEARS, "§7Retour", "§8Clic pour revenir"));
 
@@ -229,7 +228,7 @@ public class FactionGUI {
     }
 
     public static void openFactionsListMenu(Player player, Faction playerFaction, java.util.Collection<Faction> allFactions) {
-        Inventory inv = Bukkit.createInventory(null, 54, "§6Liste des Factions");
+        Inventory inv = Bukkit.createInventory(new FactionInventoryHolder("FACTIONS_LIST", playerFaction), 54, "§c§lListe des Factions");
         fillBorder(inv);
         inv.setItem(49, createItem(Material.SHEARS, "§7Retour", "§8Clic pour revenir"));
 
@@ -251,8 +250,23 @@ public class FactionGUI {
         player.openInventory(inv);
     }
 
+    public static void openPetMenu(Player player) {
+        Inventory inv = Bukkit.createInventory(new FactionInventoryHolder("PETS", null), 27, "§c§lAnimaux de Compagnie");
+        fillBorder(inv);
+        inv.setItem(22, createItem(Material.SHEARS, "§7Retour", "§8Clic pour revenir"));
+
+        inv.setItem(10, createItem(Material.BONE, "§eLoup", "§7Bonus: Force I", "§8Clic pour invoquer"));
+        inv.setItem(12, createItem(Material.COD, "§eChat", "§7Bonus: Vitesse I", "§8Clic pour invoquer"));
+        inv.setItem(14, createItem(Material.FEATHER, "§ePerroquet", "§7Bonus: Saut I", "§8Clic pour invoquer"));
+        inv.setItem(16, createItem(Material.SWEET_BERRIES, "§eRenard", "§7Bonus: Vision Nocturne", "§8Clic pour invoquer"));
+
+        inv.setItem(4, createItem(Material.BARRIER, "§cRenvoyer", "§7Faire disparaitre le familier"));
+
+        player.openInventory(inv);
+    }
+
     public static void openClaimsMenu(Player player, Faction faction) {
-        Inventory inv = Bukkit.createInventory(null, 27, "§6Territoires: " + faction.getName());
+        Inventory inv = Bukkit.createInventory(new FactionInventoryHolder("CLAIMS", faction), 27, "§c§lTerritoires: " + faction.getName());
         fillBorder(inv);
         inv.setItem(22, createItem(Material.SHEARS, "§7Retour", "§8Clic pour revenir"));
 
@@ -266,7 +280,7 @@ public class FactionGUI {
     }
 
     private static void fillBorder(Inventory inv) {
-        ItemStack pane = createItem(Material.BLACK_STAINED_GLASS_PANE, " ");
+        ItemStack pane = createItem(Material.RED_STAINED_GLASS_PANE, " ");
         for (int i = 0; i < inv.getSize(); i++) {
             if (i < 9 || i >= inv.getSize() - 9 || i % 9 == 0 || i % 9 == 8) {
                 inv.setItem(i, pane);

@@ -28,6 +28,7 @@ public class Faction {
     private int tntStock = 0;
     private FactionType type = FactionType.NORMAL;
     private Set<String> claims = new HashSet<>(); // Format: "world,x,z"
+    private org.bukkit.inventory.Inventory factionChest;
 
     public void addMember(UUID uuid) {
         members.add(uuid);

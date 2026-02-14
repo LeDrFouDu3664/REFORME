@@ -12,7 +12,7 @@ import java.util.List;
 
 public class ShopGUI {
     public static void openShopMenu(Player player) {
-        Inventory inv = Bukkit.createInventory(null, 27, "§6Boutique Administrative");
+        Inventory inv = Bukkit.createInventory(new FactionInventoryHolder("SHOP_MAIN", null), 27, "§c§lBoutique Faction");
         fillBorder(inv);
 
         inv.setItem(11, createShopCategory(Material.GRASS_BLOCK, "§aBlocs", "§7Acheter des matériaux de construction"));
@@ -23,7 +23,7 @@ public class ShopGUI {
     }
 
     public static void openCategoryMenu(Player player, String category) {
-        Inventory inv = Bukkit.createInventory(null, 54, "§6Boutique: " + category);
+        Inventory inv = Bukkit.createInventory(new FactionInventoryHolder("SHOP_CATEGORY", category), 54, "§c§lBoutique: " + category);
         fillBorder(inv);
         inv.setItem(49, createItem(Material.SHEARS, "§7Retour", "§8Clic pour revenir"));
 
@@ -80,7 +80,7 @@ public class ShopGUI {
     }
 
     private static void fillBorder(Inventory inv) {
-        ItemStack pane = createItem(Material.BLACK_STAINED_GLASS_PANE, " ");
+        ItemStack pane = createItem(Material.RED_STAINED_GLASS_PANE, " ");
         for (int i = 0; i < inv.getSize(); i++) {
             if (i < 9 || i >= inv.getSize() - 9 || i % 9 == 0 || i % 9 == 8) {
                 inv.setItem(i, pane);

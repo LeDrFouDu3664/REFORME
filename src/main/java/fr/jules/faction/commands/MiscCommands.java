@@ -69,7 +69,7 @@ public class MiscCommands implements CommandExecutor {
     }
 
     private void handleBoutique(Player player) {
-        Inventory boutique = Bukkit.createInventory(null, 27, "§6Boutique Me's");
+        Inventory boutique = Bukkit.createInventory(new fr.jules.faction.gui.FactionInventoryHolder("BOUTIQUE", null), 27, "§c§lBoutique Me's");
         boutique.setItem(11, createShopItem(org.bukkit.Material.NETHER_STAR, "§fÉtoile du Nether", "§7Prix: §e1000 Me's"));
         boutique.setItem(13, createShopItem(org.bukkit.Material.EXPERIENCE_BOTTLE, "§aBouteille d'XP x64", "§7Prix: §e500 Me's"));
         boutique.setItem(15, createShopItem(org.bukkit.Material.ENCHANTED_GOLDEN_APPLE, "§dPomme Notch", "§7Prix: §e750 Me's"));

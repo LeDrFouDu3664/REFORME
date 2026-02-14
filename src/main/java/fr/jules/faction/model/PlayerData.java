@@ -25,6 +25,7 @@ public class PlayerData {
     private Map<String, Integer> questProgress = new HashMap<>(); // QuestID -> Progress
     private long lastQuestRefresh = 0;
     private Set<String> powers = new HashSet<>();
+    private String currentPet = "NONE";
     private boolean bypass = false;
     private boolean autoClaim = false;
     private boolean showTitles = true;

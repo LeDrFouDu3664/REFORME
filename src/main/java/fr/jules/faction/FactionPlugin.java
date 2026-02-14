@@ -21,6 +21,7 @@ public class FactionPlugin extends JavaPlugin {
     @Getter private QuestManager questManager;
     @Getter private PowerManager powerManager;
     @Getter private FactionLevelManager factionLevelManager;
+    @Getter private PetManager petManager;
 
     @Override
     public void onEnable() {
@@ -37,6 +38,7 @@ public class FactionPlugin extends JavaPlugin {
         this.questManager = new QuestManager(this);
         this.powerManager = new PowerManager(this);
         this.factionLevelManager = new FactionLevelManager(this);
+        this.petManager = new PetManager(this);
 
         dataManager.loadFactions(factionManager, claimManager);
         factionManager.getAllFactions().forEach(f -> factionManager.recalculatePower(f, playerManager));
@@ -91,6 +93,7 @@ public class FactionPlugin extends JavaPlugin {
             Bukkit.getOnlinePlayers().forEach(p -> {
                 powerManager.applyEffects(p);
                 updateCompass(p);
+                fr.jules.faction.utils.ScoreboardUtils.updateScoreboard(this, p);
             });
         }, 20, 20);
 
@@ -105,6 +108,12 @@ public class FactionPlugin extends JavaPlugin {
                 factionManager.recalculatePower(f, playerManager);
             });
         }, 20 * 60 * interval, 20 * 60 * interval);
+
+        // Auto-save every 5 minutes
+        Bukkit.getScheduler().runTaskTimerAsynchronously(this, () -> {
+            getLogger().info("Auto-sauvegarde des données...");
+            dataManager.saveAll(factionManager, playerManager, claimManager);
+        }, 6000L, 6000L);
     }
 
     @Override

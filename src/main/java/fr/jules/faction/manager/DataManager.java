@@ -6,6 +6,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
 
 import java.io.File;
 import java.io.IOException;
@@ -54,6 +56,10 @@ public class DataManager {
         config.set("balance", faction.getBalance());
         config.set("tntStock", faction.getTntStock());
         config.set("type", faction.getType().name());
+
+        if (faction.getFactionChest() != null) {
+            config.set("chest", faction.getFactionChest().getContents());
+        }
 
         try {
             config.save(file);
@@ -127,6 +133,15 @@ public class DataManager {
             faction.setTntStock(config.getInt("tntStock", 0));
             faction.setType(FactionType.valueOf(config.getString("type", "NORMAL")));
 
+            if (config.contains("chest")) {
+                List<ItemStack> items = (List<ItemStack>) config.getList("chest");
+                Inventory chest = Bukkit.createInventory(null, 54, "§c§lCoffre de Faction: " + faction.getName());
+                if (items != null) {
+                    chest.setContents(items.toArray(new ItemStack[0]));
+                }
+                faction.setFactionChest(chest);
+            }
+
             factionManager.addFaction(faction);
         }
     }
@@ -197,5 +212,15 @@ public class DataManager {
             }
         }
         return data;
+    }
+
+    public void saveAll(FactionManager fm, PlayerManager pm, ClaimManager cm) {
+        fm.getAllFactions().forEach(this::saveFaction);
+        pm.getAllPlayerData().forEach(this::savePlayerData);
+    }
+
+    public void deleteFaction(UUID id) {
+        File file = new File(factionDir, id.toString() + ".yml");
+        if (file.exists()) file.delete();
     }
 }

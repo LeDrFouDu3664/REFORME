@@ -18,8 +18,8 @@ public class PowerManager {
 
     private void setupPowers() {
         powers.put("SPEED_II", new PowerInfo("Vitesse Supérieure", "Course effrénée (Vitesse II).", PotionEffectType.SPEED, 1));
-        powers.put("STRENGTH", new PowerInfo("Force Brute", "Vos coups sont dévastateurs (Force I).", PotionEffectType.INCREASE_DAMAGE, 0));
-        powers.put("RESISTANCE", new PowerInfo("Blindage", "Protection accrue contre les coups (Résistance I).", PotionEffectType.DAMAGE_RESISTANCE, 0));
+        powers.put("STRENGTH", new PowerInfo("Force Brute", "Vos coups sont dévastateurs (Force I).", PotionEffectType.STRENGTH, 0));
+        powers.put("RESISTANCE", new PowerInfo("Blindage", "Protection accrue contre les coups (Résistance I).", PotionEffectType.RESISTANCE, 0));
         powers.put("NO_FALL", new PowerInfo("Plume", "Immunité totale aux dégâts de chute.", null, 0));
         powers.put("FIRE_RES", new PowerInfo("Peau de Lave", "Immunité totale au feu.", PotionEffectType.FIRE_RESISTANCE, 0));
         powers.put("DOUBLE_XP", new PowerInfo("Érudit", "Double XP gagnée via les métiers.", null, 0));
@@ -32,7 +32,7 @@ public class PowerManager {
         powers.put("SATURATION", new PowerInfo("Insatiable", "Barre de faim toujours pleine.", PotionEffectType.SATURATION, 0));
         powers.put("NIGHT_VISION", new PowerInfo("Nyctalope", "Vision nocturne permanente.", PotionEffectType.NIGHT_VISION, 0));
         powers.put("HEALTH_II", new PowerInfo("Vitalité II", "4 cœurs supplémentaires.", PotionEffectType.HEALTH_BOOST, 1));
-        powers.put("HASTE_II", new PowerInfo("Forreur", "Minage ultra rapide (Hâte II).", PotionEffectType.FAST_DIGGING, 1));
+        powers.put("HASTE_II", new PowerInfo("Forreur", "Minage ultra rapide (Hâte II).", PotionEffectType.HASTE, 1));
         powers.put("LUCK_MINER", new PowerInfo("Filons d'Or", "5% de chance de doubler les minerais.", null, 0));
         powers.put("LUCK_FARMER", new PowerInfo("Main Verte", "Les cultures poussent instantanément.", null, 0));
         powers.put("LAVA_SPEED", new PowerInfo("Dauphin de Feu", "Nage rapide dans la lave.", null, 0));
