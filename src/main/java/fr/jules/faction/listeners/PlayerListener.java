@@ -78,7 +78,7 @@ public class PlayerListener implements Listener {
         UUID oldId = oldClaim != null ? oldClaim.getFactionId() : null;
         UUID newId = newClaim != null ? newClaim.getFactionId() : null;
 
-        if (!Objects.equals(oldId, newId)) {
+        if (!Objects.equals(oldId, newId) && data.isShowTitles()) {
             if (newId == null) {
                 event.getPlayer().sendTitle("§7Nature", "§fTerritoire libre", 10, 40, 10);
             } else {

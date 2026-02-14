@@ -71,6 +71,7 @@ public class FactionCommand implements CommandExecutor {
             case "ally": case "a": handleRelation(player, args, Relation.ALLY.name()); break;
             case "relation": handleRelationSub(player, args); break;
             case "chat": case "c": handleChat(player, args); break;
+            case "toggle": handleToggle(player); break;
             case "gui": case "perm": handleGui(player); break;
             case "unstuck": handleUnstuck(player); break;
             case "help": displayHelp(player); break;
@@ -538,27 +539,23 @@ public class FactionCommand implements CommandExecutor {
     }
 
     private void handleMap(Player player) {
-        int rx = 24, rz = 10;
+        int rx = 12, rz = 6;
         PlayerData pd = plugin.getPlayerManager().getPlayerData(player.getUniqueId());
         player.sendMessage("§8§m---------------------------------------");
         player.sendMessage("   §6§lCARTE DE TERRITOIRE");
         int centerX = player.getLocation().getChunk().getX();
         int centerZ = player.getLocation().getChunk().getZ();
-        player.sendMessage("   §7Position: §f" + centerX + ", " + centerZ);
-        player.sendMessage("   §7Direction: §e" + player.getFacing().name());
+        player.sendMessage("   §7Position: §f" + centerX + ", " + centerZ + " §8| §7Dir: §e" + player.getFacing().name());
         player.sendMessage("");
 
-        player.sendMessage("           §e[ NORD ]");
         for (int z = -rz; z <= rz; z++) {
             net.kyori.adventure.text.TextComponent.Builder line = net.kyori.adventure.text.Component.text();
-            if (z == 0) line.append(net.kyori.adventure.text.Component.text("§e[O] "));
-            else line.append(net.kyori.adventure.text.Component.text("    "));
-
+            line.append(net.kyori.adventure.text.Component.text("   "));
             for (int x = -rx; x <= rx; x++) {
                 if (x == 0 && z == 0) {
                     line.append(net.kyori.adventure.text.Component.text("§b✚").hoverEvent(net.kyori.adventure.text.event.HoverEvent.showText(net.kyori.adventure.text.Component.text("§bVous êtes ici"))));
                 } else {
-                    Claim c = plugin.getClaimManager().getClaim(player.getWorld().getName(), player.getLocation().getChunk().getX() + x, player.getLocation().getChunk().getZ() + z);
+                    Claim c = plugin.getClaimManager().getClaim(player.getWorld().getName(), centerX + x, centerZ + z);
                     if (c == null) {
                         line.append(net.kyori.adventure.text.Component.text("§7-"));
                     } else {
@@ -580,10 +577,8 @@ public class FactionCommand implements CommandExecutor {
                     }
                 }
             }
-            if (z == 0) line.append(net.kyori.adventure.text.Component.text(" §e[E]"));
             player.sendMessage(line.build());
         }
-        player.sendMessage("           §e[ SUD ]");
         player.sendMessage("");
         player.sendMessage(" §a■ §7Vôtre  §d■ §7Allié  §c■ §7Ennemi  §6■ §7Trêve  §b■ §7Safe  §7- §7Libre");
         player.sendMessage("§8§m---------------------------------------");
@@ -690,9 +685,19 @@ public class FactionCommand implements CommandExecutor {
 
     private void handleGui(Player player) {
         PlayerData pd = plugin.getPlayerManager().getPlayerData(player.getUniqueId());
-        if (pd.getFactionId() == null) return;
+        if (pd.getFactionId() == null) {
+            player.sendMessage("§cVous n'avez pas de faction. Accès restreint au menu.");
+            // On peut quand même ouvrir un menu minimal ou rien.
+            return;
+        }
         Faction f = plugin.getFactionManager().getFaction(pd.getFactionId());
         fr.jules.faction.gui.FactionGUI.openMainMenu(player, f);
+    }
+
+    private void handleToggle(Player player) {
+        PlayerData pd = plugin.getPlayerManager().getPlayerData(player.getUniqueId());
+        pd.setShowTitles(!pd.isShowTitles());
+        player.sendMessage("§aAffichage des titres de territoire: " + (pd.isShowTitles() ? "§aActivé" : "§cDésactivé"));
     }
 
     private void handleUnstuck(Player player) { player.teleport(player.getWorld().getSpawnLocation()); }
@@ -705,6 +710,7 @@ public class FactionCommand implements CommandExecutor {
             player.sendMessage("§e/f admin setchateau §7- Définir le château");
             player.sendMessage("§e/f admin setforteresse §7- Définir la forteresse");
             player.sendMessage("§e/f admin setpower [joueur] [valeur] §7- Modifier le power");
+            player.sendMessage("§e/f admin eco [give|take|set] [joueur] [montant] §7- Économie");
             player.sendMessage("§e/f admin disband [faction] §7- Dissoudre une faction");
             player.sendMessage("§e/f admin reload §7- Recharger la config");
             return;
@@ -728,6 +734,27 @@ public class FactionCommand implements CommandExecutor {
                 double val = Double.parseDouble(args[3]);
                 td.setPower(val);
                 player.sendMessage("§aPower de " + td.getName() + " mis à " + val);
+            } catch (NumberFormatException e) { player.sendMessage("§cValeur invalide."); }
+        } else if (sub.equalsIgnoreCase("eco")) {
+            if (args.length < 5) { player.sendMessage("§cUsage: /f admin eco [give|take|set] [joueur] [montant]"); return; }
+            PlayerData td = plugin.getPlayerManager().getPlayerDataByName(args[3]);
+            if (td == null) { player.sendMessage("§cJoueur introuvable."); return; }
+            try {
+                double val = Double.parseDouble(args[4]);
+                String action = args[2].toLowerCase();
+                Player tPlayer = Bukkit.getPlayer(td.getUuid());
+                if (action.equals("give")) {
+                    plugin.getEconomyManager().deposit(tPlayer, val);
+                    player.sendMessage("§a" + val + "$ donnés à " + td.getName());
+                } else if (action.equals("take")) {
+                    plugin.getEconomyManager().withdraw(tPlayer, val);
+                    player.sendMessage("§a" + val + "$ retirés à " + td.getName());
+                } else if (action.equals("set")) {
+                    double current = plugin.getEconomyManager().getBalance(tPlayer);
+                    plugin.getEconomyManager().withdraw(tPlayer, current);
+                    plugin.getEconomyManager().deposit(tPlayer, val);
+                    player.sendMessage("§aSolde de " + td.getName() + " mis à " + val + "$");
+                }
             } catch (NumberFormatException e) { player.sendMessage("§cValeur invalide."); }
         } else if (sub.equalsIgnoreCase("disband")) {
             if (args.length < 3) { player.sendMessage("§cUsage: /f admin disband [faction]"); return; }
@@ -837,15 +864,45 @@ public class FactionCommand implements CommandExecutor {
 
     private void handleReload(Player player) { if (player.hasPermission("faction.admin")) { plugin.reloadConfig(); player.sendMessage("§aReload."); } }
 
+    private void displayHelp(Player player, String[] args) {
+        int page = 1;
+        if (args.length > 1) {
+            try { page = Integer.parseInt(args[1]); } catch (NumberFormatException ignored) {}
+        }
+
+        player.sendMessage("§8§m---------------------------------------");
+        player.sendMessage("   §6§lAIDE FACTION §7(Page " + page + "/3)");
+        player.sendMessage("");
+
+        if (page == 1) {
+            player.sendMessage(" §e/f create [nom] §7- Créer votre faction");
+            player.sendMessage(" §e/f join [nom] §7- Rejoindre une faction");
+            player.sendMessage(" §e/f leave §7- Quitter votre faction");
+            player.sendMessage(" §e/f show [nom] §7- Voir les infos d'une faction");
+            player.sendMessage(" §e/f list §7- Liste des factions par power");
+            player.sendMessage(" §e/f gui §7- Ouvrir le menu de gestion");
+        } else if (page == 2) {
+            player.sendMessage(" §e/f claim §7- Revendiquer le chunk actuel");
+            player.sendMessage(" §e/f unclaim §7- Libérer le chunk actuel");
+            player.sendMessage(" §e/f map §7- Afficher la carte des alentours");
+            player.sendMessage(" §e/f sethome §7- Définir le home de faction");
+            player.sendMessage(" §e/f home §7- Se téléporter au home");
+            player.sendMessage(" §e/f chat [f|t|a|p] §7- Changer de canal chat");
+        } else if (page == 3) {
+            player.sendMessage(" §e/jobs §7- Choisir et voir son métier");
+            player.sendMessage(" §e/quests §7- Liste des quêtes quotidiennes");
+            player.sendMessage(" §e/shop §7- Boutique administrative");
+            player.sendMessage(" §e/money §7- Voir son solde");
+            player.sendMessage(" §e/tpa [joueur] §7- Demande de téléportation");
+            player.sendMessage(" §e/f toggle §7- Masquer les titres de zone");
+        }
+
+        player.sendMessage("");
+        player.sendMessage(" §7Utilisez §e/f help [page] §7pour naviguer.");
+        player.sendMessage("§8§m---------------------------------------");
+    }
+
     private void displayHelp(Player player) {
-        player.sendMessage("§6--- Commandes Faction ---");
-        player.sendMessage("§e/f create <nom> §7- Créer une faction");
-        player.sendMessage("§e/f show [faction] §7- Infos faction");
-        player.sendMessage("§e/f join <faction> §7- Rejoindre");
-        player.sendMessage("§e/f leave §7- Quitter");
-        player.sendMessage("§e/f claim/unclaim §7- Territoires");
-        player.sendMessage("§e/f map §7- Carte");
-        player.sendMessage("§e/f gui §7- Menu de gestion");
-        player.sendMessage("§e/f home §7- Téléportation");
+        displayHelp(player, new String[]{"help", "1"});
     }
 }

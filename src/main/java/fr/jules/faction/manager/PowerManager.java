@@ -17,26 +17,26 @@ public class PowerManager {
     }
 
     private void setupPowers() {
-        powers.put("SPEED", new PowerInfo("Vitesse", "Vitesse de déplacement augmentée.", PotionEffectType.SPEED));
-        powers.put("STRENGTH", new PowerInfo("Force", "Dégâts au corps à corps augmentés.", PotionEffectType.INCREASE_DAMAGE));
-        powers.put("RESISTANCE", new PowerInfo("Résistance", "Dégâts subis réduits.", PotionEffectType.DAMAGE_RESISTANCE));
-        powers.put("JUMP", new PowerInfo("Saut", "Hauteur de saut augmentée.", PotionEffectType.JUMP));
-        powers.put("HASTE", new PowerInfo("Hâte", "Vitesse de minage augmentée.", PotionEffectType.FAST_DIGGING));
-        powers.put("NIGHT_VISION", new PowerInfo("Vision Nocturne", "Voir dans le noir.", PotionEffectType.NIGHT_VISION));
-        powers.put("WATER_BREATHING", new PowerInfo("Apnée", "Respirer sous l'eau.", PotionEffectType.WATER_BREATHING));
-        powers.put("FIRE_RESISTANCE", new PowerInfo("Résistance Feu", "Immunité au feu et à la lave.", PotionEffectType.FIRE_RESISTANCE));
-        powers.put("REGENERATION", new PowerInfo("Régénération", "Régénération de vie passive.", PotionEffectType.REGENERATION));
-        powers.put("LUCK", new PowerInfo("Chance", "Plus de chance pour le butin.", PotionEffectType.LUCK));
-        powers.put("SLOW_FALLING", new PowerInfo("Chute Lente", "Tomber sans se blesser.", PotionEffectType.SLOW_FALLING));
-        powers.put("HEALTH_BOOST", new PowerInfo("Vitalité", "Cœurs supplémentaires.", PotionEffectType.HEALTH_BOOST));
-        powers.put("ABSORPTION", new PowerInfo("Bouclier", "Cœurs d'absorption réguliers.", PotionEffectType.ABSORPTION));
-        powers.put("SATURATION", new PowerInfo("Nutrition", "Ne plus avoir faim.", PotionEffectType.SATURATION));
-        powers.put("DOLPHINS_GRACE", new PowerInfo("Grâce du Dauphin", "Nager plus vite.", PotionEffectType.DOLPHINS_GRACE));
-        powers.put("CONDUIT_POWER", new PowerInfo("Puissance Conduit", "Vision et minage sous-marin.", PotionEffectType.CONDUIT_POWER));
-        powers.put("HERO_OF_VILLAGE", new PowerInfo("Héros", "Réductions chez les villageois.", PotionEffectType.HERO_OF_THE_VILLAGE));
-        powers.put("INVISIBILITY", new PowerInfo("Furtivité", "Devenir invisible.", PotionEffectType.INVISIBILITY));
-        powers.put("GLOWING", new PowerInfo("Radar", "Vous brillez (détection).", PotionEffectType.GLOWING));
-        powers.put("LUCK_MINER", new PowerInfo("Mineur Chanceux", "Bonus de métier minage.", null));
+        powers.put("SPEED_II", new PowerInfo("Vitesse Supérieure", "Course effrénée (Vitesse II).", PotionEffectType.SPEED, 1));
+        powers.put("STRENGTH", new PowerInfo("Force Brute", "Vos coups sont dévastateurs (Force I).", PotionEffectType.INCREASE_DAMAGE, 0));
+        powers.put("RESISTANCE", new PowerInfo("Blindage", "Protection accrue contre les coups (Résistance I).", PotionEffectType.DAMAGE_RESISTANCE, 0));
+        powers.put("NO_FALL", new PowerInfo("Plume", "Immunité totale aux dégâts de chute.", null, 0));
+        powers.put("FIRE_RES", new PowerInfo("Peau de Lave", "Immunité totale au feu.", PotionEffectType.FIRE_RESISTANCE, 0));
+        powers.put("DOUBLE_XP", new PowerInfo("Érudit", "Double XP gagnée via les métiers.", null, 0));
+        powers.put("DOUBLE_MONEY", new PowerInfo("Capitaliste", "Double argent gagné via les métiers.", null, 0));
+        powers.put("AUTO_SMELT", new PowerInfo("Hâte Infernale", "Les minerais sont cuits à la mine.", null, 0));
+        powers.put("TELEKINESIS", new PowerInfo("Magnétisme", "Les items vont direct dans l'inventaire.", null, 0));
+        powers.put("SNEAK_INVIS", new PowerInfo("Ombre", "Invisible en mode discret (Sneak).", null, 0));
+        powers.put("VAMPIRE", new PowerInfo("Vampirisme", "Soigne 10% des dégâts infligés.", null, 0));
+        powers.put("STUN", new PowerInfo("Coup Assommant", "10% de chance d'étourdir l'ennemi.", null, 0));
+        powers.put("SATURATION", new PowerInfo("Insatiable", "Barre de faim toujours pleine.", PotionEffectType.SATURATION, 0));
+        powers.put("NIGHT_VISION", new PowerInfo("Nyctalope", "Vision nocturne permanente.", PotionEffectType.NIGHT_VISION, 0));
+        powers.put("HEALTH_II", new PowerInfo("Vitalité II", "4 cœurs supplémentaires.", PotionEffectType.HEALTH_BOOST, 1));
+        powers.put("HASTE_II", new PowerInfo("Forreur", "Minage ultra rapide (Hâte II).", PotionEffectType.FAST_DIGGING, 1));
+        powers.put("LUCK_MINER", new PowerInfo("Filons d'Or", "5% de chance de doubler les minerais.", null, 0));
+        powers.put("LUCK_FARMER", new PowerInfo("Main Verte", "Les cultures poussent instantanément.", null, 0));
+        powers.put("LAVA_SPEED", new PowerInfo("Dauphin de Feu", "Nage rapide dans la lave.", null, 0));
+        powers.put("LUCK_LOOT", new PowerInfo("Pilleur", "Double les loots des monstres.", null, 0));
     }
 
     public void applyEffects(Player player) {
@@ -46,7 +46,10 @@ public class PowerManager {
         for (String powerId : data.getPowers()) {
             PowerInfo info = powers.get(powerId);
             if (info != null && info.effectType != null) {
-                player.addPotionEffect(new PotionEffect(info.effectType, 40, 0, false, false, true));
+                player.addPotionEffect(new PotionEffect(info.effectType, 60, info.amplifier, false, false, true));
+            }
+            if (powerId.equals("SNEAK_INVIS") && player.isSneaking()) {
+                player.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, 40, 0, false, false, false));
             }
         }
     }
@@ -59,11 +62,13 @@ public class PowerManager {
         public final String name;
         public final String description;
         public final PotionEffectType effectType;
+        public final int amplifier;
 
-        public PowerInfo(String name, String description, PotionEffectType effectType) {
+        public PowerInfo(String name, String description, PotionEffectType effectType, int amplifier) {
             this.name = name;
             this.description = description;
             this.effectType = effectType;
+            this.amplifier = amplifier;
         }
     }
 }

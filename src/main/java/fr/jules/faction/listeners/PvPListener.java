@@ -19,6 +19,17 @@ public class PvPListener implements Listener {
     }
 
     @EventHandler
+    public void onFallDamage(org.bukkit.event.entity.EntityDamageEvent event) {
+        if (!(event.getEntity() instanceof Player player)) return;
+        if (event.getCause() == org.bukkit.event.entity.EntityDamageEvent.DamageCause.FALL) {
+            PlayerData data = plugin.getPlayerManager().getPlayerData(player.getUniqueId());
+            if (data.getPowers().contains("NO_FALL")) {
+                event.setCancelled(true);
+            }
+        }
+    }
+
+    @EventHandler
     public void onPvP(EntityDamageByEntityEvent event) {
         if (!(event.getEntity() instanceof Player target && event.getDamager() instanceof Player attacker)) return;
 
@@ -60,6 +71,17 @@ public class PvPListener implements Listener {
                 event.setCancelled(true);
                 return;
             }
+        }
+
+        // Powers logic
+        if (attackerData.getPowers().contains("VAMPIRE")) {
+            attacker.setHealth(Math.min(attacker.getMaxHealth(), attacker.getHealth() + (event.getFinalDamage() * 0.1)));
+        }
+
+        if (attackerData.getPowers().contains("STUN") && Math.random() < 0.1) {
+            target.addPotionEffect(new org.bukkit.potion.PotionEffect(org.bukkit.potion.PotionEffectType.SLOW, 40, 2));
+            target.sendMessage("§cVous avez été étourdi !");
+            attacker.sendMessage("§aVous avez étourdi votre cible !");
         }
 
         // Combat tagging

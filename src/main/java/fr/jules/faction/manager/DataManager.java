@@ -147,6 +147,7 @@ public class DataManager {
         config.set("jobLevel", data.getJobLevel());
         config.set("questProgress", data.getQuestProgress());
         config.set("powers", new ArrayList<>(data.getPowers()));
+        config.set("showTitles", data.isShowTitles());
         config.set("powerBoost", data.getPowerBoost());
         config.set("ignoredPlayers", data.getIgnoredPlayers().stream().map(UUID::toString).toList());
 
@@ -177,6 +178,7 @@ public class DataManager {
         data.setJobExp(config.getDouble("jobExp", 0));
         data.setJobLevel(config.getInt("jobLevel", 1));
         data.getPowers().addAll(config.getStringList("powers"));
+        data.setShowTitles(config.getBoolean("showTitles", true));
         ConfigurationSection questSec = config.getConfigurationSection("questProgress");
         if (questSec != null) {
             for (String key : questSec.getKeys(false)) {

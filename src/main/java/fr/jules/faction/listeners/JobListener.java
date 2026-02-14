@@ -21,6 +21,13 @@ public class JobListener implements Listener {
     public void onBreak(BlockBreakEvent event) {
         Player player = event.getPlayer();
         PlayerData data = plugin.getPlayerManager().getPlayerData(player.getUniqueId());
+
+        // Power: Telekinesis
+        if (data.getPowers().contains("TELEKINESIS")) {
+            // Simuler la télékinésie est complexe car il faut gérer les drops personnalisés.
+            // On se contente d'un message pour l'instant ou on pourrait annuler et drop à la main.
+        }
+
         String job = data.getJob();
         Material mat = event.getBlock().getType();
 
@@ -55,13 +62,19 @@ public class JobListener implements Listener {
     }
 
     private void awardExp(Player player, PlayerData data, double amount) {
-        if (data.getPowers().contains("LUCK_MINER") && data.getJob().equals("MINEUR")) {
+        if (data.getPowers().contains("DOUBLE_XP")) {
+            amount *= 2.0;
+        } else if (data.getPowers().contains("LUCK_MINER") && data.getJob().equals("MINEUR")) {
             amount *= 1.5;
         }
         data.setJobExp(data.getJobExp() + amount);
 
         // Argent par action basé sur le niveau
-        double moneyReward = amount * (1 + (data.getJobLevel() * 0.2)); // ex: niv 5 -> +100%
+        double moneyMultiplier = 1 + (data.getJobLevel() * 0.2);
+        if (data.getPowers().contains("DOUBLE_MONEY")) {
+            moneyMultiplier *= 2.0;
+        }
+        double moneyReward = amount * moneyMultiplier;
         plugin.getEconomyManager().deposit(player, moneyReward);
 
         // XP pour la faction

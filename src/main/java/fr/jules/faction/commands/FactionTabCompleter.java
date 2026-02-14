@@ -15,7 +15,7 @@ public class FactionTabCompleter implements TabCompleter {
     private final List<String> subCommands = Arrays.asList(
             "create", "join", "leave", "disband", "invite", "kick", "promote", "demote", "leader",
             "claim", "unclaim", "map", "status", "faction", "player", "home", "sethome", "unsethome",
-            "chat", "gui", "help", "seechunk", "unstuck", "admin", "relation", "ally", "enemy", "truce", "neutral"
+            "chat", "gui", "help", "seechunk", "unstuck", "admin", "relation", "ally", "enemy", "truce", "neutral", "toggle"
     );
 
     @Override

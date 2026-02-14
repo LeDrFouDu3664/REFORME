@@ -11,6 +11,7 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 
 import java.util.UUID;
 import java.util.Map;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class GUIListener implements Listener {
@@ -30,6 +31,7 @@ public class GUIListener implements Listener {
             title.startsWith("§6Relations: ") || title.startsWith("§6Territoires: ") ||
             title.startsWith("§6Banque: ") || title.startsWith("§6Liste des Factions") ||
             title.startsWith("§6Paramètres: ") || title.startsWith("§6Récompenses de Niveau") ||
+            title.startsWith("§6Boutique: ") || title.equals("§6Boutique Administrative") ||
             title.equals("§6Métiers") || title.equals("§6Quêtes") || title.equals("§6Pouvoirs de Faction") ||
             title.equals("§6Boutique Faction") || title.equals("§6Boutique Me's")) {
             event.setCancelled(true);
@@ -66,6 +68,10 @@ public class GUIListener implements Listener {
                 handleQuestsMenuClick(player, name, faction);
             } else if (title.equals("§6Pouvoirs de Faction")) {
                 handlePowersMenuClick(player, name, data, faction);
+            } else if (title.equals("§6Boutique Administrative")) {
+                handleAdminShopMainClick(player, name);
+            } else if (title.startsWith("§6Boutique: ")) {
+                handleAdminShopCategoryClick(player, event, title.replace("§6Boutique: ", ""));
             } else if (title.equals("§6Boutique Faction")) {
                 handleShopClick(player, event, faction);
             } else if (title.equals("§6Boutique Me's")) {
@@ -323,13 +329,16 @@ public class GUIListener implements Listener {
             return;
         }
 
-        if (plugin.getEconomyManager().has(player, 5000)) {
-            plugin.getEconomyManager().withdraw(player, 5000);
+        double cost = 5000;
+        if (powerId.contains("II") || powerId.equals("VAMPIRE") || powerId.equals("STRENGTH")) cost = 15000;
+
+        if (plugin.getEconomyManager().has(player, cost)) {
+            plugin.getEconomyManager().withdraw(player, cost);
             data.getPowers().add(powerId);
             player.sendMessage("§aPouvoir §e" + name + " §adébloqué !");
             fr.jules.faction.gui.FactionGUI.openPowersMenu(player, data, plugin.getPowerManager());
         } else {
-            player.sendMessage("§cPas assez d'argent (5000$).");
+            player.sendMessage("§cPas assez d'argent (" + String.format("%.0f", cost) + "$).");
         }
     }
 
@@ -351,6 +360,45 @@ public class GUIListener implements Listener {
             player.sendMessage("§aAchat réussi !");
         } else {
             player.sendMessage("§cVous n'avez pas assez d'argent.");
+        }
+    }
+
+    private void handleAdminShopMainClick(Player player, String name) {
+        if (name.contains("Blocs")) fr.jules.faction.gui.ShopGUI.openCategoryMenu(player, "Blocs");
+        else if (name.contains("Combat")) fr.jules.faction.gui.ShopGUI.openCategoryMenu(player, "Combat");
+        else if (name.contains("Agriculture")) fr.jules.faction.gui.ShopGUI.openCategoryMenu(player, "Agriculture");
+    }
+
+    private void handleAdminShopCategoryClick(Player player, InventoryClickEvent event, String category) {
+        if (org.bukkit.ChatColor.stripColor(event.getCurrentItem().getItemMeta().getDisplayName()).equalsIgnoreCase("Retour")) {
+            fr.jules.faction.gui.ShopGUI.openShopMenu(player);
+            return;
+        }
+
+        List<String> lore = event.getCurrentItem().getItemMeta().getLore();
+        if (lore == null || lore.size() < 3) return;
+
+        int amount = Integer.parseInt(org.bukkit.ChatColor.stripColor(lore.get(0)).replace("Quantité: ", ""));
+        double buyPrice = Double.parseDouble(org.bukkit.ChatColor.stripColor(lore.get(1)).replace("Prix Achat: ", "").replace("$", ""));
+        double sellPrice = Double.parseDouble(org.bukkit.ChatColor.stripColor(lore.get(2)).replace("Prix Vente: ", "").replace("$", ""));
+        org.bukkit.Material material = event.getCurrentItem().getType();
+
+        if (event.getClick().isLeftClick()) {
+            if (plugin.getEconomyManager().has(player, buyPrice)) {
+                plugin.getEconomyManager().withdraw(player, buyPrice);
+                player.getInventory().addItem(new org.bukkit.inventory.ItemStack(material, amount));
+                player.sendMessage("§aAchat de " + amount + " " + material.name() + " pour " + buyPrice + "$.");
+            } else {
+                player.sendMessage("§cPas assez d'argent.");
+            }
+        } else if (event.getClick().isRightClick()) {
+            if (player.getInventory().containsAtLeast(new org.bukkit.inventory.ItemStack(material), amount)) {
+                player.getInventory().removeItem(new org.bukkit.inventory.ItemStack(material, amount));
+                plugin.getEconomyManager().deposit(player, sellPrice);
+                player.sendMessage("§aVente de " + amount + " " + material.name() + " pour " + sellPrice + "$.");
+            } else {
+                player.sendMessage("§cVous n'avez pas assez d'items.");
+            }
         }
     }
 

@@ -27,6 +27,7 @@ public class PlayerData {
     private Set<String> powers = new HashSet<>();
     private boolean bypass = false;
     private boolean autoClaim = false;
+    private boolean showTitles = true;
     private double powerBoost = 0;
     private long lastDeathTime = 0;
     private long combatLoggedTime = 0;

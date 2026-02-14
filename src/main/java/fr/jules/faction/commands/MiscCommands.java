@@ -64,11 +64,7 @@ public class MiscCommands implements CommandExecutor {
     }
 
     private void handleShop(Player player) {
-        Inventory shop = Bukkit.createInventory(null, 27, "§6Boutique Faction");
-        shop.setItem(11, createShopItem(org.bukkit.Material.DIAMOND_SWORD, "§bÉpée en Diamant", "§7Prix: §e500$"));
-        shop.setItem(13, createShopItem(org.bukkit.Material.GOLDEN_APPLE, "§6Pomme Dorée", "§7Prix: §e250$"));
-        shop.setItem(15, createShopItem(org.bukkit.Material.OBSIDIAN, "§8Obsidienne x16", "§7Prix: §e100$"));
-        player.openInventory(shop);
+        fr.jules.faction.gui.ShopGUI.openShopMenu(player);
         MessageUtils.sendMessage(player, "shop-open");
     }
 

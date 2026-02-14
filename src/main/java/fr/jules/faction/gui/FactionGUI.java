@@ -41,9 +41,9 @@ public class FactionGUI {
     }
 
     public static void openPowersMenu(Player player, fr.jules.faction.model.PlayerData data, fr.jules.faction.manager.PowerManager pm) {
-        Inventory inv = Bukkit.createInventory(null, 36, "§6Pouvoirs de Faction");
+        Inventory inv = Bukkit.createInventory(null, 54, "§6Pouvoirs de Faction");
         fillBorder(inv);
-        inv.setItem(31, createItem(Material.SHEARS, "§7Retour", "§8Clic pour revenir"));
+        inv.setItem(49, createItem(Material.SHEARS, "§7Retour", "§8Clic pour revenir"));
 
         int slot = 10;
         for (Map.Entry<String, fr.jules.faction.manager.PowerManager.PowerInfo> entry : pm.getPowers().entrySet()) {
@@ -51,12 +51,17 @@ public class FactionGUI {
             fr.jules.faction.manager.PowerManager.PowerInfo info = entry.getValue();
             boolean has = data.getPowers().contains(pid);
 
+            // Prix équilibrés
+            double cost = 5000;
+            if (pid.contains("II") || pid.equals("VAMPIRE") || pid.equals("STRENGTH")) cost = 15000;
+
             inv.setItem(slot++, createItem(has ? Material.ENCHANTED_BOOK : Material.BOOK,
                 "§e" + info.name,
                 "§7" + info.description,
-                has ? "§aActivé" : "§cCliquez pour débloquer (5000$)"));
+                has ? "§aDébloqué" : "§cCliquez pour débloquer (" + String.format("%.0f", cost) + "$)"));
+
             if (slot % 9 == 8) slot += 2;
-            if (slot >= 26) break;
+            if (slot >= 44) break;
         }
 
         player.openInventory(inv);
