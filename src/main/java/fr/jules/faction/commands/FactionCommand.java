@@ -766,6 +766,7 @@ public class FactionCommand implements CommandExecutor {
             player.sendMessage("§e/f admin setpower [joueur] [valeur] §7- Modifier le power");
             player.sendMessage("§e/f admin eco [give|take|set] [joueur] [montant] §7- Économie");
             player.sendMessage("§e/f admin disband [faction] §7- Dissoudre une faction");
+            player.sendMessage("§e/f admin give [lasso|baton|pioche] §7- Give item spécial");
             player.sendMessage("§e/f admin reload §7- Recharger la config");
             return;
         }
@@ -825,6 +826,32 @@ public class FactionCommand implements CommandExecutor {
             plugin.getClaimManager().removeAllFactionClaims(f.getId());
             plugin.getFactionManager().disbandFaction(f.getId());
             player.sendMessage("§aFaction " + f.getName() + " dissoute.");
+        } else if (sub.equalsIgnoreCase("give")) {
+            if (args.length < 3) { player.sendMessage("§cUsage: /f admin give [lasso|baton|pioche]"); return; }
+            String type = args[2].toLowerCase();
+            org.bukkit.inventory.ItemStack item = null;
+            if (type.equals("lasso")) {
+                item = new org.bukkit.inventory.ItemStack(org.bukkit.Material.LEAD);
+                org.bukkit.inventory.meta.ItemMeta meta = item.getItemMeta();
+                meta.setDisplayName("§bLasso de Capture");
+                item.setItemMeta(meta);
+            } else if (type.equals("baton")) {
+                item = new org.bukkit.inventory.ItemStack(org.bukkit.Material.BLAZE_ROD);
+                org.bukkit.inventory.meta.ItemMeta meta = item.getItemMeta();
+                meta.setDisplayName("§6Bâton de Modération");
+                item.setItemMeta(meta);
+            } else if (type.equals("pioche")) {
+                item = new org.bukkit.inventory.ItemStack(org.bukkit.Material.DIAMOND_PICKAXE);
+                org.bukkit.inventory.meta.ItemMeta meta = item.getItemMeta();
+                meta.setDisplayName("§dPioche à Spawner");
+                item.setItemMeta(meta);
+            }
+            if (item != null) {
+                player.getInventory().addItem(item);
+                player.sendMessage("§aItem reçu.");
+            } else {
+                player.sendMessage("§cType inconnu.");
+            }
         } else if (sub.equalsIgnoreCase("reload")) {
             plugin.reloadConfig();
             player.sendMessage("§aConfiguration rechargée.");

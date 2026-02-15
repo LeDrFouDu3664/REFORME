@@ -59,6 +59,12 @@ public class ShopGUI {
                 "§7Prix Vente: §c0$",
                 "§7Permet de capturer un animal", "§7sauvage comme compagnon.",
                 "§8Clic Gauche: Acheter"));
+            inv.setItem(11, createItem(Material.DIAMOND_PICKAXE, "§dPioche à Spawner",
+                "§7Quantité: §f1",
+                "§7Prix Achat: §a50000$",
+                "§7Prix Vente: §c0$",
+                "§7Permet de récupérer les spawners.",
+                "§8Clic Gauche: Acheter"));
         }
 
         player.openInventory(inv);

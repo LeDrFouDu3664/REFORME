@@ -74,6 +74,9 @@ public class FactionPlugin extends JavaPlugin {
         getCommand("ignore").setExecutor(misc);
         getCommand("shop").setExecutor(misc);
         getCommand("boutique").setExecutor(misc);
+        getCommand("eco").setExecutor(misc);
+        getCommand("mod").setExecutor(misc);
+        getCommand("ec").setExecutor(misc);
         getCommand("jobs").setExecutor(new JobCommand(this));
         getCommand("quests").setExecutor(new QuestCommand(this));
         getCommand("ah").setExecutor(new AuctionCommand(this));
@@ -91,6 +94,7 @@ public class FactionPlugin extends JavaPlugin {
         Bukkit.getPluginManager().registerEvents(new AntiCheatListener(this), this);
         Bukkit.getPluginManager().registerEvents(new XRayListener(this), this);
         Bukkit.getPluginManager().registerEvents(new ModerationListener(this), this);
+        Bukkit.getPluginManager().registerEvents(new SpawnerListener(this), this);
     }
 
     private void startTasks() {

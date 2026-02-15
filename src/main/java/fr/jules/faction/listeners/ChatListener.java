@@ -24,12 +24,28 @@ public class ChatListener implements Listener {
     public void onChat(AsyncChatEvent event) {
         Player player = event.getPlayer();
         PlayerData data = plugin.getPlayerManager().getPlayerData(player.getUniqueId());
-        String mode = data.getChatMode();
+        String message = PlainTextComponentSerializer.plainText().serialize(event.message());
 
+        // Anti-Spam
+        if (!player.hasPermission("faction.staff")) {
+            if (System.currentTimeMillis() - data.getLastMessageTime() < 2000) { // 2s cooldown
+                event.setCancelled(true);
+                player.sendMessage("§cMerci de ne pas spammer ! (2s)");
+                return;
+            }
+            if (message.equalsIgnoreCase(data.getLastMessageContent())) {
+                event.setCancelled(true);
+                player.sendMessage("§cNe répétez pas le même message !");
+                return;
+            }
+        }
+        data.setLastMessageTime(System.currentTimeMillis());
+        data.setLastMessageContent(message);
+
+        String mode = data.getChatMode();
         if (mode.equalsIgnoreCase("PUBLIC")) return;
 
         event.setCancelled(true);
-        String message = PlainTextComponentSerializer.plainText().serialize(event.message());
 
         if (data.getFactionId() == null) {
             MessageUtils.sendMessage(player, "not-in-faction");

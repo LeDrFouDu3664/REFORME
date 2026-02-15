@@ -5,6 +5,7 @@ import fr.jules.faction.model.Claim;
 import fr.jules.faction.model.Faction;
 import fr.jules.faction.model.PlayerData;
 import fr.jules.faction.utils.MessageUtils;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -25,6 +26,42 @@ public class ProtectionListener implements Listener {
         if (!canPerformAction(event.getPlayer(), event.getBlock().getLocation(), "DESTROY")) {
             event.setCancelled(true);
             MessageUtils.sendMessage(event.getPlayer(), "claim-protection");
+        } else {
+            // AUTO_PLANT logic
+            handleAutoPlant(event);
+        }
+    }
+
+    private void handleAutoPlant(BlockBreakEvent event) {
+        Player player = event.getPlayer();
+        org.bukkit.block.Block block = event.getBlock();
+        org.bukkit.Material type = block.getType();
+
+        if (type == org.bukkit.Material.WHEAT || type == org.bukkit.Material.CARROTS || type == org.bukkit.Material.POTATOES || type == org.bukkit.Material.NETHER_WART) {
+            org.bukkit.block.data.Ageable ageable = (org.bukkit.block.data.Ageable) block.getBlockData();
+            if (ageable.getAge() == ageable.getMaximumAge()) {
+                PlayerData data = plugin.getPlayerManager().getPlayerData(player.getUniqueId());
+                if (data.getFactionId() != null) {
+                    Faction f = plugin.getFactionManager().getFaction(data.getFactionId());
+                    if (f != null && f.getFactionFlags().getOrDefault("AUTO_PLANT", false)) {
+                        org.bukkit.Material seed = null;
+                        if (type == org.bukkit.Material.WHEAT) seed = org.bukkit.Material.WHEAT_SEEDS;
+                        else if (type == org.bukkit.Material.CARROTS) seed = org.bukkit.Material.CARROT;
+                        else if (type == org.bukkit.Material.POTATOES) seed = org.bukkit.Material.POTATO;
+                        else if (type == org.bukkit.Material.NETHER_WART) seed = org.bukkit.Material.NETHER_WART;
+
+                        if (seed != null) {
+                            org.bukkit.Material finalSeed = seed;
+                            Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                                block.setType(type);
+                                org.bukkit.block.data.Ageable newAge = (org.bukkit.block.data.Ageable) block.getBlockData();
+                                newAge.setAge(0);
+                                block.setBlockData(newAge);
+                            }, 2L);
+                        }
+                    }
+                }
+            }
         }
     }
 

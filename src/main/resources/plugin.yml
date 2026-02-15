@@ -44,6 +44,8 @@ commands:
     description: Gérer l'économie.
   mod:
     description: Menu de modération.
+  ec:
+    description: Ouvrir son ender chest.
 
 permissions:
   faction.command.*:
@@ -85,6 +87,7 @@ permissions:
       faction.command.ah: true
       faction.command.eco: true
       faction.command.mod: true
+      faction.command.ec: true
   faction.admin:
     description: Accès aux commandes d'administration faction.
     default: op

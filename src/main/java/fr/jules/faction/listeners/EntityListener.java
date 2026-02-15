@@ -30,28 +30,15 @@ public class EntityListener implements Listener {
         if (claim == null) return;
 
         Faction owner = plugin.getFactionManager().getFaction(claim.getFactionId());
-        if (owner != null && !owner.getFactionFlags().getOrDefault("explosions", true)) {
+        // MOB_GRIEFING flag (true = allowed, false = protected)
+        if (owner != null && !owner.getFactionFlags().getOrDefault("MOB_GRIEFING", false)) {
             event.setCancelled(true);
         }
     }
 
     @EventHandler
     public void onSpawn(EntitySpawnEvent event) {
-        String world = event.getLocation().getWorld().getName();
-        int x = event.getLocation().getChunk().getX();
-        int z = event.getLocation().getChunk().getZ();
-
-        Claim claim = plugin.getClaimManager().getClaim(world, x, z);
-        if (claim == null) return;
-
-        Faction owner = plugin.getFactionManager().getFaction(claim.getFactionId());
-        if (owner == null) return;
-
-        if (event.getEntity() instanceof Monster && !owner.getFactionFlags().getOrDefault("monsters", true)) {
-            event.setCancelled(true);
-        } else if (event.getEntity() instanceof Animals && !owner.getFactionFlags().getOrDefault("animals", true)) {
-            event.setCancelled(true);
-        }
+        // We keep normal spawn for now, but obey MOB_GRIEFING for certain things
     }
 
     @EventHandler

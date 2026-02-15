@@ -31,13 +31,14 @@ public class FactionTabCompleter implements TabCompleter {
             String sub = args[0].toLowerCase();
             if (sub.equals("invite")) return Arrays.asList("add", "revoke");
             if (sub.equals("claim") || sub.equals("unclaim")) return Arrays.asList("one", "all", "auto", "radius");
-            if (sub.equals("admin")) return Arrays.asList("disband", "bypass", "setpower", "setchateau", "setforteresse");
+            if (sub.equals("admin")) return Arrays.asList("disband", "bypass", "setpower", "setchateau", "setforteresse", "give");
             if (sub.equals("chat")) return Arrays.asList("faction", "truce", "ally", "public");
         }
 
         if (args.length == 3) {
             String sub = args[0].toLowerCase();
             if (sub.equals("relation")) return Arrays.asList("ally", "enemy", "truce", "neutral");
+            if (sub.equals("admin") && args[1].equalsIgnoreCase("give")) return Arrays.asList("lasso", "baton", "pioche");
         }
 
         return new ArrayList<>();

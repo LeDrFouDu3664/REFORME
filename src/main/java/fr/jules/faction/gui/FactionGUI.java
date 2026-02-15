@@ -151,11 +151,11 @@ public class FactionGUI {
         boolean ff = faction.getFactionFlags().getOrDefault("friendlyFire", false);
         inv.setItem(12, createItem(ff ? Material.IRON_SWORD : Material.WOODEN_SWORD, "§efriendlyFire", "§7Feu ami activé", "§7Statut: " + (ff ? "§aActivé" : "§cDésactivé")));
 
-        boolean explosions = faction.getFactionFlags().getOrDefault("explosions", true);
-        inv.setItem(13, createItem(explosions ? Material.TNT : Material.GUNPOWDER, "§eexplosions", "§7Explosions activées", "§7Statut: " + (explosions ? "§aActivé" : "§cDésactivé")));
+        boolean autoPlant = faction.getFactionFlags().getOrDefault("AUTO_PLANT", false);
+        inv.setItem(13, createItem(autoPlant ? Material.WHEAT : Material.WHEAT_SEEDS, "§eAUTO_PLANT", "§7Replantation automatique", "§7Statut: " + (autoPlant ? "§aActivé" : "§cDésactivé")));
 
-        boolean monsters = faction.getFactionFlags().getOrDefault("monsters", true);
-        inv.setItem(14, createItem(monsters ? Material.ZOMBIE_HEAD : Material.SKELETON_SKULL, "§emonsters", "§7Apparition monstres", "§7Statut: " + (monsters ? "§aActivé" : "§cDésactivé")));
+        boolean mobGriefing = faction.getFactionFlags().getOrDefault("MOB_GRIEFING", false);
+        inv.setItem(14, createItem(mobGriefing ? Material.CREEPER_HEAD : Material.DIRT, "§eMOB_GRIEFING", "§7Dégâts blocs par mobs", "§7Statut: " + (mobGriefing ? "§aActivé" : "§cDésactivé")));
 
         inv.setItem(15, createItem(Material.OAK_SIGN, "§eDescription", "§7Modifier la description", "§7Actuel: §f" + faction.getDescription()));
         inv.setItem(16, createItem(Material.PAPER, "§eMOTD", "§7Modifier le message de connexion", "§7Actuel: §f" + faction.getMotd()));
@@ -195,7 +195,7 @@ public class FactionGUI {
                 allowed = faction.hasPermission(fr.jules.faction.model.Grade.valueOf(target), action);
             }
 
-            inv.setItem(slot++, createItem(allowed ? Material.LIME_STAINED_GLASS_PANE : Material.RED_STAINED_GLASS_PANE, "§e" + action, "§7Autorisé: " + (allowed ? "§aOui" : "§cNon")));
+            inv.setItem(slot++, createItem(allowed ? Material.LIME_DYE : Material.RED_DYE, "§e" + action, "§7Autorisé: " + (allowed ? "§aOui" : "§cNon")));
         }
 
         player.openInventory(inv);
@@ -262,9 +262,10 @@ public class FactionGUI {
 
         for (int i = 0; i < pets.length; i++) {
             boolean owned = data.getOwnedPets().contains(pets[i]);
-            inv.setItem(slots[i], createItem(icons[i], "§e" + pets[i],
+            inv.setItem(slots[i], createItem(owned ? icons[i] : Material.BARRIER,
+                "§e" + pets[i],
                 "§7Bonus: " + bonuses[i],
-                owned ? "§aPossédé - Clic pour invoquer" : "§cNon possédé - Capturez-en un ou adoptez (5000$)"));
+                owned ? "§aPossédé - Clic pour invoquer" : "§cVerrouillé - Capturez-le avec un Lasso !"));
         }
 
         inv.setItem(4, createItem(Material.BARRIER, "§cRenvoyer", "§7Faire disparaitre le familier"));

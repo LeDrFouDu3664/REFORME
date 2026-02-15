@@ -65,6 +65,10 @@ public class MiscCommands implements CommandExecutor {
             case "mod":
                 handleMod(player);
                 break;
+            case "ec":
+                player.openInventory(player.getEnderChest());
+                player.sendMessage("§aOuverture de l'ender chest.");
+                break;
         }
         return true;
     }

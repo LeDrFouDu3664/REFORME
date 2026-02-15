@@ -98,6 +98,9 @@ public class GUIListener implements Listener {
             case "MOD_ACTIONS":
                 handleModActionsClick(player, name, (Player) holder.getData());
                 break;
+            case "SPAWNER":
+                handleSpawnerClick(player, name, (org.bukkit.block.Block) holder.getData(), event);
+                break;
         }
     }
 
@@ -171,6 +174,9 @@ public class GUIListener implements Listener {
 
         boolean current = faction.getFactionFlags().getOrDefault(permName, false);
         if (permName.equals("ALLY_HOME")) current = faction.getFactionFlags().getOrDefault("ALLY_HOME", true);
+
+        // Correct default for mob griefing might be false (safe by default)
+        if (permName.equals("MOB_GRIEFING")) current = faction.getFactionFlags().getOrDefault("MOB_GRIEFING", false);
 
         faction.getFactionFlags().put(permName, !current);
         player.sendMessage("§aOption " + permName + " passée à: " + (!current));
@@ -352,16 +358,7 @@ public class GUIListener implements Listener {
                 plugin.getPetManager().spawnPet(player, type);
                 player.closeInventory();
             } else {
-                // Adoption
-                double cost = 5000;
-                if (plugin.getEconomyManager().has(player, cost)) {
-                    plugin.getEconomyManager().withdraw(player, cost);
-                    data.getOwnedPets().add(type);
-                    player.sendMessage("§aVous avez adopté un §e" + type + " §a!");
-                    fr.jules.faction.gui.FactionGUI.openPetMenu(player, data);
-                } else {
-                    player.sendMessage("§cPas assez d'argent pour adopter (5000$).");
-                }
+                player.sendMessage("§cVous ne possédez pas cet animal. Capturez-le d'abord !");
             }
         }
     }
@@ -538,6 +535,68 @@ public class GUIListener implements Listener {
             target.kickPlayer("§cBanni du serveur.");
             staff.closeInventory();
         }
+    }
+
+    private void handleSpawnerClick(Player player, String name, org.bukkit.block.Block spawner, InventoryClickEvent event) {
+        if (name.contains("Statut")) {
+            if (spawner.hasMetadata("inactive")) {
+                spawner.removeMetadata("inactive", plugin);
+                player.sendMessage("§aSpawner activé !");
+            } else {
+                spawner.setMetadata("inactive", new org.bukkit.metadata.FixedMetadataValue(plugin, true));
+                player.sendMessage("§cSpawner désactivé !");
+            }
+            fr.jules.faction.gui.SpawnerGUI.openSpawnerMenu(player, spawner);
+        } else if (name.contains("Récupérer")) {
+            boolean hasPickaxe = false;
+            org.bukkit.inventory.ItemStack pick = player.getInventory().getItemInMainHand();
+            if (pick.getType() == org.bukkit.Material.DIAMOND_PICKAXE && pick.hasItemMeta() && pick.getItemMeta().getDisplayName().contains("Pioche à Spawner")) {
+                hasPickaxe = true;
+            }
+
+            if (hasPickaxe) {
+                giveSpawner(player, spawner);
+            } else if (event.getClick().isRightClick()) {
+                if (plugin.getEconomyManager().has(player, 25000)) {
+                    plugin.getEconomyManager().withdraw(player, 25000);
+                    giveSpawner(player, spawner);
+                } else {
+                    player.sendMessage("§cPas assez d'argent (25000$).");
+                }
+            } else {
+                player.sendMessage("§cVous n'avez pas la pioche spéciale !");
+            }
+        } else if (name.contains("Acheter")) {
+            if (plugin.getEconomyManager().has(player, 50000)) {
+                plugin.getEconomyManager().withdraw(player, 50000);
+                org.bukkit.inventory.ItemStack item = new org.bukkit.inventory.ItemStack(org.bukkit.Material.DIAMOND_PICKAXE);
+                org.bukkit.inventory.meta.ItemMeta meta = item.getItemMeta();
+                meta.setDisplayName("§dPioche à Spawner");
+                item.setItemMeta(meta);
+                player.getInventory().addItem(item);
+                player.sendMessage("§aPioche achetée !");
+            } else {
+                player.sendMessage("§cPas assez d'argent (50000$).");
+            }
+        }
+    }
+
+    private void giveSpawner(Player player, org.bukkit.block.Block block) {
+        org.bukkit.block.CreatureSpawner cs = (org.bukkit.block.CreatureSpawner) block.getState();
+        org.bukkit.entity.EntityType type = cs.getSpawnedType();
+
+        org.bukkit.inventory.ItemStack item = new org.bukkit.inventory.ItemStack(org.bukkit.Material.SPAWNER);
+        org.bukkit.inventory.meta.BlockStateMeta meta = (org.bukkit.inventory.meta.BlockStateMeta) item.getItemMeta();
+        org.bukkit.block.CreatureSpawner metaCs = (org.bukkit.block.CreatureSpawner) meta.getBlockState();
+        metaCs.setSpawnedType(type);
+        meta.setBlockState(metaCs);
+        meta.setDisplayName("§eSpawner: §b" + type.name());
+        item.setItemMeta(meta);
+
+        block.setType(org.bukkit.Material.AIR);
+        player.getInventory().addItem(item);
+        player.sendMessage("§aSpawner récupéré !");
+        player.closeInventory();
     }
 
     private void handleBoutiqueClick(Player player, InventoryClickEvent event) {
