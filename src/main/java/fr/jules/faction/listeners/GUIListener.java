@@ -336,6 +336,8 @@ public class GUIListener implements Listener {
     }
 
     private void handlePetMenuClick(Player player, String name, PlayerData data, Faction faction) {
+        String petId = name; // Color already stripped in onInventoryClick
+
         if (name.equalsIgnoreCase("Retour")) {
             if (faction != null) fr.jules.faction.gui.FactionGUI.openMainMenu(player, faction);
             else player.closeInventory();
@@ -347,19 +349,11 @@ public class GUIListener implements Listener {
             return;
         }
 
-        String type = null;
-        if (name.contains("LOUP")) type = "LOUP";
-        else if (name.contains("CHAT")) type = "CHAT";
-        else if (name.contains("PERROQUET")) type = "PERROQUET";
-        else if (name.contains("RENARD")) type = "RENARD";
-
-        if (type != null) {
-            if (data.getOwnedPets().contains(type)) {
-                plugin.getPetManager().spawnPet(player, type);
-                player.closeInventory();
-            } else {
-                player.sendMessage("§cVous ne possédez pas cet animal. Capturez-le d'abord !");
-            }
+        if (data.getCapturedPets().containsKey(petId)) {
+            plugin.getPetManager().spawnPet(player, petId);
+            player.closeInventory();
+        } else if (!name.equalsIgnoreCase("Pas de compagnon")) {
+            player.sendMessage("§cVous ne possédez pas cet animal. Capturez-le d'abord !");
         }
     }
 
@@ -515,6 +509,17 @@ public class GUIListener implements Listener {
     }
 
     private void handleModActionsClick(Player staff, String action, Player target) {
+        if (target.getUniqueId().equals(staff.getUniqueId())) {
+            staff.sendMessage("§cAction impossible sur vous-même !");
+            return;
+        }
+
+        // Hierarchy check
+        if (target.hasPermission("faction.admin") && !staff.isOp()) {
+            staff.sendMessage("§cVous ne pouvez pas agir sur un administrateur !");
+            return;
+        }
+
         if (action.contains("Inventaire")) {
             staff.openInventory(target.getInventory());
         } else if (action.contains("Freeze")) {

@@ -105,7 +105,46 @@ public class MiscCommands implements CommandExecutor {
 
     private void handleMod(Player player) {
         if (!player.hasPermission("faction.staff")) return;
-        fr.jules.faction.gui.ModGUI.openModMenu(player);
+        PlayerData data = plugin.getPlayerManager().getPlayerData(player.getUniqueId());
+
+        if (!data.isStaffMode()) {
+            // Activate Staff Mode
+            data.setStaffMode(true);
+            data.setSavedInventory(player.getInventory().getContents());
+            data.setSavedArmor(player.getInventory().getArmorContents());
+
+            player.getInventory().clear();
+
+            player.getInventory().setItem(0, createStaffItem(org.bukkit.Material.COMPASS, "§bVanish", "§7Clic pour alterner"));
+            player.getInventory().setItem(1, createStaffItem(org.bukkit.Material.PACKED_ICE, "§bFreeze", "§7Clic droit sur joueur"));
+            player.getInventory().setItem(2, createStaffItem(org.bukkit.Material.CHEST, "§eInvSee", "§7Clic droit sur joueur"));
+            player.getInventory().setItem(4, createStaffItem(org.bukkit.Material.BOOK, "§6Outils Modération", "§7Ouvrir le menu"));
+            player.getInventory().setItem(8, createStaffItem(org.bukkit.Material.BARRIER, "§cQuitter Staff Mode", "§7Désactiver"));
+
+            player.sendMessage("§a§l[Staff] §aMode Staff activé.");
+        } else {
+            // Deactivate Staff Mode
+            data.setStaffMode(false);
+            player.getInventory().clear();
+            if (data.getSavedInventory() != null) player.getInventory().setContents(data.getSavedInventory());
+            if (data.getSavedArmor() != null) player.getInventory().setArmorContents(data.getSavedArmor());
+
+            if (player.hasMetadata("vanished")) {
+                player.removeMetadata("vanished", plugin);
+                Bukkit.getOnlinePlayers().forEach(p -> p.showPlayer(plugin, player));
+            }
+
+            player.sendMessage("§c§l[Staff] §cMode Staff désactivé. Inventaire restauré.");
+        }
+    }
+
+    private ItemStack createStaffItem(org.bukkit.Material material, String name, String lore) {
+        ItemStack item = new ItemStack(material);
+        org.bukkit.inventory.meta.ItemMeta meta = item.getItemMeta();
+        meta.setDisplayName(name);
+        meta.setLore(java.util.Collections.singletonList(lore));
+        item.setItemMeta(meta);
+        return item;
     }
 
     private void handleBoutique(Player player) {

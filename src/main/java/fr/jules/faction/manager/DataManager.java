@@ -162,7 +162,17 @@ public class DataManager {
         config.set("jobLevel", data.getJobLevel());
         config.set("questProgress", data.getQuestProgress());
         config.set("powers", new ArrayList<>(data.getPowers()));
-        config.set("ownedPets", new ArrayList<>(data.getOwnedPets()));
+
+        Map<String, Map<String, Object>> petsMap = new HashMap<>();
+        data.getCapturedPets().forEach((k, v) -> {
+            Map<String, Object> pi = new HashMap<>();
+            pi.put("type", v.getType());
+            pi.put("variant", v.getVariant());
+            pi.put("baby", v.isBaby());
+            petsMap.put(k, pi);
+        });
+        config.set("capturedPets", petsMap);
+
         config.set("petCooldown", data.getPetCooldown());
         config.set("showTitles", data.isShowTitles());
         config.set("powerBoost", data.getPowerBoost());
@@ -195,7 +205,17 @@ public class DataManager {
         data.setJobExp(config.getDouble("jobExp", 0));
         data.setJobLevel(config.getInt("jobLevel", 1));
         data.getPowers().addAll(config.getStringList("powers"));
-        data.getOwnedPets().addAll(config.getStringList("ownedPets"));
+
+        ConfigurationSection petsSec = config.getConfigurationSection("capturedPets");
+        if (petsSec != null) {
+            for (String key : petsSec.getKeys(false)) {
+                String type = petsSec.getString(key + ".type");
+                String variant = petsSec.getString(key + ".variant");
+                boolean baby = petsSec.getBoolean(key + ".baby");
+                data.getCapturedPets().put(key, new PetInfo(type, variant, baby));
+            }
+        }
+
         data.setPetCooldown(config.getLong("petCooldown", 0));
         data.setShowTitles(config.getBoolean("showTitles", true));
         ConfigurationSection questSec = config.getConfigurationSection("questProgress");

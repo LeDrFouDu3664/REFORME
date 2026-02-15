@@ -767,6 +767,7 @@ public class FactionCommand implements CommandExecutor {
             player.sendMessage("§e/f admin eco [give|take|set] [joueur] [montant] §7- Économie");
             player.sendMessage("§e/f admin disband [faction] §7- Dissoudre une faction");
             player.sendMessage("§e/f admin give [lasso|baton|pioche] §7- Give item spécial");
+            player.sendMessage("§e/f admin clearlag §7- Nettoyage immédiat");
             player.sendMessage("§e/f admin reload §7- Recharger la config");
             return;
         }
@@ -852,6 +853,17 @@ public class FactionCommand implements CommandExecutor {
             } else {
                 player.sendMessage("§cType inconnu.");
             }
+        } else if (sub.equalsIgnoreCase("clearlag")) {
+            int count = 0;
+            for (org.bukkit.World world : Bukkit.getWorlds()) {
+                for (org.bukkit.entity.Entity entity : world.getEntities()) {
+                    if (entity instanceof org.bukkit.entity.Item) {
+                        entity.remove();
+                        count++;
+                    }
+                }
+            }
+            player.sendMessage("§a§l[ClearLag] §eNettoyage manuel effectué: §6" + count + " §eitems supprimés.");
         } else if (sub.equalsIgnoreCase("reload")) {
             plugin.reloadConfig();
             player.sendMessage("§aConfiguration rechargée.");

@@ -71,26 +71,53 @@ public class PlayerListener implements Listener {
 
         if (item.getType() == org.bukkit.Material.LEAD && item.hasItemMeta() && item.getItemMeta().getDisplayName().contains("Lasso de Capture")) {
             Entity entity = event.getRightClicked();
-            String type = null;
-            if (entity instanceof Wolf) type = "LOUP";
-            else if (entity instanceof Cat) type = "CHAT";
-            else if (entity instanceof Parrot) type = "PERROQUET";
-            else if (entity instanceof Fox) type = "RENARD";
 
-            if (type != null) {
+            // Allow capturing any Animals, Ambient, Fish, non-hostile
+            if (entity instanceof org.bukkit.entity.Animals || entity instanceof org.bukkit.entity.Ambient || entity instanceof org.bukkit.entity.Fish) {
+                if (entity instanceof org.bukkit.entity.Monster) return; // Protection against hostile animals like Polar Bears or Wolves when angry (though they are Animals)
+
+                if (entity instanceof Wolf && ((Wolf) entity).isAngry()) return;
+
                 event.setCancelled(true);
                 PlayerData data = plugin.getPlayerManager().getPlayerData(player.getUniqueId());
-                if (data.getOwnedPets().contains(type)) {
-                    player.sendMessage("§cVous possédez déjà ce type d'animal.");
-                } else {
-                    data.getOwnedPets().add(type);
-                    item.setAmount(item.getAmount() - 1);
-                    entity.remove();
-                    player.sendMessage("§aFélicitations ! Vous avez capturé un §e" + type + " §a!");
-                    plugin.getDataManager().savePlayerData(data);
+
+                String petId = entity.getType().name() + "_" + entity.getEntityId();
+                if (data.getCapturedPets().containsKey(petId)) {
+                    player.sendMessage("§cAnimal déjà capturé !");
+                    return;
                 }
+
+                String variant = getVariant(entity);
+                boolean baby = false;
+                if (entity instanceof Ageable) baby = !((Ageable) entity).isAdult();
+
+                fr.jules.faction.model.PetInfo info = new fr.jules.faction.model.PetInfo(entity.getType().name(), variant, baby);
+                data.getCapturedPets().put(entity.getType().name() + " (" + (variant != null ? variant : "Défaut") + ") [" + UUID.randomUUID().toString().substring(0, 4) + "]", info);
+
+                item.setAmount(item.getAmount() - 1);
+                entity.remove();
+                player.sendMessage("§aFélicitations ! Vous avez capturé un §e" + entity.getType().name() + " §a!");
+                plugin.getDataManager().savePlayerData(data);
             }
         }
+    }
+
+    private String getVariant(Entity entity) {
+        try {
+            if (entity instanceof Cat) return ((Cat) entity).getCatType().name();
+            if (entity instanceof Parrot) return ((Parrot) entity).getVariant().name();
+            if (entity instanceof Fox) return ((Fox) entity).getFoxType().name();
+            if (entity instanceof Rabbit) return ((Rabbit) entity).getRabbitType().name();
+            if (entity instanceof Llama) return ((Llama) entity).getColor().name();
+            if (entity instanceof Wolf) return ((Wolf) entity).getVariant().getKey().getKey().toUpperCase();
+            if (entity instanceof Horse) return ((Horse) entity).getColor().name();
+            if (entity instanceof Sheep) return ((Sheep) entity).getColor().name();
+            if (entity instanceof MushroomCow) return ((MushroomCow) entity).getVariant().name();
+            if (entity instanceof Axolotl) return ((Axolotl) entity).getVariant().name();
+            if (entity instanceof Frog) return ((Frog) entity).getVariant().getKey().getKey().toUpperCase();
+            if (entity instanceof Villager) return ((Villager) entity).getVillagerType().name();
+        } catch (Exception ignored) {}
+        return null;
     }
 
     @EventHandler

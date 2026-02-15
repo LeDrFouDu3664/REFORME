@@ -26,7 +26,7 @@ public class PlayerData {
     private long lastQuestRefresh = 0;
     private Set<String> powers = new HashSet<>();
     private String currentPet = "NONE";
-    private Set<String> ownedPets = new HashSet<>();
+    private Map<String, PetInfo> capturedPets = new HashMap<>();
     private long petCooldown = 0;
     private boolean bypass = false;
     private boolean autoClaim = false;
@@ -36,6 +36,9 @@ public class PlayerData {
     private long combatLoggedTime = 0;
     private long lastMessageTime = 0;
     private String lastMessageContent = "";
+    private boolean staffMode = false;
+    private org.bukkit.inventory.ItemStack[] savedInventory = null;
+    private org.bukkit.inventory.ItemStack[] savedArmor = null;
 
     public void addPower(double amount) {
         this.power = Math.min(this.maxPower, this.power + amount);

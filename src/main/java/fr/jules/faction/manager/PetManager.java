@@ -20,7 +20,7 @@ public class PetManager {
         startFollowTask();
     }
 
-    public void spawnPet(Player player, String type) {
+    public void spawnPet(Player player, String petId) {
         PlayerData data = plugin.getPlayerManager().getPlayerData(player.getUniqueId());
 
         long remaining = (data.getPetCooldown() - System.currentTimeMillis()) / 1000;
@@ -29,60 +29,74 @@ public class PetManager {
             return;
         }
 
-        if (!data.getOwnedPets().contains(type.toUpperCase())) {
+        fr.jules.faction.model.PetInfo info = data.getCapturedPets().get(petId);
+        if (info == null) {
             player.sendMessage("§cVous ne possédez pas cet animal.");
             return;
         }
 
         despawnPet(player);
 
-        Entity pet;
-        switch (type.toUpperCase()) {
-            case "LOUP":
-                Wolf wolf = (Wolf) player.getWorld().spawnEntity(player.getLocation(), EntityType.WOLF);
-                wolf.setTamed(true);
-                wolf.setOwner(player);
-                wolf.setBaby();
-                wolf.setAgeLock(true);
-                wolf.setCustomName("§c§lCompagnon de " + player.getName());
-                wolf.setCustomNameVisible(true);
-                pet = wolf;
-                break;
-            case "CHAT":
-                Cat cat = (Cat) player.getWorld().spawnEntity(player.getLocation(), EntityType.CAT);
-                cat.setTamed(true);
-                cat.setOwner(player);
-                cat.setBaby();
-                cat.setAgeLock(true);
-                cat.setCustomName("§c§lFélin de " + player.getName());
-                cat.setCustomNameVisible(true);
-                pet = cat;
-                break;
-            case "PERROQUET":
-                Parrot parrot = (Parrot) player.getWorld().spawnEntity(player.getLocation(), EntityType.PARROT);
-                parrot.setTamed(true);
-                parrot.setOwner(player);
-                // Parrots don't have baby state in standard Bukkit API easily or at all
-                parrot.setCustomName("§c§lPlume de " + player.getName());
-                parrot.setCustomNameVisible(true);
-                pet = parrot;
-                break;
-            case "RENARD":
-                Fox fox = (Fox) player.getWorld().spawnEntity(player.getLocation(), EntityType.FOX);
-                fox.setBaby();
-                fox.setAgeLock(true);
-                fox.setCustomName("§c§lRusé de " + player.getName());
-                fox.setCustomNameVisible(true);
-                pet = fox;
-                break;
-            default:
-                return;
+        EntityType et;
+        try {
+            et = EntityType.valueOf(info.getType());
+        } catch (Exception e) {
+            return;
         }
 
+        Entity pet = player.getWorld().spawnEntity(player.getLocation(), et);
+        pet.setCustomName("§c§lCompagnon de " + player.getName());
+        pet.setCustomNameVisible(true);
+
+        if (pet instanceof Tameable tameable) {
+            tameable.setTamed(true);
+            tameable.setOwner(player);
+        }
+
+        if (pet instanceof Ageable ageable) {
+            if (info.isBaby()) ageable.setBaby();
+            else ageable.setAdult();
+            ageable.setAgeLock(true);
+        }
+
+        applyVariant(pet, info.getVariant());
+
         activePets.put(player.getUniqueId(), pet);
-        data.setCurrentPet(type.toUpperCase());
+        data.setCurrentPet(petId);
         data.setPetCooldown(System.currentTimeMillis() + 300000); // 5 min cooldown
-        player.sendMessage("§aVotre animal de compagnie §e" + type + " §aa été invoqué ! (Bébé)");
+        player.sendMessage("§aVotre animal de compagnie §e" + petId + " §aa été invoqué !");
+    }
+
+    private void applyVariant(Entity entity, String variant) {
+        if (variant == null || variant.isEmpty()) return;
+        try {
+            if (entity instanceof Cat cat) {
+                cat.setCatType(org.bukkit.entity.Cat.Type.valueOf(variant));
+            } else if (entity instanceof Parrot parrot) {
+                parrot.setVariant(org.bukkit.entity.Parrot.Variant.valueOf(variant));
+            } else if (entity instanceof Fox fox) {
+                fox.setFoxType(org.bukkit.entity.Fox.Type.valueOf(variant));
+            } else if (entity instanceof Rabbit rabbit) {
+                rabbit.setRabbitType(org.bukkit.entity.Rabbit.Type.valueOf(variant));
+            } else if (entity instanceof Llama llama) {
+                llama.setColor(org.bukkit.entity.Llama.Color.valueOf(variant));
+            } else if (entity instanceof Wolf wolf) {
+                // In 1.21.1 Wolf has variants
+                wolf.setVariant(org.bukkit.Registry.WOLF_VARIANT.get(org.bukkit.NamespacedKey.minecraft(variant.toLowerCase())));
+            } else if (entity instanceof Horse horse) {
+                horse.setColor(org.bukkit.entity.Horse.Color.valueOf(variant));
+            } else if (entity instanceof Sheep sheep) {
+                sheep.setColor(org.bukkit.DyeColor.valueOf(variant));
+            } else if (entity instanceof MushroomCow mc) {
+                mc.setVariant(org.bukkit.entity.MushroomCow.Variant.valueOf(variant));
+            } else if (entity instanceof Axolotl axo) {
+                axo.setVariant(org.bukkit.entity.Axolotl.Variant.valueOf(variant));
+            } else if (entity instanceof Frog frog) {
+                frog.setVariant(org.bukkit.Registry.FROG_VARIANT.get(org.bukkit.NamespacedKey.minecraft(variant.toLowerCase())));
+            } else if (entity instanceof Villager vil) {
+                vil.setVillagerType(org.bukkit.entity.Villager.Type.valueOf(variant));
+            }
+        } catch (Exception ignored) {}
     }
 
     public void despawnPet(Player player) {
@@ -107,12 +121,18 @@ public class PetManager {
                     pet.teleport(player.getLocation());
                 }
 
-                // Pet Buffs
-                String type = plugin.getPlayerManager().getPlayerData(player.getUniqueId()).getCurrentPet();
-                if (type.equals("LOUP")) player.addPotionEffect(new PotionEffect(PotionEffectType.STRENGTH, 40, 0, false, false));
-                if (type.equals("CHAT")) player.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 40, 0, false, false));
-                if (type.equals("PERROQUET")) player.addPotionEffect(new PotionEffect(PotionEffectType.JUMP_BOOST, 40, 0, false, false));
-                if (type.equals("RENARD")) player.addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, 300, 0, false, false));
+                // Pet Buffs based on type
+                String petId = plugin.getPlayerManager().getPlayerData(player.getUniqueId()).getCurrentPet();
+                fr.jules.faction.model.PetInfo info = plugin.getPlayerManager().getPlayerData(player.getUniqueId()).getCapturedPets().get(petId);
+                if (info == null) continue;
+
+                String type = info.getType();
+                if (type.equals("WOLF")) player.addPotionEffect(new PotionEffect(PotionEffectType.STRENGTH, 40, 0, false, false));
+                else if (type.equals("CAT")) player.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 40, 0, false, false));
+                else if (type.equals("PARROT")) player.addPotionEffect(new PotionEffect(PotionEffectType.JUMP_BOOST, 40, 0, false, false));
+                else if (type.equals("FOX")) player.addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, 300, 0, false, false));
+                else if (type.equals("SHEEP")) player.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 40, 0, false, false));
+                else player.addPotionEffect(new PotionEffect(PotionEffectType.LUCK, 40, 0, false, false));
             }
         }, 20, 20);
     }

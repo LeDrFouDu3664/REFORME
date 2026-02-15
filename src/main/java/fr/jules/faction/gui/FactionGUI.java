@@ -251,21 +251,35 @@ public class FactionGUI {
     }
 
     public static void openPetMenu(Player player, fr.jules.faction.model.PlayerData data) {
-        Inventory inv = Bukkit.createInventory(new FactionInventoryHolder("PETS", data), 27, "§c§lAnimaux de Compagnie");
+        Inventory inv = Bukkit.createInventory(new FactionInventoryHolder("PETS", data), 54, "§c§lVos Compagnons");
         fillBorder(inv);
-        inv.setItem(22, createItem(Material.SHEARS, "§7Retour", "§8Clic pour revenir"));
+        inv.setItem(49, createItem(Material.SHEARS, "§7Retour", "§8Clic pour revenir"));
 
-        String[] pets = {"LOUP", "CHAT", "PERROQUET", "RENARD"};
-        Material[] icons = {Material.BONE, Material.COD, Material.FEATHER, Material.SWEET_BERRIES};
-        String[] bonuses = {"Force I", "Vitesse I", "Saut I", "Vision Nocturne"};
-        int[] slots = {10, 12, 14, 16};
+        int slot = 10;
+        for (Map.Entry<String, fr.jules.faction.model.PetInfo> entry : data.getCapturedPets().entrySet()) {
+            if (slot >= 44) break;
+            if (slot % 9 == 0 || slot % 9 == 8) slot++;
 
-        for (int i = 0; i < pets.length; i++) {
-            boolean owned = data.getOwnedPets().contains(pets[i]);
-            inv.setItem(slots[i], createItem(owned ? icons[i] : Material.BARRIER,
-                "§e" + pets[i],
-                "§7Bonus: " + bonuses[i],
-                owned ? "§aPossédé - Clic pour invoquer" : "§cVerrouillé - Capturez-le avec un Lasso !"));
+            String petId = entry.getKey();
+            fr.jules.faction.model.PetInfo info = entry.getValue();
+
+            Material icon = Material.BONE;
+            try {
+                icon = Material.valueOf(info.getType() + "_SPAWN_EGG");
+            } catch (Exception e) {
+                if (info.getType().equals("WOLF")) icon = Material.BONE;
+                else if (info.getType().equals("CAT")) icon = Material.COD;
+                else icon = Material.EGG;
+            }
+
+            inv.setItem(slot++, createItem(icon, "§e" + petId,
+                "§7Type: §f" + info.getType(),
+                "§7Bébé: §f" + (info.isBaby() ? "Oui" : "Non"),
+                "§aClic pour invoquer"));
+        }
+
+        if (data.getCapturedPets().isEmpty()) {
+            inv.setItem(22, createItem(Material.BARRIER, "§cPas de compagnon", "§7Capturez des animaux sauvages", "§7avec un Lasso de Capture !"));
         }
 
         inv.setItem(4, createItem(Material.BARRIER, "§cRenvoyer", "§7Faire disparaitre le familier"));
