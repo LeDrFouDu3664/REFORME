@@ -480,53 +480,70 @@ public class FactionCommand implements CommandExecutor {
     }
 
     public boolean performClaim(Player player, Faction faction, String world, int x, int z, boolean ignoreAdjacencyCheck) {
+        // 1. Recalculer le Power pour être sûr à 100%
         plugin.getFactionManager().recalculatePower(faction, plugin.getPlayerManager());
+
+        // 2. Vérifier si on a déjà atteint la limite de Power
+        if (!player.hasPermission("faction.admin")) {
+            if (faction.getClaims().size() >= faction.getPower()) {
+                player.sendMessage("§cLimite de Power atteinte ! (" + String.format("%.1f", faction.getPower()) + " / " + faction.getClaims().size() + ")");
+                return false;
+            }
+        }
+
+        // 3. Vérifier les claims existants
         Claim existing = plugin.getClaimManager().getClaim(world, x, z);
         if (existing != null) {
-            if (existing.getFactionId().equals(faction.getId())) return false;
+            if (existing.getFactionId().equals(faction.getId())) {
+                if (!ignoreAdjacencyCheck) player.sendMessage("§7Vous possédez déjà ce territoire.");
+                return false;
+            }
 
             Faction owner = plugin.getFactionManager().getFaction(existing.getFactionId());
             if (owner != null && owner.getType() == FactionType.NORMAL) {
-                // Overclaim logic
+                // Overclaim logic: Seulement si ENNEMI et RAIDABLE
                 boolean isEnemy = "ENEMY".equals(faction.getRelations().get(owner.getId()));
+                plugin.getFactionManager().recalculatePower(owner, plugin.getPlayerManager());
                 boolean isRaidable = owner.getPower() < owner.getClaims().size();
 
                 if (isEnemy && isRaidable) {
                     player.sendMessage("§eSur-revendication en cours sur le territoire de " + owner.getName() + " !");
                     owner.getClaims().remove(world + "," + x + "," + z);
                     plugin.getClaimManager().removeClaim(world, x, z);
-                    // continue to claim below
+                    plugin.getDataManager().saveFaction(owner);
                 } else {
-                    player.sendMessage("§cCette parcelle appartient déjà à " + owner.getName() + ".");
+                    player.sendMessage("§cCe territoire appartient à " + owner.getName() + ".");
+                    if (isEnemy && !isRaidable) player.sendMessage("§7(La faction n'est pas raidable: " + String.format("%.1f", owner.getPower()) + " power / " + owner.getClaims().size() + " claims)");
                     return false;
                 }
-            } else {
+            } else if (owner != null) {
+                // SafeZone / WarZone / Wilderness spéciaux
+                player.sendMessage("§cVous ne pouvez pas claim ici (" + owner.getName() + ").");
                 return false;
             }
         }
 
+        // 4. Vérifier l'adjacence
         if (!faction.getClaims().isEmpty() && !player.hasPermission("faction.admin") && !ignoreAdjacencyCheck) {
             boolean adj = faction.getClaims().contains(world + "," + (x + 1) + "," + z) ||
                           faction.getClaims().contains(world + "," + (x - 1) + "," + z) ||
                           faction.getClaims().contains(world + "," + x + "," + (z + 1)) ||
                           faction.getClaims().contains(world + "," + x + "," + (z - 1));
             if (!adj) {
-                player.sendMessage("§cLa parcelle en " + x + "," + z + " n'est pas adjacente à votre territoire.");
+                player.sendMessage("§cLe territoire n'est pas adjacent à votre faction.");
                 return false;
             }
         }
 
-        if (faction.getPower() < faction.getClaims().size() + 1 && !player.hasPermission("faction.admin")) {
-            player.sendMessage("§cPas assez de Power (Requis: " + (faction.getClaims().size() + 1) + ", Actuel: " + String.format("%.1f", faction.getPower()) + ")");
-            return false;
-        }
-
+        // 5. Effectuer le claim
         Claim c = new Claim(world, x, z, faction.getId());
         plugin.getClaimManager().addClaim(c);
         faction.getClaims().add(c.toString());
+
         plugin.getQuestManager().progressQuest(player, "CLAIM_MASTER", 1);
         plugin.getDataManager().saveFaction(faction);
-        if (!ignoreAdjacencyCheck) player.sendMessage("§aParcelle revendiquée !");
+
+        if (!ignoreAdjacencyCheck) player.sendMessage("§aTerritoire revendiqué ! (§e" + faction.getClaims().size() + "§a/§e" + String.format("%.0f", faction.getPower()) + "§a)");
         return true;
     }
 

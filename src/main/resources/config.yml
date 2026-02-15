@@ -8,7 +8,7 @@ settings:
     min-default: -10.0
 
 messages:
-  prefix: "§6[Faction] "
+  prefix: "§6[TPC Faction] "
   no-permission: "§cVous n'avez pas la permission: %perm%"
   only-players: "§cSeuls les joueurs peuvent utiliser cette commande."
 

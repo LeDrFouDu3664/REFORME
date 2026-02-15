@@ -49,7 +49,7 @@ public class FactionPlugin extends JavaPlugin {
         registerListeners();
         startTasks();
 
-        getLogger().info("TPC faction a été activé !");
+        getLogger().info("TPC faction a été activé ! (Système de Claim/Power à 100%)");
     }
 
     private void registerCommands() {
@@ -116,6 +116,29 @@ public class FactionPlugin extends JavaPlugin {
             getLogger().info("Auto-sauvegarde des données...");
             dataManager.saveAll(factionManager, playerManager, claimManager);
         }, 6000L, 6000L);
+
+        // Clear Lag Task (Every 60 minutes)
+        startClearLagTask();
+    }
+
+    private void startClearLagTask() {
+        Bukkit.getScheduler().runTaskTimer(this, () -> {
+            Bukkit.broadcastMessage("§c§l[ClearLag] §eNettoyage des items au sol dans 30 secondes...");
+
+            Bukkit.getScheduler().runTaskLater(this, () -> {
+                int count = 0;
+                for (org.bukkit.World world : Bukkit.getWorlds()) {
+                    for (org.bukkit.entity.Entity entity : world.getEntities()) {
+                        if (entity instanceof org.bukkit.entity.Item) {
+                            entity.remove();
+                            count++;
+                        }
+                    }
+                }
+                Bukkit.broadcastMessage("§c§l[ClearLag] §aNettoyage terminé ! §e" + count + " §aitems supprimés.");
+            }, 20 * 30L); // 30 seconds later
+
+        }, 20 * 60 * 60L, 20 * 60 * 60L); // Every 60 minutes
     }
 
     @Override
