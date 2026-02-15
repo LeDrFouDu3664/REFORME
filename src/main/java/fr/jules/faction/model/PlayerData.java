@@ -26,6 +26,8 @@ public class PlayerData {
     private long lastQuestRefresh = 0;
     private Set<String> powers = new HashSet<>();
     private String currentPet = "NONE";
+    private Set<String> ownedPets = new HashSet<>();
+    private long petCooldown = 0;
     private boolean bypass = false;
     private boolean autoClaim = false;
     private boolean showTitles = true;

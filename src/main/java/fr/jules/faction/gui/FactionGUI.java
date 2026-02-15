@@ -250,15 +250,22 @@ public class FactionGUI {
         player.openInventory(inv);
     }
 
-    public static void openPetMenu(Player player) {
-        Inventory inv = Bukkit.createInventory(new FactionInventoryHolder("PETS", null), 27, "§c§lAnimaux de Compagnie");
+    public static void openPetMenu(Player player, fr.jules.faction.model.PlayerData data) {
+        Inventory inv = Bukkit.createInventory(new FactionInventoryHolder("PETS", data), 27, "§c§lAnimaux de Compagnie");
         fillBorder(inv);
         inv.setItem(22, createItem(Material.SHEARS, "§7Retour", "§8Clic pour revenir"));
 
-        inv.setItem(10, createItem(Material.BONE, "§eLoup", "§7Bonus: Force I", "§8Clic pour invoquer"));
-        inv.setItem(12, createItem(Material.COD, "§eChat", "§7Bonus: Vitesse I", "§8Clic pour invoquer"));
-        inv.setItem(14, createItem(Material.FEATHER, "§ePerroquet", "§7Bonus: Saut I", "§8Clic pour invoquer"));
-        inv.setItem(16, createItem(Material.SWEET_BERRIES, "§eRenard", "§7Bonus: Vision Nocturne", "§8Clic pour invoquer"));
+        String[] pets = {"LOUP", "CHAT", "PERROQUET", "RENARD"};
+        Material[] icons = {Material.BONE, Material.COD, Material.FEATHER, Material.SWEET_BERRIES};
+        String[] bonuses = {"Force I", "Vitesse I", "Saut I", "Vision Nocturne"};
+        int[] slots = {10, 12, 14, 16};
+
+        for (int i = 0; i < pets.length; i++) {
+            boolean owned = data.getOwnedPets().contains(pets[i]);
+            inv.setItem(slots[i], createItem(icons[i], "§e" + pets[i],
+                "§7Bonus: " + bonuses[i],
+                owned ? "§aPossédé - Clic pour invoquer" : "§cNon possédé - Capturez-en un ou adoptez (5000$)"));
+        }
 
         inv.setItem(4, createItem(Material.BARRIER, "§cRenvoyer", "§7Faire disparaitre le familier"));
 

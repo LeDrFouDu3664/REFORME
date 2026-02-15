@@ -5,10 +5,13 @@ import fr.jules.faction.model.Claim;
 import fr.jules.faction.model.Faction;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import fr.jules.faction.model.PlayerData;
+import org.bukkit.entity.*;
+import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.EntitySpawnEvent;
-import org.bukkit.entity.Monster;
-import org.bukkit.entity.Animals;
+
+import java.util.UUID;
 
 public class EntityListener implements Listener {
     private final FactionPlugin plugin;
@@ -48,6 +51,18 @@ public class EntityListener implements Listener {
             event.setCancelled(true);
         } else if (event.getEntity() instanceof Animals && !owner.getFactionFlags().getOrDefault("animals", true)) {
             event.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    public void onDeath(EntityDeathEvent event) {
+        Entity entity = event.getEntity();
+        if (entity instanceof Tameable tameable && tameable.getOwner() instanceof Player owner) {
+            if (entity.getCustomName() != null && entity.getCustomName().contains("§c§l")) {
+                PlayerData data = plugin.getPlayerManager().getPlayerData(owner.getUniqueId());
+                data.setPetCooldown(System.currentTimeMillis() + 600000); // 10 min if dead
+                owner.sendMessage("§cTon compagnon est mort ! Cooldown de 10 minutes.");
+            }
         }
     }
 }

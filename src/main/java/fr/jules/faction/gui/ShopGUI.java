@@ -15,9 +15,10 @@ public class ShopGUI {
         Inventory inv = Bukkit.createInventory(new FactionInventoryHolder("SHOP_MAIN", null), 27, "§c§lBoutique Faction");
         fillBorder(inv);
 
-        inv.setItem(11, createShopCategory(Material.GRASS_BLOCK, "§aBlocs", "§7Acheter des matériaux de construction"));
-        inv.setItem(13, createShopCategory(Material.DIAMOND_SWORD, "§cCombat", "§7Armes et armures"));
-        inv.setItem(15, createShopCategory(Material.WHEAT, "§eAgriculture", "§7Nourriture et ressources"));
+        inv.setItem(10, createShopCategory(Material.GRASS_BLOCK, "§aBlocs", "§7Acheter des matériaux de construction"));
+        inv.setItem(12, createShopCategory(Material.DIAMOND_SWORD, "§cCombat", "§7Armes et armures"));
+        inv.setItem(14, createShopCategory(Material.WHEAT, "§eAgriculture", "§7Nourriture et ressources"));
+        inv.setItem(16, createShopCategory(Material.LEAD, "§bSpécial", "§7Objets uniques et outils"));
 
         player.openInventory(inv);
     }
@@ -51,6 +52,13 @@ public class ShopGUI {
             addShopItem(inv, 14, Material.CARROT, 32, 100, 20);
             addShopItem(inv, 15, Material.MELON_SLICE, 64, 150, 30);
             addShopItem(inv, 16, Material.SUGAR_CANE, 32, 300, 60);
+        } else if (category.equals("Spécial")) {
+            inv.setItem(10, createItem(Material.LEAD, "§bLasso de Capture",
+                "§7Quantité: §f1",
+                "§7Prix Achat: §a10000$",
+                "§7Prix Vente: §c0$",
+                "§7Permet de capturer un animal", "§7sauvage comme compagnon.",
+                "§8Clic Gauche: Acheter"));
         }
 
         player.openInventory(inv);

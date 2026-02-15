@@ -701,7 +701,8 @@ public class FactionCommand implements CommandExecutor {
     }
 
     private void handlePet(Player player) {
-        fr.jules.faction.gui.FactionGUI.openPetMenu(player);
+        PlayerData data = plugin.getPlayerManager().getPlayerData(player.getUniqueId());
+        fr.jules.faction.gui.FactionGUI.openPetMenu(player, data);
     }
 
     private void handleChest(Player player) {

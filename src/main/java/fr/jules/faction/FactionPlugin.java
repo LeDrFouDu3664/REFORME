@@ -22,6 +22,7 @@ public class FactionPlugin extends JavaPlugin {
     @Getter private PowerManager powerManager;
     @Getter private FactionLevelManager factionLevelManager;
     @Getter private PetManager petManager;
+    @Getter private AuctionManager auctionManager;
 
     @Override
     public void onEnable() {
@@ -39,6 +40,7 @@ public class FactionPlugin extends JavaPlugin {
         this.powerManager = new PowerManager(this);
         this.factionLevelManager = new FactionLevelManager(this);
         this.petManager = new PetManager(this);
+        this.auctionManager = new AuctionManager(this);
 
         dataManager.loadFactions(factionManager, claimManager);
         factionManager.getAllFactions().forEach(f -> factionManager.recalculatePower(f, playerManager));
@@ -74,6 +76,7 @@ public class FactionPlugin extends JavaPlugin {
         getCommand("boutique").setExecutor(misc);
         getCommand("jobs").setExecutor(new JobCommand(this));
         getCommand("quests").setExecutor(new QuestCommand(this));
+        getCommand("ah").setExecutor(new AuctionCommand(this));
     }
 
     private void registerListeners() {
@@ -117,6 +120,7 @@ public class FactionPlugin extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        if (auctionManager != null) auctionManager.save();
         if (factionManager != null) {
             factionManager.getAllFactions().forEach(dataManager::saveFaction);
         }

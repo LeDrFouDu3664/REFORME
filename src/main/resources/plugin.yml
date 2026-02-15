@@ -38,6 +38,8 @@ commands:
     description: Choisir et voir son métier.
   quests:
     description: Voir ses quêtes en cours.
+  ah:
+    description: Hôtel de vente.
 
 permissions:
   faction.command.*:
@@ -76,6 +78,7 @@ permissions:
       faction.command.ignore: true
       faction.command.shop: true
       faction.command.boutique: true
+      faction.command.ah: true
   faction.admin:
     description: Accès aux commandes d'administration faction.
     default: op

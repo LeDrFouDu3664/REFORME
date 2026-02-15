@@ -7,12 +7,11 @@ import fr.jules.faction.model.PlayerData;
 import org.bukkit.Bukkit;
 import java.util.Objects;
 import java.util.UUID;
+
+import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerMoveEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.event.player.PlayerTeleportEvent;
+import org.bukkit.event.player.*;
 
 public class PlayerListener implements Listener {
     private final FactionPlugin plugin;
@@ -61,6 +60,35 @@ public class PlayerListener implements Listener {
             if (event.getCause() == PlayerTeleportEvent.TeleportCause.COMMAND || event.getCause() == PlayerTeleportEvent.TeleportCause.PLUGIN) {
                 event.setCancelled(true);
                 event.getPlayer().sendMessage("§cVous ne pouvez pas vous téléporter en combat !");
+            }
+        }
+    }
+
+    @EventHandler
+    public void onInteractEntity(PlayerInteractEntityEvent event) {
+        Player player = event.getPlayer();
+        org.bukkit.inventory.ItemStack item = player.getInventory().getItemInMainHand();
+
+        if (item.getType() == org.bukkit.Material.LEAD && item.hasItemMeta() && item.getItemMeta().getDisplayName().contains("Lasso de Capture")) {
+            Entity entity = event.getRightClicked();
+            String type = null;
+            if (entity instanceof Wolf) type = "LOUP";
+            else if (entity instanceof Cat) type = "CHAT";
+            else if (entity instanceof Parrot) type = "PERROQUET";
+            else if (entity instanceof Fox) type = "RENARD";
+
+            if (type != null) {
+                event.setCancelled(true);
+                PlayerData data = plugin.getPlayerManager().getPlayerData(player.getUniqueId());
+                if (data.getOwnedPets().contains(type)) {
+                    player.sendMessage("§cVous possédez déjà ce type d'animal.");
+                } else {
+                    data.getOwnedPets().add(type);
+                    item.setAmount(item.getAmount() - 1);
+                    entity.remove();
+                    player.sendMessage("§aFélicitations ! Vous avez capturé un §e" + type + " §a!");
+                    plugin.getDataManager().savePlayerData(data);
+                }
             }
         }
     }

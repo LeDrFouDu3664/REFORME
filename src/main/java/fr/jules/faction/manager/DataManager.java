@@ -162,6 +162,8 @@ public class DataManager {
         config.set("jobLevel", data.getJobLevel());
         config.set("questProgress", data.getQuestProgress());
         config.set("powers", new ArrayList<>(data.getPowers()));
+        config.set("ownedPets", new ArrayList<>(data.getOwnedPets()));
+        config.set("petCooldown", data.getPetCooldown());
         config.set("showTitles", data.isShowTitles());
         config.set("powerBoost", data.getPowerBoost());
         config.set("ignoredPlayers", data.getIgnoredPlayers().stream().map(UUID::toString).toList());
@@ -193,6 +195,8 @@ public class DataManager {
         data.setJobExp(config.getDouble("jobExp", 0));
         data.setJobLevel(config.getInt("jobLevel", 1));
         data.getPowers().addAll(config.getStringList("powers"));
+        data.getOwnedPets().addAll(config.getStringList("ownedPets"));
+        data.setPetCooldown(config.getLong("petCooldown", 0));
         data.setShowTitles(config.getBoolean("showTitles", true));
         ConfigurationSection questSec = config.getConfigurationSection("questProgress");
         if (questSec != null) {

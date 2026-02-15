@@ -37,6 +37,11 @@ public class EconomyManager {
         else plugin.getPlayerManager().getPlayerData(player.getUniqueId()).addBalance(amount);
     }
 
+    public void deposit(org.bukkit.OfflinePlayer player, double amount) {
+        if (vaultEconomy != null) vaultEconomy.depositPlayer(player, amount);
+        else plugin.getPlayerManager().getPlayerData(player.getUniqueId()).addBalance(amount);
+    }
+
     public boolean has(org.bukkit.entity.Player player, double amount) {
         if (vaultEconomy != null) return vaultEconomy.has(player, amount);
         return plugin.getPlayerManager().getPlayerData(player.getUniqueId()).getBalance() >= amount;

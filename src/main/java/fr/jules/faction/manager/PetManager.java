@@ -21,6 +21,19 @@ public class PetManager {
     }
 
     public void spawnPet(Player player, String type) {
+        PlayerData data = plugin.getPlayerManager().getPlayerData(player.getUniqueId());
+
+        long remaining = (data.getPetCooldown() - System.currentTimeMillis()) / 1000;
+        if (remaining > 0) {
+            player.sendMessage("§cVous devez attendre encore " + remaining + "s avant de changer d'animal.");
+            return;
+        }
+
+        if (!data.getOwnedPets().contains(type.toUpperCase())) {
+            player.sendMessage("§cVous ne possédez pas cet animal.");
+            return;
+        }
+
         despawnPet(player);
 
         Entity pet;
@@ -29,6 +42,8 @@ public class PetManager {
                 Wolf wolf = (Wolf) player.getWorld().spawnEntity(player.getLocation(), EntityType.WOLF);
                 wolf.setTamed(true);
                 wolf.setOwner(player);
+                wolf.setBaby();
+                wolf.setAgeLock(true);
                 wolf.setCustomName("§c§lCompagnon de " + player.getName());
                 wolf.setCustomNameVisible(true);
                 pet = wolf;
@@ -37,6 +52,8 @@ public class PetManager {
                 Cat cat = (Cat) player.getWorld().spawnEntity(player.getLocation(), EntityType.CAT);
                 cat.setTamed(true);
                 cat.setOwner(player);
+                cat.setBaby();
+                cat.setAgeLock(true);
                 cat.setCustomName("§c§lFélin de " + player.getName());
                 cat.setCustomNameVisible(true);
                 pet = cat;
@@ -45,12 +62,15 @@ public class PetManager {
                 Parrot parrot = (Parrot) player.getWorld().spawnEntity(player.getLocation(), EntityType.PARROT);
                 parrot.setTamed(true);
                 parrot.setOwner(player);
+                // Parrots don't have baby state in standard Bukkit API easily or at all
                 parrot.setCustomName("§c§lPlume de " + player.getName());
                 parrot.setCustomNameVisible(true);
                 pet = parrot;
                 break;
             case "RENARD":
                 Fox fox = (Fox) player.getWorld().spawnEntity(player.getLocation(), EntityType.FOX);
+                fox.setBaby();
+                fox.setAgeLock(true);
                 fox.setCustomName("§c§lRusé de " + player.getName());
                 fox.setCustomNameVisible(true);
                 pet = fox;
@@ -60,8 +80,9 @@ public class PetManager {
         }
 
         activePets.put(player.getUniqueId(), pet);
-        plugin.getPlayerManager().getPlayerData(player.getUniqueId()).setCurrentPet(type);
-        player.sendMessage("§aVotre animal de compagnie §e" + type + " §aa été invoqué !");
+        data.setCurrentPet(type.toUpperCase());
+        data.setPetCooldown(System.currentTimeMillis() + 300000); // 5 min cooldown
+        player.sendMessage("§aVotre animal de compagnie §e" + type + " §aa été invoqué ! (Bébé)");
     }
 
     public void despawnPet(Player player) {

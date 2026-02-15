@@ -75,7 +75,7 @@ public class GUIListener implements Listener {
                 handlePowersMenuClick(player, name, data, faction);
                 break;
             case "PETS":
-                handlePetMenuClick(player, name, faction);
+                handlePetMenuClick(player, name, data, faction);
                 break;
             case "SHOP_MAIN":
                 handleAdminShopMainClick(player, name);
@@ -85,6 +85,9 @@ public class GUIListener implements Listener {
                 break;
             case "BOUTIQUE":
                 handleBoutiqueClick(player, event);
+                break;
+            case "AUCTION":
+                handleAuctionClick(player, event);
                 break;
         }
     }
@@ -110,7 +113,7 @@ public class GUIListener implements Listener {
         } else if (name.equalsIgnoreCase("Quêtes")) {
             fr.jules.faction.gui.FactionGUI.openQuestsMenu(player, plugin.getPlayerManager().getPlayerData(player.getUniqueId()), plugin.getQuestManager());
         } else if (name.equalsIgnoreCase("Compagnon")) {
-            fr.jules.faction.gui.FactionGUI.openPetMenu(player);
+            fr.jules.faction.gui.FactionGUI.openPetMenu(player, plugin.getPlayerManager().getPlayerData(player.getUniqueId()));
         } else if (name.equalsIgnoreCase("Niveaux Faction")) {
             fr.jules.faction.gui.FactionGUI.openFactionLevelMenu(player, faction);
         } else if (name.equalsIgnoreCase("Pouvoirs")) {
@@ -317,7 +320,7 @@ public class GUIListener implements Listener {
         }
     }
 
-    private void handlePetMenuClick(Player player, String name, Faction faction) {
+    private void handlePetMenuClick(Player player, String name, PlayerData data, Faction faction) {
         if (name.equalsIgnoreCase("Retour")) {
             if (faction != null) fr.jules.faction.gui.FactionGUI.openMainMenu(player, faction);
             else player.closeInventory();
@@ -330,14 +333,27 @@ public class GUIListener implements Listener {
         }
 
         String type = null;
-        if (name.contains("Loup")) type = "LOUP";
-        else if (name.contains("Chat")) type = "CHAT";
-        else if (name.contains("Perroquet")) type = "PERROQUET";
-        else if (name.contains("Renard")) type = "RENARD";
+        if (name.contains("LOUP")) type = "LOUP";
+        else if (name.contains("CHAT")) type = "CHAT";
+        else if (name.contains("PERROQUET")) type = "PERROQUET";
+        else if (name.contains("RENARD")) type = "RENARD";
 
         if (type != null) {
-            plugin.getPetManager().spawnPet(player, type);
-            player.closeInventory();
+            if (data.getOwnedPets().contains(type)) {
+                plugin.getPetManager().spawnPet(player, type);
+                player.closeInventory();
+            } else {
+                // Adoption
+                double cost = 5000;
+                if (plugin.getEconomyManager().has(player, cost)) {
+                    plugin.getEconomyManager().withdraw(player, cost);
+                    data.getOwnedPets().add(type);
+                    player.sendMessage("§aVous avez adopté un §e" + type + " §a!");
+                    fr.jules.faction.gui.FactionGUI.openPetMenu(player, data);
+                } else {
+                    player.sendMessage("§cPas assez d'argent pour adopter (5000$).");
+                }
+            }
         }
     }
 
@@ -379,6 +395,7 @@ public class GUIListener implements Listener {
         if (name.contains("Blocs")) fr.jules.faction.gui.ShopGUI.openCategoryMenu(player, "Blocs");
         else if (name.contains("Combat")) fr.jules.faction.gui.ShopGUI.openCategoryMenu(player, "Combat");
         else if (name.contains("Agriculture")) fr.jules.faction.gui.ShopGUI.openCategoryMenu(player, "Agriculture");
+        else if (name.contains("Spécial")) fr.jules.faction.gui.ShopGUI.openCategoryMenu(player, "Spécial");
     }
 
     private void handleAdminShopCategoryClick(Player player, InventoryClickEvent event, String category) {
@@ -411,6 +428,51 @@ public class GUIListener implements Listener {
             } else {
                 player.sendMessage("§cVous n'avez pas assez d'items.");
             }
+        }
+    }
+
+    private void handleAuctionClick(Player player, InventoryClickEvent event) {
+        if (event.getCurrentItem() == null || !event.getCurrentItem().hasItemMeta()) return;
+        List<String> lore = event.getCurrentItem().getItemMeta().getLore();
+        if (lore == null) return;
+
+        String idStr = null;
+        for (String s : lore) {
+            if (s.startsWith("§0ID:")) {
+                idStr = s.replace("§0ID:", "");
+                break;
+            }
+        }
+
+        if (idStr == null) return;
+        UUID id = UUID.fromString(idStr);
+        fr.jules.faction.model.AuctionItem ai = plugin.getAuctionManager().getItem(id);
+
+        if (ai == null) {
+            player.sendMessage("§cCet objet n'est plus en vente.");
+            fr.jules.faction.gui.AuctionGUI.openAuctionMenu(player, plugin.getAuctionManager().getItems());
+            return;
+        }
+
+        if (ai.getSellerId().equals(player.getUniqueId())) {
+            player.sendMessage("§cVous ne pouvez pas acheter votre propre objet.");
+            return;
+        }
+
+        if (plugin.getEconomyManager().has(player, ai.getPrice())) {
+            plugin.getEconomyManager().withdraw(player, ai.getPrice());
+            plugin.getEconomyManager().deposit(Bukkit.getOfflinePlayer(ai.getSellerId()), ai.getPrice());
+
+            player.getInventory().addItem(ai.getItem());
+            plugin.getAuctionManager().removeItem(id);
+
+            player.sendMessage("§aVous avez acheté l'objet pour " + ai.getPrice() + "$ !");
+            Player seller = Bukkit.getPlayer(ai.getSellerId());
+            if (seller != null) seller.sendMessage("§aVotre objet a été vendu pour " + ai.getPrice() + "$ !");
+
+            fr.jules.faction.gui.AuctionGUI.openAuctionMenu(player, plugin.getAuctionManager().getItems());
+        } else {
+            player.sendMessage("§cPas assez d'argent.");
         }
     }
 
