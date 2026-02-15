@@ -140,8 +140,8 @@ public class PlayerListener implements Listener {
                 plugin.getFactionManager().recalculatePower(faction, plugin.getPlayerManager());
 
                 // Vérification stricte du Power vs Claims
-                if (!event.getPlayer().hasPermission("faction.admin")) {
-                    if (faction.getClaims().size() >= faction.getPower()) {
+                if (!data.isBypass()) {
+                    if (faction.getClaims().size() >= (int) faction.getPower()) {
                         data.setAutoClaim(false);
                         event.getPlayer().sendMessage("§c§l[TPC Faction] §cAuto-claim désactivé ! Plus assez de Power (§e" + String.format("%.1f", faction.getPower()) + "§c).");
                         return;

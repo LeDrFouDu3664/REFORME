@@ -480,12 +480,14 @@ public class FactionCommand implements CommandExecutor {
     }
 
     public boolean performClaim(Player player, Faction faction, String world, int x, int z, boolean ignoreAdjacencyCheck) {
+        PlayerData data = plugin.getPlayerManager().getPlayerData(player.getUniqueId());
+
         // 1. Recalculer le Power pour être sûr à 100%
         plugin.getFactionManager().recalculatePower(faction, plugin.getPlayerManager());
 
         // 2. Vérifier si on a déjà atteint la limite de Power
-        if (!player.hasPermission("faction.admin")) {
-            if (faction.getClaims().size() >= faction.getPower()) {
+        if (!data.isBypass()) {
+            if (faction.getClaims().size() >= (int) faction.getPower()) {
                 player.sendMessage("§cLimite de Power atteinte ! (" + String.format("%.1f", faction.getPower()) + " / " + faction.getClaims().size() + ")");
                 return false;
             }

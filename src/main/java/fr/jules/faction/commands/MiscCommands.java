@@ -59,6 +59,12 @@ public class MiscCommands implements CommandExecutor {
             case "boutique":
                 handleBoutique(player);
                 break;
+            case "eco":
+                handleEconomy(player, args);
+                break;
+            case "mod":
+                handleMod(player);
+                break;
         }
         return true;
     }
@@ -66,6 +72,36 @@ public class MiscCommands implements CommandExecutor {
     private void handleShop(Player player) {
         fr.jules.faction.gui.ShopGUI.openShopMenu(player);
         MessageUtils.sendMessage(player, "shop-open");
+    }
+
+    private void handleEconomy(Player player, String[] args) {
+        if (!player.hasPermission("faction.admin")) return;
+        if (args.length < 3) {
+            player.sendMessage("§cUsage: /eco <give|take|set> <joueur> <montant>");
+            return;
+        }
+        String action = args[0].toLowerCase();
+        org.bukkit.OfflinePlayer target = Bukkit.getOfflinePlayer(args[1]);
+        double amount;
+        try { amount = Double.parseDouble(args[2]); } catch (Exception e) { player.sendMessage("§cMontant invalide."); return; }
+
+        if (action.equals("give")) {
+            plugin.getEconomyManager().deposit(target, amount);
+            player.sendMessage("§aDonné " + amount + "$ à " + target.getName());
+        } else if (action.equals("take")) {
+            plugin.getEconomyManager().withdraw(Bukkit.getPlayer(target.getUniqueId()), amount); // fallback logic handles offline if needed
+            player.sendMessage("§aRetiré " + amount + "$ à " + target.getName());
+        } else if (action.equals("set")) {
+            double current = plugin.getEconomyManager().getBalance(Bukkit.getPlayer(target.getUniqueId()));
+            plugin.getEconomyManager().withdraw(Bukkit.getPlayer(target.getUniqueId()), current);
+            plugin.getEconomyManager().deposit(target, amount);
+            player.sendMessage("§aMis le solde de " + target.getName() + " à " + amount + "$");
+        }
+    }
+
+    private void handleMod(Player player) {
+        if (!player.hasPermission("faction.staff")) return;
+        fr.jules.faction.gui.ModGUI.openModMenu(player);
     }
 
     private void handleBoutique(Player player) {

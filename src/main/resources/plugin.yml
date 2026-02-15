@@ -40,6 +40,10 @@ commands:
     description: Voir ses quêtes en cours.
   ah:
     description: Hôtel de vente.
+  eco:
+    description: Gérer l'économie.
+  mod:
+    description: Menu de modération.
 
 permissions:
   faction.command.*:
@@ -79,6 +83,8 @@ permissions:
       faction.command.shop: true
       faction.command.boutique: true
       faction.command.ah: true
+      faction.command.eco: true
+      faction.command.mod: true
   faction.admin:
     description: Accès aux commandes d'administration faction.
     default: op

@@ -89,6 +89,15 @@ public class GUIListener implements Listener {
             case "AUCTION":
                 handleAuctionClick(player, event);
                 break;
+            case "MOD_MAIN":
+                handleModMainClick(player, name);
+                break;
+            case "MOD_PLAYERS":
+                handleModPlayersClick(player, name);
+                break;
+            case "MOD_ACTIONS":
+                handleModActionsClick(player, name, (Player) holder.getData());
+                break;
         }
     }
 
@@ -473,6 +482,61 @@ public class GUIListener implements Listener {
             fr.jules.faction.gui.AuctionGUI.openAuctionMenu(player, plugin.getAuctionManager().getItems());
         } else {
             player.sendMessage("§cPas assez d'argent.");
+        }
+    }
+
+    private void handleModMainClick(Player player, String name) {
+        if (name.contains("Bâton")) {
+            org.bukkit.inventory.ItemStack rod = new org.bukkit.inventory.ItemStack(org.bukkit.Material.BLAZE_ROD);
+            org.bukkit.inventory.meta.ItemMeta meta = rod.getItemMeta();
+            meta.setDisplayName("§6Bâton de Modération");
+            rod.setItemMeta(meta);
+            player.getInventory().addItem(rod);
+            player.sendMessage("§aOutil de modération reçu.");
+        } else if (name.contains("Freeze")) {
+            fr.jules.faction.gui.ModGUI.openPlayerList(player);
+        } else if (name.contains("Vanish")) {
+            if (player.hasMetadata("vanished")) {
+                player.removeMetadata("vanished", plugin);
+                Bukkit.getOnlinePlayers().forEach(p -> p.showPlayer(plugin, player));
+                player.sendMessage("§aVous n'êtes plus invisible.");
+            } else {
+                player.setMetadata("vanished", new org.bukkit.metadata.FixedMetadataValue(plugin, true));
+                Bukkit.getOnlinePlayers().forEach(p -> p.hidePlayer(plugin, player));
+                player.sendMessage("§aVous êtes désormais invisible.");
+            }
+        } else if (name.contains("Joueurs")) {
+            fr.jules.faction.gui.ModGUI.openPlayerList(player);
+        }
+    }
+
+    private void handleModPlayersClick(Player staff, String targetName) {
+        Player target = Bukkit.getPlayer(targetName);
+        if (target != null) {
+            fr.jules.faction.gui.ModGUI.openPlayerActions(staff, target);
+        }
+    }
+
+    private void handleModActionsClick(Player staff, String action, Player target) {
+        if (action.contains("Inventaire")) {
+            staff.openInventory(target.getInventory());
+        } else if (action.contains("Freeze")) {
+            if (target.hasMetadata("frozen")) {
+                target.removeMetadata("frozen", plugin);
+                target.sendMessage("§aVous avez été libéré !");
+                staff.sendMessage("§aJoueur libéré.");
+            } else {
+                target.setMetadata("frozen", new org.bukkit.metadata.FixedMetadataValue(plugin, true));
+                target.sendMessage("§cVous avez été gelé par un modérateur !");
+                staff.sendMessage("§cJoueur gelé.");
+            }
+        } else if (action.contains("Kick")) {
+            target.kickPlayer("§cExpulsé par un modérateur.");
+            staff.closeInventory();
+        } else if (action.contains("Ban")) {
+            Bukkit.getBanList(org.bukkit.BanList.Type.NAME).addBan(target.getName(), "§cBanni par un modérateur.", null, null);
+            target.kickPlayer("§cBanni du serveur.");
+            staff.closeInventory();
         }
     }
 
