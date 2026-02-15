@@ -108,8 +108,14 @@ public class PlayerListener implements Listener {
         if (data.isAutoClaim() && data.getFactionId() != null) {
             Faction faction = plugin.getFactionManager().getFaction(data.getFactionId());
             if (faction != null && faction.isOfficer(event.getPlayer().getUniqueId())) {
-                fr.jules.faction.commands.FactionCommand cmd = (fr.jules.faction.commands.FactionCommand) plugin.getCommand("f").getExecutor();
-                cmd.performClaim(event.getPlayer(), faction, event.getTo().getWorld().getName(), event.getTo().getChunk().getX(), event.getTo().getChunk().getZ(), false);
+                plugin.getFactionManager().recalculatePower(faction, plugin.getPlayerManager());
+                if (faction.getPower() < faction.getClaims().size() + 1 && !event.getPlayer().hasPermission("faction.admin")) {
+                    data.setAutoClaim(false);
+                    event.getPlayer().sendMessage("§cAuto-claim désactivé : Pas assez de Power (" + String.format("%.1f", faction.getPower()) + " / " + (faction.getClaims().size() + 1) + ") !");
+                } else {
+                    fr.jules.faction.commands.FactionCommand cmd = (fr.jules.faction.commands.FactionCommand) plugin.getCommand("f").getExecutor();
+                    cmd.performClaim(event.getPlayer(), faction, event.getTo().getWorld().getName(), event.getTo().getChunk().getX(), event.getTo().getChunk().getZ(), false);
+                }
             }
         }
     }

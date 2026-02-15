@@ -1,4 +1,4 @@
-name: FactionPlugin
+name: TPCFaction
 version: 1.0-SNAPSHOT
 main: fr.jules.faction.FactionPlugin
 api-version: 1.20

@@ -47,7 +47,7 @@ public class FactionPlugin extends JavaPlugin {
         registerListeners();
         startTasks();
 
-        getLogger().info("FactionPlugin a été activé !");
+        getLogger().info("TPC faction a été activé !");
     }
 
     private void registerCommands() {
@@ -93,7 +93,6 @@ public class FactionPlugin extends JavaPlugin {
             Bukkit.getOnlinePlayers().forEach(p -> {
                 powerManager.applyEffects(p);
                 updateCompass(p);
-                fr.jules.faction.utils.ScoreboardUtils.updateScoreboard(this, p);
             });
         }, 20, 20);
 
@@ -125,7 +124,7 @@ public class FactionPlugin extends JavaPlugin {
             playerManager.getAllPlayerData().forEach(dataManager::savePlayerData);
         }
         saveLocations();
-        getLogger().info("FactionPlugin a été désactivé !");
+        getLogger().info("TPC faction a été désactivé !");
     }
 
     public void setChateauLocation(org.bukkit.Location loc) {
