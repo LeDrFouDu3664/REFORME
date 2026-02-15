@@ -1,0 +1,126 @@
+package fr.jules.faction.listeners;
+
+import fr.jules.faction.FactionPlugin;
+import fr.jules.faction.model.Claim;
+import fr.jules.faction.model.Faction;
+import fr.jules.faction.model.PlayerData;
+import fr.jules.faction.utils.MessageUtils;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
+
+public class ProtectionListener implements Listener {
+    private final FactionPlugin plugin;
+
+    public ProtectionListener(FactionPlugin plugin) {
+        this.plugin = plugin;
+    }
+
+    @EventHandler
+    public void onBlockBreak(BlockBreakEvent event) {
+        if (!canPerformAction(event.getPlayer(), event.getBlock().getLocation(), "DESTROY")) {
+            event.setCancelled(true);
+            MessageUtils.sendMessage(event.getPlayer(), "claim-protection");
+        } else {
+            // AUTO_PLANT logic
+            handleAutoPlant(event);
+        }
+    }
+
+    private void handleAutoPlant(BlockBreakEvent event) {
+        Player player = event.getPlayer();
+        org.bukkit.block.Block block = event.getBlock();
+        org.bukkit.Material type = block.getType();
+
+        if (type == org.bukkit.Material.WHEAT || type == org.bukkit.Material.CARROTS || type == org.bukkit.Material.POTATOES || type == org.bukkit.Material.NETHER_WART) {
+            org.bukkit.block.data.Ageable ageable = (org.bukkit.block.data.Ageable) block.getBlockData();
+            if (ageable.getAge() == ageable.getMaximumAge()) {
+                PlayerData data = plugin.getPlayerManager().getPlayerData(player.getUniqueId());
+                if (data.getFactionId() != null) {
+                    Faction f = plugin.getFactionManager().getFaction(data.getFactionId());
+                    if (f != null && f.getFactionFlags().getOrDefault("AUTO_PLANT", false)) {
+                        org.bukkit.Material seed = null;
+                        if (type == org.bukkit.Material.WHEAT) seed = org.bukkit.Material.WHEAT_SEEDS;
+                        else if (type == org.bukkit.Material.CARROTS) seed = org.bukkit.Material.CARROT;
+                        else if (type == org.bukkit.Material.POTATOES) seed = org.bukkit.Material.POTATO;
+                        else if (type == org.bukkit.Material.NETHER_WART) seed = org.bukkit.Material.NETHER_WART;
+
+                        if (seed != null) {
+                            org.bukkit.Material finalSeed = seed;
+                            Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                                block.setType(type);
+                                org.bukkit.block.data.Ageable newAge = (org.bukkit.block.data.Ageable) block.getBlockData();
+                                newAge.setAge(0);
+                                block.setBlockData(newAge);
+                            }, 2L);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    @EventHandler
+    public void onBlockPlace(BlockPlaceEvent event) {
+        if (!canPerformAction(event.getPlayer(), event.getBlock().getLocation(), "BUILD")) {
+            event.setCancelled(true);
+            MessageUtils.sendMessage(event.getPlayer(), "claim-protection");
+        }
+    }
+
+    @EventHandler
+    public void onInteract(PlayerInteractEvent event) {
+        if (event.getClickedBlock() == null) return;
+        if (!canPerformAction(event.getPlayer(), event.getClickedBlock().getLocation(), "USE")) {
+            if (event.getClickedBlock().getType().name().contains("CHEST") ||
+                event.getClickedBlock().getType().name().contains("DOOR") ||
+                event.getClickedBlock().getType().name().contains("BUTTON") ||
+                event.getClickedBlock().getType().name().contains("LEVER") ||
+                event.getClickedBlock().getType().name().contains("GATE")) {
+                event.setCancelled(true);
+                MessageUtils.sendMessage(event.getPlayer(), "claim-protection");
+            }
+        }
+    }
+
+    private boolean canPerformAction(Player player, Location loc, String action) {
+        PlayerData data = plugin.getPlayerManager().getPlayerData(player.getUniqueId());
+        if (data.isBypass()) return true;
+
+        String world = loc.getWorld().getName();
+        int x = loc.getChunk().getX();
+        int z = loc.getChunk().getZ();
+
+        Claim claim = plugin.getClaimManager().getClaim(world, x, z);
+        if (claim == null) return true;
+
+        Faction owner = plugin.getFactionManager().getFaction(claim.getFactionId());
+        if (owner == null) return true;
+
+        if (owner.getType() == fr.jules.faction.model.FactionType.SAFEZONE || owner.getType() == fr.jules.faction.model.FactionType.WARZONE) {
+            return player.hasPermission("faction.admin.build");
+        }
+
+        if (owner.getPower() < owner.getClaims().size()) {
+            return true; // Territory is raidable
+        }
+
+        if (data.getFactionId() != null) {
+            if (data.getFactionId().equals(claim.getFactionId())) {
+                return owner.hasPermission(data.getRole(), action);
+            }
+
+            String rel = owner.getRelations().get(data.getFactionId());
+            if (fr.jules.faction.model.Relation.ALLY.name().equals(rel)) {
+                return owner.getFactionFlags().getOrDefault("ALLY_" + action, false);
+            }
+        }
+
+        return false;
+    }
+}
