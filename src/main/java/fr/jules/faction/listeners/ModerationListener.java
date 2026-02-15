@@ -24,6 +24,15 @@ public class ModerationListener implements Listener {
     }
 
     @EventHandler
+    public void onDamage(org.bukkit.event.entity.EntityDamageEvent event) {
+        if (event.getEntity() instanceof Player player) {
+            if (player.hasMetadata("godmode")) {
+                event.setCancelled(true);
+            }
+        }
+    }
+
+    @EventHandler
     public void onInteract(PlayerInteractEntityEvent event) {
         Player staff = event.getPlayer();
         if (!staff.hasPermission("faction.staff")) return;

@@ -14,8 +14,11 @@ public class ModGUI {
         Inventory inv = Bukkit.createInventory(new FactionInventoryHolder("MOD_MAIN", null), 27, "§c§lOutils de Modération");
 
         inv.setItem(10, createItem(Material.BLAZE_ROD, "§6Bâton de Modération", "§7Outil rapide (Clic droit sur joueur)"));
-        inv.setItem(12, createItem(Material.PACKED_ICE, "§bFreeze", "§7Geler un joueur"));
-        inv.setItem(14, createItem(Material.ENDER_EYE, "§aVanish", "§7Devenir invisible"));
+        inv.setItem(11, createItem(Material.PACKED_ICE, "§bFreeze", "§7Geler un joueur"));
+        inv.setItem(12, createItem(Material.ENDER_EYE, "§aVanish", "§7Devenir invisible"));
+        inv.setItem(13, createItem(Material.ENCHANTED_GOLDEN_APPLE, "§6God Mode", "§7Devenir invincible"));
+        inv.setItem(14, createItem(Material.FEATHER, "§fVitesse Fly", "§7Augmenter la vitesse de vol"));
+        inv.setItem(15, createItem(Material.ENDER_PEARL, "§dTP Aléatoire", "§7Se téléporter à un joueur aléatoire"));
         inv.setItem(16, createItem(Material.PLAYER_HEAD, "§eJoueurs en ligne", "§7Gérer les joueurs"));
 
         staff.openInventory(inv);

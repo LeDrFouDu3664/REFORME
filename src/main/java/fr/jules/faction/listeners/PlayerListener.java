@@ -82,9 +82,12 @@ public class PlayerListener implements Listener {
                 event.setCancelled(true);
                 PlayerData data = plugin.getPlayerManager().getPlayerData(player.getUniqueId());
 
-                String petId = entity.getType().name() + "_" + entity.getEntityId();
-                if (data.getCapturedPets().containsKey(petId)) {
-                    player.sendMessage("§cAnimal déjà capturé !");
+                String species = entity.getType().name();
+                boolean alreadyHasSpecies = data.getCapturedPets().values().stream()
+                        .anyMatch(p -> p.getType().equalsIgnoreCase(species));
+
+                if (alreadyHasSpecies) {
+                    player.sendMessage("§cVous possédez déjà un animal de cette espèce !");
                     return;
                 }
 

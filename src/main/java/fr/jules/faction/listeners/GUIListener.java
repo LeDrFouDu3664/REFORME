@@ -497,6 +497,33 @@ public class GUIListener implements Listener {
                 Bukkit.getOnlinePlayers().forEach(p -> p.hidePlayer(plugin, player));
                 player.sendMessage("§aVous êtes désormais invisible.");
             }
+        } else if (name.contains("God Mode")) {
+            if (player.hasMetadata("godmode")) {
+                player.removeMetadata("godmode", plugin);
+                player.sendMessage("§aGod Mode désactivé.");
+            } else {
+                player.setMetadata("godmode", new org.bukkit.metadata.FixedMetadataValue(plugin, true));
+                player.sendMessage("§aGod Mode activé.");
+            }
+        } else if (name.contains("Vitesse Fly")) {
+            float current = player.getFlySpeed();
+            if (current < 0.2f) player.setFlySpeed(0.2f);
+            else if (current < 0.5f) player.setFlySpeed(0.5f);
+            else if (current < 1.0f) player.setFlySpeed(1.0f);
+            else player.setFlySpeed(0.1f);
+            player.sendMessage("§aVitesse Fly: §e" + player.getFlySpeed());
+        } else if (name.contains("TP Aléatoire")) {
+            List<Player> targets = Bukkit.getOnlinePlayers().stream()
+                    .filter(p -> !p.getUniqueId().equals(player.getUniqueId()))
+                    .map(p -> (Player) p)
+                    .toList();
+            if (targets.isEmpty()) {
+                player.sendMessage("§cAucun joueur cible.");
+            } else {
+                Player target = targets.get(new java.util.Random().nextInt(targets.size()));
+                player.teleport(target.getLocation());
+                player.sendMessage("§aTéléporté sur §e" + target.getName());
+            }
         } else if (name.contains("Joueurs")) {
             fr.jules.faction.gui.ModGUI.openPlayerList(player);
         }

@@ -63,7 +63,7 @@ public class PetManager {
 
         activePets.put(player.getUniqueId(), pet);
         data.setCurrentPet(petId);
-        data.setPetCooldown(System.currentTimeMillis() + 300000); // 5 min cooldown
+        data.setPetCooldown(System.currentTimeMillis() + 120000); // 2 min cooldown
         player.sendMessage("§aVotre animal de compagnie §e" + petId + " §aa été invoqué !");
     }
 
