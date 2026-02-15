@@ -161,7 +161,7 @@ public class DataManager {
         config.set("jobExp", data.getJobExp());
         config.set("jobLevel", data.getJobLevel());
         config.set("questProgress", data.getQuestProgress());
-        config.set("powers", new ArrayList<>(data.getPowers()));
+        config.set("activePower", data.getActivePower());
 
         Map<String, Map<String, Object>> petsMap = new HashMap<>();
         data.getCapturedPets().forEach((k, v) -> {
@@ -204,7 +204,7 @@ public class DataManager {
         data.setJob(config.getString("job", "NONE"));
         data.setJobExp(config.getDouble("jobExp", 0));
         data.setJobLevel(config.getInt("jobLevel", 1));
-        data.getPowers().addAll(config.getStringList("powers"));
+        data.setActivePower(config.getString("activePower", "NONE"));
 
         ConfigurationSection petsSec = config.getConfigurationSection("capturedPets");
         if (petsSec != null) {

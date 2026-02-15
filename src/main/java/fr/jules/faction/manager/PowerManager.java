@@ -39,17 +39,49 @@ public class PowerManager {
         powers.put("LUCK_LOOT", new PowerInfo("Pilleur", "Double les loots des monstres.", null, 0));
     }
 
+    public void refreshPowerEffects(Player player) {
+        PlayerData data = plugin.getPlayerManager().getPlayerData(player.getUniqueId());
+
+        // Remove all previous power-related effects to avoid overlap
+        for (PowerInfo info : powers.values()) {
+            if (info.effectType != null) {
+                player.removePotionEffect(info.effectType);
+            }
+        }
+        player.removePotionEffect(PotionEffectType.INVISIBILITY);
+
+        if (data.getFactionId() == null || data.getActivePower().equals("NONE")) return;
+
+        String powerId = data.getActivePower();
+        PowerInfo info = powers.get(powerId);
+        if (info != null && info.effectType != null) {
+            // Apply infinite effect (using a very long duration to avoid flickering)
+            player.addPotionEffect(new PotionEffect(info.effectType, Integer.MAX_VALUE, info.amplifier, false, false, true));
+        }
+    }
+
     public void applyEffects(Player player) {
         PlayerData data = plugin.getPlayerManager().getPlayerData(player.getUniqueId());
         if (data.getFactionId() == null) return;
 
-        for (String powerId : data.getPowers()) {
-            PowerInfo info = powers.get(powerId);
-            if (info != null && info.effectType != null) {
-                player.addPotionEffect(new PotionEffect(info.effectType, 60, info.amplifier, false, false, true));
+        String powerId = data.getActivePower();
+
+        // Handle conditional powers like SNEAK_INVIS which can't be infinite
+        if (powerId.equals("SNEAK_INVIS")) {
+            if (player.isSneaking()) {
+                if (!player.hasPotionEffect(PotionEffectType.INVISIBILITY)) {
+                    player.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, 100, 0, false, false, false));
+                }
+            } else {
+                player.removePotionEffect(PotionEffectType.INVISIBILITY);
             }
-            if (powerId.equals("SNEAK_INVIS") && player.isSneaking()) {
-                player.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, 40, 0, false, false, false));
+        }
+
+        // Safety check to ensure infinite effects are still there
+        PowerInfo info = powers.get(powerId);
+        if (info != null && info.effectType != null) {
+            if (!player.hasPotionEffect(info.effectType)) {
+                player.addPotionEffect(new PotionEffect(info.effectType, Integer.MAX_VALUE, info.amplifier, false, false, true));
             }
         }
     }

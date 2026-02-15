@@ -24,7 +24,7 @@ public class PlayerData {
     private int jobLevel = 1;
     private Map<String, Integer> questProgress = new HashMap<>(); // QuestID -> Progress
     private long lastQuestRefresh = 0;
-    private Set<String> powers = new HashSet<>();
+    private String activePower = "NONE";
     private String currentPet = "NONE";
     private Map<String, PetInfo> capturedPets = new HashMap<>();
     private long petCooldown = 0;

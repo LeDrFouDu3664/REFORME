@@ -95,6 +95,7 @@ public class FactionPlugin extends JavaPlugin {
         Bukkit.getPluginManager().registerEvents(new XRayListener(this), this);
         Bukkit.getPluginManager().registerEvents(new ModerationListener(this), this);
         Bukkit.getPluginManager().registerEvents(new SpawnerListener(this), this);
+        Bukkit.getPluginManager().registerEvents(new PowerListener(this), this);
     }
 
     private void startTasks() {

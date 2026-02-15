@@ -373,21 +373,22 @@ public class GUIListener implements Listener {
         }
 
         if (powerId == null) return;
-        if (data.getPowers().contains(powerId)) {
-            player.sendMessage("§cVous possédez déjà ce pouvoir.");
-            return;
-        }
 
         double cost = 5000;
         if (powerId.contains("II") || powerId.equals("VAMPIRE") || powerId.equals("STRENGTH")) cost = 15000;
 
         if (plugin.getEconomyManager().has(player, cost)) {
+            if (data.getActivePower().equals(powerId)) {
+                player.sendMessage("§cCe pouvoir est déjà actif.");
+                return;
+            }
             plugin.getEconomyManager().withdraw(player, cost);
-            data.getPowers().add(powerId);
-            player.sendMessage("§aPouvoir §e" + name + " §adébloqué !");
+            data.setActivePower(powerId);
+            plugin.getPowerManager().refreshPowerEffects(player);
+            player.sendMessage("§a§l[Pouvoirs] §aVous avez activé le pouvoir: §e" + name);
             fr.jules.faction.gui.FactionGUI.openPowersMenu(player, data, plugin.getPowerManager());
         } else {
-            player.sendMessage("§cPas assez d'argent (" + String.format("%.0f", cost) + "$).");
+            player.sendMessage("§cPas assez d'argent pour activer ce pouvoir (" + String.format("%.0f", cost) + "$).");
         }
     }
 

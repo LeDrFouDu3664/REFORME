@@ -37,6 +37,7 @@ public class PlayerListener implements Listener {
                 event.getPlayer().sendMessage("§6[MOTD] " + faction.getMotd());
             }
         }
+        plugin.getPowerManager().refreshPowerEffects(event.getPlayer());
     }
 
     @EventHandler
@@ -125,7 +126,7 @@ public class PlayerListener implements Listener {
         PlayerData data = plugin.getPlayerManager().getPlayerData(event.getPlayer().getUniqueId());
 
         // Power: Lava Speed
-        if (data.getPowers().contains("LAVA_SPEED") && event.getTo().getBlock().getType() == org.bukkit.Material.LAVA) {
+        if (data.getActivePower().equals("LAVA_SPEED") && event.getTo().getBlock().getType() == org.bukkit.Material.LAVA) {
             event.getPlayer().addPotionEffect(new org.bukkit.potion.PotionEffect(org.bukkit.potion.PotionEffectType.SPEED, 40, 2, false, false));
         }
 

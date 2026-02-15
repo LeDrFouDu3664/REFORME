@@ -49,15 +49,16 @@ public class FactionGUI {
         for (Map.Entry<String, fr.jules.faction.manager.PowerManager.PowerInfo> entry : pm.getPowers().entrySet()) {
             String pid = entry.getKey();
             fr.jules.faction.manager.PowerManager.PowerInfo info = entry.getValue();
-            boolean has = data.getPowers().contains(pid);
+            boolean active = data.getActivePower().equals(pid);
 
             double cost = 5000;
             if (pid.contains("II") || pid.equals("VAMPIRE") || pid.equals("STRENGTH")) cost = 15000;
 
-            inv.setItem(slot++, createItem(has ? Material.ENCHANTED_BOOK : Material.BOOK,
+            inv.setItem(slot++, createItem(active ? Material.ENCHANTED_BOOK : Material.BOOK,
                 "§e" + info.name,
                 "§7" + info.description,
-                has ? "§aDébloqué" : "§cCliquez pour débloquer (" + String.format("%.0f", cost) + "$)"));
+                "§7Prix: §6" + String.format("%.0f", cost) + "$",
+                active ? "§a§lACTIF" : "§cCliquez pour activer"));
 
             if (slot % 9 == 8) slot += 2;
             if (slot >= 44) break;
