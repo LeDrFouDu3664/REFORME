@@ -767,6 +767,7 @@ public class FactionCommand implements CommandExecutor {
             player.sendMessage("§e/f admin eco [give|take|set] [joueur] [montant] §7- Économie");
             player.sendMessage("§e/f admin disband [faction] §7- Dissoudre une faction");
             player.sendMessage("§e/f admin give [lasso|baton|pioche] §7- Give item spécial");
+            player.sendMessage("§e/f admin petclear [joueur] §7- Vider l'inventaire Pet");
             player.sendMessage("§e/f admin clearlag §7- Nettoyage immédiat");
             player.sendMessage("§e/f admin reload §7- Recharger la config");
             return;
@@ -816,6 +817,13 @@ public class FactionCommand implements CommandExecutor {
                     player.sendMessage("§aSolde de " + td.getName() + " mis à " + val + "$");
                 }
             } catch (NumberFormatException e) { player.sendMessage("§cValeur invalide."); }
+        } else if (sub.equalsIgnoreCase("petclear")) {
+            if (args.length < 3) { player.sendMessage("§cUsage: /f admin petclear [joueur]"); return; }
+            PlayerData td = plugin.getPlayerManager().getPlayerDataByName(args[2]);
+            if (td == null) { player.sendMessage("§cJoueur introuvable."); return; }
+            td.getCapturedPets().clear();
+            td.setCurrentPet(null);
+            player.sendMessage("§aInventaire Pet de " + td.getName() + " vidé.");
         } else if (sub.equalsIgnoreCase("disband")) {
             if (args.length < 3) { player.sendMessage("§cUsage: /f admin disband [faction]"); return; }
             Faction f = plugin.getFactionManager().getFactionByName(args[2]);

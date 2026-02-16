@@ -46,6 +46,12 @@ commands:
     description: Menu de modération.
   ec:
     description: Ouvrir son ender chest.
+  tempban:
+    description: Bannir temporairement un joueur.
+  banip:
+    description: Bannir l'IP d'un joueur.
+  unban:
+    description: Débannir un joueur.
 
 permissions:
   faction.command.*:

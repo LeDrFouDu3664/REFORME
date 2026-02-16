@@ -1,9 +1,11 @@
 fr/jules/faction/manager/PetManager.class
 fr/jules/faction/utils/MessageUtils.class
+fr/jules/faction/model/BanData.class
 fr/jules/faction/commands/TeleportCommands.class
 fr/jules/faction/manager/AuctionManager.class
 fr/jules/faction/manager/FactionLevelManager.class
 fr/jules/faction/commands/MiscCommands.class
+fr/jules/faction/manager/TabManager.class
 fr/jules/faction/listeners/PvPListener.class
 fr/jules/faction/manager/DataManager.class
 fr/jules/faction/model/Grade.class
@@ -11,6 +13,7 @@ fr/jules/faction/listeners/QuestListener.class
 fr/jules/faction/manager/TeleportManager$TpaRequest.class
 fr/jules/faction/model/AuctionItem.class
 fr/jules/faction/listeners/EntityListener.class
+fr/jules/faction/commands/BanCommand.class
 fr/jules/faction/manager/TeleportManager.class
 fr/jules/faction/manager/QuestManager.class
 fr/jules/faction/listeners/ChatListener.class
@@ -29,14 +32,17 @@ fr/jules/faction/listeners/XRayListener.class
 fr/jules/faction/commands/AuctionCommand.class
 fr/jules/faction/gui/FactionInventoryHolder.class
 fr/jules/faction/manager/PlayerManager.class
+fr/jules/faction/listeners/BanListener.class
 fr/jules/faction/commands/QuestCommand.class
 fr/jules/faction/gui/ModGUI.class
+fr/jules/faction/manager/BanManager.class
 fr/jules/faction/manager/EconomyManager.class
 fr/jules/faction/listeners/AntiCheatListener.class
 fr/jules/faction/gui/SpawnerGUI.class
 fr/jules/faction/listeners/SpawnerListener.class
 fr/jules/faction/model/Faction.class
 fr/jules/faction/model/PetInfo.class
+fr/jules/faction/manager/VanishManager.class
 fr/jules/faction/model/PlayerData.class
 fr/jules/faction/manager/PowerManager.class
 fr/jules/faction/listeners/ModerationListener.class

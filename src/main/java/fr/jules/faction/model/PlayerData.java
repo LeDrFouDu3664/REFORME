@@ -34,6 +34,7 @@ public class PlayerData {
     private double powerBoost = 0;
     private long lastDeathTime = 0;
     private long combatLoggedTime = 0;
+    private long mutedUntil = 0;
     private long lastMessageTime = 0;
     private String lastMessageContent = "";
     private boolean staffMode = false;

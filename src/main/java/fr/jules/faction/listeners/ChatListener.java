@@ -24,6 +24,14 @@ public class ChatListener implements Listener {
     public void onChat(AsyncChatEvent event) {
         Player player = event.getPlayer();
         PlayerData data = plugin.getPlayerManager().getPlayerData(player.getUniqueId());
+
+        if (data.getMutedUntil() > System.currentTimeMillis()) {
+            event.setCancelled(true);
+            long remaining = (data.getMutedUntil() - System.currentTimeMillis()) / 1000;
+            player.sendMessage("§cVous êtes muet pour encore " + remaining + " secondes.");
+            return;
+        }
+
         String message = PlainTextComponentSerializer.plainText().serialize(event.message());
 
         // Anti-Spam

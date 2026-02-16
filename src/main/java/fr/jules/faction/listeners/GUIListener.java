@@ -488,15 +488,7 @@ public class GUIListener implements Listener {
         } else if (name.contains("Freeze")) {
             fr.jules.faction.gui.ModGUI.openPlayerList(player);
         } else if (name.contains("Vanish")) {
-            if (player.hasMetadata("vanished")) {
-                player.removeMetadata("vanished", plugin);
-                Bukkit.getOnlinePlayers().forEach(p -> p.showPlayer(plugin, player));
-                player.sendMessage("§aVous n'êtes plus invisible.");
-            } else {
-                player.setMetadata("vanished", new org.bukkit.metadata.FixedMetadataValue(plugin, true));
-                Bukkit.getOnlinePlayers().forEach(p -> p.hidePlayer(plugin, player));
-                player.sendMessage("§aVous êtes désormais invisible.");
-            }
+            plugin.getVanishManager().toggleVanish(player);
         } else if (name.contains("God Mode")) {
             if (player.hasMetadata("godmode")) {
                 player.removeMetadata("godmode", plugin);
@@ -526,6 +518,9 @@ public class GUIListener implements Listener {
             }
         } else if (name.contains("Joueurs")) {
             fr.jules.faction.gui.ModGUI.openPlayerList(player);
+        } else if (name.contains("Clear Chat")) {
+            for (int i = 0; i < 100; i++) Bukkit.broadcastMessage("");
+            Bukkit.broadcastMessage("§c§l[Modération] §aLe chat a été vidé par un modérateur.");
         }
     }
 
@@ -550,6 +545,17 @@ public class GUIListener implements Listener {
 
         if (action.contains("Inventaire")) {
             staff.openInventory(target.getInventory());
+        } else if (action.contains("Clear Inv")) {
+            target.getInventory().clear();
+            staff.sendMessage("§aInventaire de " + target.getName() + " vidé.");
+        } else if (action.contains("Mute")) {
+            PlayerData data = plugin.getPlayerManager().getPlayerData(target.getUniqueId());
+            data.setMutedUntil(System.currentTimeMillis() + 3600000); // 1 hour
+            target.sendMessage("§cVous avez été rendu muet pour 1 heure.");
+            staff.sendMessage("§aJoueur mute.");
+        } else if (action.contains("Téléportation")) {
+            staff.teleport(target.getLocation());
+            staff.sendMessage("§aTP sur " + target.getName());
         } else if (action.contains("Freeze")) {
             if (target.hasMetadata("frozen")) {
                 target.removeMetadata("frozen", plugin);

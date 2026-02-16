@@ -78,15 +78,7 @@ public class ModerationListener implements Listener {
     }
 
     private void toggleVanish(Player staff) {
-        if (staff.hasMetadata("vanished")) {
-            staff.removeMetadata("vanished", plugin);
-            org.bukkit.Bukkit.getOnlinePlayers().forEach(p -> p.showPlayer(plugin, staff));
-            staff.sendMessage("§aVanish: §cDésactivé");
-        } else {
-            staff.setMetadata("vanished", new org.bukkit.metadata.FixedMetadataValue(plugin, true));
-            org.bukkit.Bukkit.getOnlinePlayers().forEach(p -> p.hidePlayer(plugin, staff));
-            staff.sendMessage("§aVanish: §aActivé");
-        }
+        plugin.getVanishManager().toggleVanish(staff);
     }
 
     private void toggleFreeze(Player target, Player staff) {

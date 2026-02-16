@@ -23,6 +23,9 @@ public class FactionPlugin extends JavaPlugin {
     @Getter private FactionLevelManager factionLevelManager;
     @Getter private PetManager petManager;
     @Getter private AuctionManager auctionManager;
+    @Getter private BanManager banManager;
+    @Getter private TabManager tabManager;
+    @Getter private VanishManager vanishManager;
 
     @Override
     public void onEnable() {
@@ -41,6 +44,9 @@ public class FactionPlugin extends JavaPlugin {
         this.factionLevelManager = new FactionLevelManager(this);
         this.petManager = new PetManager(this);
         this.auctionManager = new AuctionManager(this);
+        this.banManager = new BanManager(this);
+        this.tabManager = new TabManager(this);
+        this.vanishManager = new VanishManager(this);
 
         dataManager.loadFactions(factionManager, claimManager);
         factionManager.getAllFactions().forEach(f -> factionManager.recalculatePower(f, playerManager));
@@ -80,6 +86,11 @@ public class FactionPlugin extends JavaPlugin {
         getCommand("jobs").setExecutor(new JobCommand(this));
         getCommand("quests").setExecutor(new QuestCommand(this));
         getCommand("ah").setExecutor(new AuctionCommand(this));
+
+        BanCommand banCommand = new BanCommand(this);
+        getCommand("tempban").setExecutor(banCommand);
+        getCommand("banip").setExecutor(banCommand);
+        getCommand("unban").setExecutor(banCommand);
     }
 
     private void registerListeners() {
@@ -96,6 +107,7 @@ public class FactionPlugin extends JavaPlugin {
         Bukkit.getPluginManager().registerEvents(new ModerationListener(this), this);
         Bukkit.getPluginManager().registerEvents(new SpawnerListener(this), this);
         Bukkit.getPluginManager().registerEvents(new PowerListener(this), this);
+        Bukkit.getPluginManager().registerEvents(new BanListener(this), this);
     }
 
     private void startTasks() {
