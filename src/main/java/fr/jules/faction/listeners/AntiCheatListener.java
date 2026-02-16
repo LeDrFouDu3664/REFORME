@@ -36,13 +36,16 @@ public class AntiCheatListener implements Listener {
         Player player = event.getPlayer();
         if (player.hasPermission("faction.staff") || player.getAllowFlight() || player.isInsideVehicle()) return;
 
+        // Grace period after damage
+        if (player.getNoDamageTicks() > 10) return;
+
         // 1. Detection Fly / AirJump / Airstrike+
         if (event.getTo().getY() > event.getFrom().getY() && !player.getLocation().getBlock().isLiquid() && player.getVelocity().getY() >= 0) {
             Material ground = player.getLocation().subtract(0, 0.1, 0).getBlock().getType();
             if (ground == Material.AIR) {
                 long time = airTime.getOrDefault(player.getUniqueId(), 0L);
                 if (time == 0) airTime.put(player.getUniqueId(), System.currentTimeMillis());
-                else if (System.currentTimeMillis() - time > 1500) {
+                else if (System.currentTimeMillis() - time > 2500) {
                     flag(player, "Fly / AirJump / Airstrike+", 5);
                     airTime.put(player.getUniqueId(), System.currentTimeMillis());
                 }
@@ -57,7 +60,7 @@ public class AntiCheatListener implements Listener {
         double deltaY = event.getTo().getY() - event.getFrom().getY();
         double dist = Math.sqrt(deltaX * deltaX + deltaZ * deltaZ);
 
-        double limit = player.isSprinting() ? 0.75 : 0.5;
+        double limit = player.isSprinting() ? 1.1 : 0.8;
         if (dist > limit && !player.isFlying()) {
              flag(player, "Speed / Step / Sprint", 3);
         }
@@ -161,7 +164,7 @@ public class AntiCheatListener implements Listener {
                 .filter(p -> p.hasPermission("faction.staff"))
                 .forEach(p -> p.sendMessage(msg));
 
-        if (total >= 50) {
+        if (total >= 100) {
             autoPunish(suspect, cheat);
         }
     }

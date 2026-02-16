@@ -64,12 +64,15 @@ public class BanCommand implements CommandExecutor {
 
         if (label.equalsIgnoreCase("unban")) {
             if (args.length < 1) {
-                sender.sendMessage("§cUsage: /unban <joueur|all>");
+                sender.sendMessage("§cUsage: /unban <joueur|IP|all>");
                 return true;
             }
             if (args[0].equalsIgnoreCase("all")) {
                 plugin.getBanManager().unbanAll(false);
                 sender.sendMessage("§aTous les bannis ont été graciés (sauf pour triche).");
+            } else if (args[0].matches("^\\d{1,3}(\\.\\d{1,3}){3}$")) {
+                plugin.getBanManager().unbanIP(args[0]);
+                sender.sendMessage("§aIP débannie.");
             } else {
                 OfflinePlayer target = Bukkit.getOfflinePlayer(args[0]);
                 plugin.getBanManager().unban(target.getUniqueId());
