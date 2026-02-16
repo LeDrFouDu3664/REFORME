@@ -4,14 +4,6 @@
 [INFO] Building tpc-faction 1.0-SNAPSHOT
 [INFO]   from pom.xml
 [INFO] --------------------------------[ jar ]---------------------------------
-Downloading from jitpack.io: https://jitpack.io/io/papermc/paper/paper-api/1.21.1-R0.1-SNAPSHOT/maven-metadata.xml
-Downloading from papermc: https://repo.papermc.io/repository/maven-public/io/papermc/paper/paper-api/1.21.1-R0.1-SNAPSHOT/maven-metadata.xml
-Progress (1): 2.4 kB                    Downloaded from papermc: https://repo.papermc.io/repository/maven-public/io/papermc/paper/paper-api/1.21.1-R0.1-SNAPSHOT/maven-metadata.xml (2.4 kB at 2.7 kB/s)
-Downloading from papermc: https://repo.papermc.io/repository/maven-public/org/bukkit/bukkit/1.13.1-R0.1-SNAPSHOT/maven-metadata.xml
-Downloading from jitpack.io: https://jitpack.io/org/bukkit/bukkit/1.13.1-R0.1-SNAPSHOT/maven-metadata.xml
-Downloading from spigot-repo: https://hub.spigotmc.org/nexus/content/groups/public/org/bukkit/bukkit/1.13.1-R0.1-SNAPSHOT/maven-metadata.xml
-Progress (1): 1.4 kB                    Downloaded from papermc: https://repo.papermc.io/repository/maven-public/org/bukkit/bukkit/1.13.1-R0.1-SNAPSHOT/maven-metadata.xml (1.4 kB at 9.1 kB/s)
-Progress (1): 1.4 kB                    Downloaded from spigot-repo: https://hub.spigotmc.org/nexus/content/groups/public/org/bukkit/bukkit/1.13.1-R0.1-SNAPSHOT/maven-metadata.xml (1.4 kB at 2.5 kB/s)
 [INFO]
 [INFO] --- clean:3.2.0:clean (default-clean) @ tpc-faction ---
 [INFO] Deleting /app/target
@@ -59,7 +51,7 @@ Progress (1): 1.4 kB                    Downloaded from spigot-repo: https://h
 [INFO]  T E S T S
 [INFO] -------------------------------------------------------
 [INFO] Running fr.jules.faction.FactionTest
-[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.108 s -- in fr.jules.faction.FactionTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.114 s -- in fr.jules.faction.FactionTest
 [INFO]
 [INFO] Results:
 [INFO]
@@ -71,6 +63,6 @@ Progress (1): 1.4 kB                    Downloaded from spigot-repo: https://h
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  11.500 s
-[INFO] Finished at: 2026-02-16T00:50:44Z
+[INFO] Total time:  9.956 s
+[INFO] Finished at: 2026-02-16T01:30:52Z
 [INFO] ------------------------------------------------------------------------

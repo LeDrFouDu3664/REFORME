@@ -30,15 +30,19 @@ public class TabManager {
         int online = Bukkit.getOnlinePlayers().size();
 
         player.setPlayerListHeaderFooter(
-                "§8§m---------------------------------------\n" +
-                "§c§lTPC FACTION §7- §fPvP/Factions\n" +
-                "§7Joueurs en ligne: §a" + online + " §8| §7Ping: §e" + player.getPing() + "ms\n" +
-                "§8§m---------------------------------------",
-                "§8§m---------------------------------------\n" +
-                "§6✪ §7Faction: " + factionName + " §8| §6⚡ §7Power: " + powerInfo + "\n" +
-                "§d⚒ §7Métier: " + jobInfo + " §8| §a$ §7Argent: §a" + String.format("%.0f", plugin.getEconomyManager().getBalance(player)) + "$\n" +
-                "§8§m---------------------------------------\n" +
-                "§eplay.tpcfaction.fr"
+                "\n§c§l«§m-------§r §c§lTPC FACTION §c§l§m-------§r§c§l»\n" +
+                "§7Bienvenue sur le PvP/Faction\n" +
+                "§f\n" +
+                "§8» §7Connectés: §e" + online + " §8| §7Latence: §e" + player.getPing() + "ms\n" +
+                "§f",
+                "§f\n" +
+                "§8» §6✪ §7Faction: " + factionName + "\n" +
+                "§8» §6⚡ §7Puissance: " + powerInfo + "\n" +
+                "§8» §d⚒ §7Métier: " + jobInfo + "\n" +
+                "§8» §a$ §7Argent: §a" + String.format("%.0f", plugin.getEconomyManager().getBalance(player)) + "$\n" +
+                "§f\n" +
+                "§c§l«§m-------------------------§r§c§l»\n" +
+                "§eIP: §fplay.tpcfaction.fr\n"
         );
 
         // Update name in tab with faction prefix and job color

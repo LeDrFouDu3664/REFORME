@@ -29,6 +29,18 @@ public class AntiCheatListener implements Listener {
 
     public AntiCheatListener(FactionPlugin plugin) {
         this.plugin = plugin;
+        startDecayTask();
+    }
+
+    private void startDecayTask() {
+        Bukkit.getScheduler().runTaskTimer(plugin, () -> {
+            violations.entrySet().removeIf(entry -> {
+                int newVal = entry.getValue() - 5;
+                if (newVal <= 0) return true;
+                entry.setValue(newVal);
+                return false;
+            });
+        }, 20 * 60, 20 * 60); // Every minute, reduce violations by 5
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
@@ -45,8 +57,8 @@ public class AntiCheatListener implements Listener {
             if (ground == Material.AIR) {
                 long time = airTime.getOrDefault(player.getUniqueId(), 0L);
                 if (time == 0) airTime.put(player.getUniqueId(), System.currentTimeMillis());
-                else if (System.currentTimeMillis() - time > 2500) {
-                    flag(player, "Fly / AirJump / Airstrike+", 5);
+                else if (System.currentTimeMillis() - time > 4000) {
+                    flag(player, "Fly / AirJump / Airstrike+", 2);
                     airTime.put(player.getUniqueId(), System.currentTimeMillis());
                 }
             } else {
@@ -60,9 +72,9 @@ public class AntiCheatListener implements Listener {
         double deltaY = event.getTo().getY() - event.getFrom().getY();
         double dist = Math.sqrt(deltaX * deltaX + deltaZ * deltaZ);
 
-        double limit = player.isSprinting() ? 1.1 : 0.8;
+        double limit = player.isSprinting() ? 1.3 : 1.0;
         if (dist > limit && !player.isFlying()) {
-             flag(player, "Speed / Step / Sprint", 3);
+             flag(player, "Speed / Step / Sprint", 2);
         }
 
         // 3. Jesus / Liquid Filler
@@ -70,11 +82,11 @@ public class AntiCheatListener implements Listener {
             flag(player, "Jesus / LiquidFiller", 4);
         }
 
-        // 4. Spider / FastClimb
-        if (deltaY > 0.4 && player.getLocation().getBlock().getType() == Material.AIR) {
+        // 4. Spider / FastClimb (More lenient: requires low horizontal movement + steep Y)
+        if (deltaY > 0.5 && player.getLocation().getBlock().getType() == Material.AIR && dist < 0.1) {
              Material wall = player.getLocation().add(player.getLocation().getDirection().multiply(0.5)).getBlock().getType();
              if (wall.isSolid() && wall != Material.LADDER && wall != Material.VINE) {
-                 flag(player, "Spider / FastClimb", 3);
+                 flag(player, "Spider / FastClimb", 2);
              }
         }
 
@@ -164,7 +176,7 @@ public class AntiCheatListener implements Listener {
                 .filter(p -> p.hasPermission("faction.staff"))
                 .forEach(p -> p.sendMessage(msg));
 
-        if (total >= 100) {
+        if (total >= 200) {
             autoPunish(suspect, cheat);
         }
     }
