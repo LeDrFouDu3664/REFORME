@@ -85,6 +85,17 @@ public class BanManager {
         saveBans();
     }
 
+    public void unbanById(String banId) {
+        bans.values().removeIf(data -> {
+            if (data.getBanId().equalsIgnoreCase(banId)) {
+                if (data.getIp() != null) ipBans.remove(data.getIp());
+                return true;
+            }
+            return false;
+        });
+        saveBans();
+    }
+
     public void unbanAll(boolean includeCheat) {
         Iterator<Map.Entry<UUID, BanData>> it = bans.entrySet().iterator();
         while (it.hasNext()) {

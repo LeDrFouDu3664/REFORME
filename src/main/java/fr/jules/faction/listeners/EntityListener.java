@@ -44,8 +44,12 @@ public class EntityListener implements Listener {
     @EventHandler
     public void onDeath(EntityDeathEvent event) {
         Entity entity = event.getEntity();
-        if (entity instanceof Tameable tameable && tameable.getOwner() instanceof Player owner) {
-            if (entity.getCustomName() != null && entity.getCustomName().contains("§c§l")) {
+        if (entity.getCustomName() != null && entity.getCustomName().contains("§c§l")) {
+            // C'est un compagnon
+            event.getDrops().clear();
+            event.setDroppedExp(0);
+
+            if (entity instanceof Tameable tameable && tameable.getOwner() instanceof Player owner) {
                 PlayerData data = plugin.getPlayerManager().getPlayerData(owner.getUniqueId());
                 data.setPetCooldown(System.currentTimeMillis() + 300000); // 5 min if dead
                 owner.sendMessage("§cTon compagnon est mort ! Cooldown de 5 minutes.");

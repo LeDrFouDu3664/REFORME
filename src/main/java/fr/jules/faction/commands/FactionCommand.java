@@ -71,6 +71,7 @@ public class FactionCommand implements CommandExecutor {
             case "ally": case "a": handleRelation(player, args, Relation.ALLY.name()); break;
             case "relation": handleRelationSub(player, args); break;
             case "pet": handlePet(player); break;
+            case "ah": handleAuctionSub(player, args); break;
             case "chest": handleChest(player); break;
             case "chat": case "c": handleChat(player, args); break;
             case "toggle": handleToggle(player); break;
@@ -109,6 +110,8 @@ public class FactionCommand implements CommandExecutor {
         plugin.getDataManager().saveFaction(faction);
         plugin.getDataManager().savePlayerData(data);
         MessageUtils.sendMessage(player, "faction-created", "%name%", name);
+
+        plugin.getDiscordManager().log("🚩 **FACTION** | Nouvelle faction créée: **" + name + "** par " + player.getName(), "factions");
     }
 
     private void handleJoin(Player player, String[] args) {
@@ -880,16 +883,40 @@ public class FactionCommand implements CommandExecutor {
 
     private void handleFactionSetHome(Player player) {
         PlayerData pd = plugin.getPlayerManager().getPlayerData(player.getUniqueId());
-        if (pd.getFactionId() == null) return;
+        if (pd.getFactionId() == null) { MessageUtils.sendMessage(player, "not-in-faction"); return; }
         Faction f = plugin.getFactionManager().getFaction(pd.getFactionId());
-        if (f.hasPermission(pd.getRole(), "SETHOME")) { f.setHome(player.getLocation()); player.sendMessage("§aHome défini."); }
+        if (!f.hasPermission(pd.getRole(), "SETHOME")) { MessageUtils.sendMessage(player, "no-permission"); return; }
+
+        if (f.getHome() != null) {
+            player.sendMessage("§cLe home de faction est déjà défini. Supprimez-le d'abord avec /f unsethome.");
+            return;
+        }
+
+        Claim current = plugin.getClaimManager().getClaim(player.getWorld().getName(), player.getLocation().getChunk().getX(), player.getLocation().getChunk().getZ());
+        if (current == null || !current.getFactionId().equals(f.getId())) {
+            player.sendMessage("§cVous ne pouvez définir le home de faction que sur votre propre territoire.");
+            return;
+        }
+
+        f.setHome(player.getLocation());
+        player.sendMessage("§aHome de faction défini avec succès !");
+        plugin.getDataManager().saveFaction(f);
     }
 
     private void handleFactionUnsetHome(Player player) {
         PlayerData pd = plugin.getPlayerManager().getPlayerData(player.getUniqueId());
-        if (pd.getFactionId() == null) return;
+        if (pd.getFactionId() == null) { MessageUtils.sendMessage(player, "not-in-faction"); return; }
         Faction f = plugin.getFactionManager().getFaction(pd.getFactionId());
-        if (f.hasPermission(pd.getRole(), "UNSETHOME")) { f.setHome(null); player.sendMessage("§aHome supprimé."); }
+        if (!f.hasPermission(pd.getRole(), "UNSETHOME")) { MessageUtils.sendMessage(player, "no-permission"); return; }
+
+        if (f.getHome() == null) {
+            player.sendMessage("§cLe home de faction n'est pas défini.");
+            return;
+        }
+
+        f.setHome(null);
+        player.sendMessage("§aHome de faction supprimé.");
+        plugin.getDataManager().saveFaction(f);
     }
 
     private void handleFactionHome(Player player, String[] args) {
@@ -946,6 +973,19 @@ public class FactionCommand implements CommandExecutor {
 
     private void handleBalance(Player player) { handleMoney(player, null); }
 
+    private void handleAuctionSub(Player player, String[] args) {
+        if (args.length < 2) {
+            player.performCommand("ah");
+            return;
+        }
+        if (args[1].equalsIgnoreCase("sell")) {
+            if (args.length < 3) { player.sendMessage("§cUsage: /f ah sell [prix]"); return; }
+            player.performCommand("ah sell " + args[2]);
+        } else {
+            player.performCommand("ah");
+        }
+    }
+
     private void handleFlag(Player player, String[] args) {
         if (args.length < 3) return;
         PlayerData pd = plugin.getPlayerManager().getPlayerData(player.getUniqueId());
@@ -999,10 +1039,11 @@ public class FactionCommand implements CommandExecutor {
             player.sendMessage(" §e/jobs §8- §7Métiers (Mineur, Bûcheron...)");
             player.sendMessage(" §e/quests §8- §7Quêtes quotidiennes");
             player.sendMessage(" §e/shop §8- §7Boutique & Économie");
+            player.sendMessage(" §e/ah sell [prix] §8- §7Vendre un objet");
             player.sendMessage(" §e/money §8- §7Voir votre argent");
             player.sendMessage(" §e/tpa [joueur] §8- §7Demande de téléport");
             player.sendMessage(" §e/spawn §8- §7Retour au spawn");
-            player.sendMessage(" §e/chateau /forteresse §8- §7Objectifs");
+            player.sendMessage(" §e/mute/unmute §8- §7Modération chat");
         }
 
         player.sendMessage("");

@@ -15,7 +15,8 @@ public class FactionTabCompleter implements TabCompleter {
     private final List<String> subCommands = Arrays.asList(
             "create", "join", "leave", "disband", "invite", "kick", "promote", "demote", "leader",
             "claim", "unclaim", "map", "status", "faction", "player", "home", "sethome", "unsethome",
-            "chat", "gui", "help", "seechunk", "unstuck", "admin", "relation", "ally", "enemy", "truce", "neutral", "toggle"
+            "chat", "gui", "help", "seechunk", "unstuck", "admin", "relation", "ally", "enemy", "truce", "neutral", "toggle",
+            "money", "bal", "chest", "ah"
     );
 
     @Override
@@ -31,8 +32,9 @@ public class FactionTabCompleter implements TabCompleter {
             String sub = args[0].toLowerCase();
             if (sub.equals("invite")) return Arrays.asList("add", "revoke");
             if (sub.equals("claim") || sub.equals("unclaim")) return Arrays.asList("one", "all", "auto", "radius");
-            if (sub.equals("admin")) return Arrays.asList("disband", "bypass", "setpower", "setchateau", "setforteresse", "give");
+            if (sub.equals("admin")) return Arrays.asList("disband", "bypass", "setpower", "setchateau", "setforteresse", "give", "petclear");
             if (sub.equals("chat")) return Arrays.asList("faction", "truce", "ally", "public");
+            if (sub.equals("ah")) return Arrays.asList("sell", "gui");
         }
 
         if (args.length == 3) {

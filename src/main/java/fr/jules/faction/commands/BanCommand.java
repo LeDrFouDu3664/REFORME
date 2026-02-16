@@ -2,6 +2,7 @@ package fr.jules.faction.commands;
 
 import fr.jules.faction.FactionPlugin;
 import fr.jules.faction.model.BanData;
+import fr.jules.faction.model.PlayerData;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
@@ -64,12 +65,15 @@ public class BanCommand implements CommandExecutor {
 
         if (label.equalsIgnoreCase("unban")) {
             if (args.length < 1) {
-                sender.sendMessage("§cUsage: /unban <joueur|IP|all>");
+                sender.sendMessage("§cUsage: /unban <joueur|IP|ID|all>");
                 return true;
             }
             if (args[0].equalsIgnoreCase("all")) {
                 plugin.getBanManager().unbanAll(false);
                 sender.sendMessage("§aTous les bannis ont été graciés (sauf pour triche).");
+            } else if (args[0].startsWith("#")) {
+                plugin.getBanManager().unbanById(args[0]);
+                sender.sendMessage("§aBan ID " + args[0] + " supprimé.");
             } else if (args[0].matches("^\\d{1,3}(\\.\\d{1,3}){3}$")) {
                 plugin.getBanManager().unbanIP(args[0]);
                 sender.sendMessage("§aIP débannie.");
@@ -81,11 +85,46 @@ public class BanCommand implements CommandExecutor {
             return true;
         }
 
+        if (label.equalsIgnoreCase("mute")) {
+            if (args.length < 3) {
+                sender.sendMessage("§cUsage: /mute <joueur> <durée (1h, 10m)> <raison>");
+                return true;
+            }
+            Player target = Bukkit.getPlayer(args[0]);
+            if (target == null) { sender.sendMessage("§cLe joueur doit être en ligne."); return true; }
+            long duration = parseDuration(args[1]);
+            if (duration == -1) { sender.sendMessage("§cDurée invalide."); return true; }
+
+            StringBuilder reason = new StringBuilder();
+            for (int i = 2; i < args.length; i++) reason.append(args[i]).append(" ");
+
+            PlayerData data = plugin.getPlayerManager().getPlayerData(target.getUniqueId());
+            data.setMutedUntil(System.currentTimeMillis() + duration);
+
+            target.sendMessage("§c§lVOUS AVEZ ÉTÉ RENDU MUET !\n§7Raison: §f" + reason + "\n§7Temps: §b" + args[1]);
+            sender.sendMessage("§aJoueur " + target.getName() + " mute.");
+
+            plugin.getDiscordManager().log("🔇 **MUTE** | " + target.getName() + " mute par " + sender.getName() + " (Raison: " + reason + ", Temps: " + args[1] + ")", "mutes");
+            return true;
+        }
+
+        if (label.equalsIgnoreCase("unmute")) {
+            if (args.length < 1) { sender.sendMessage("§cUsage: /unmute <joueur>"); return true; }
+            OfflinePlayer target = Bukkit.getOfflinePlayer(args[0]);
+            PlayerData data = plugin.getPlayerManager().getPlayerData(target.getUniqueId());
+            data.setMutedUntil(0);
+            sender.sendMessage("§aJoueur " + target.getName() + " unmute.");
+            return true;
+        }
+
         return false;
     }
 
     private void executeBan(OfflinePlayer target, String admin, String reason, long expiry, boolean isIP) {
         String banId = "#" + UUID.randomUUID().toString().substring(0, 6).toUpperCase();
+
+        plugin.getDiscordManager().log("🔨 **BAN** | " + target.getName() + " banni par " + admin + " (Raison: " + reason + ", ID: " + banId + ")", "bans");
+
         String ip = null;
         if (target.isOnline()) {
             ip = target.getPlayer().getAddress().getAddress().getHostAddress();

@@ -1,5 +1,10 @@
 # FactionPlugin Configuration
 settings:
+  discord:
+    webhook-url: "votre_webhook_ici"
+    log-bans: true
+    log-mutes: true
+    log-factions: true
   power:
     per-death: 2.0
     per-interval: 0.2

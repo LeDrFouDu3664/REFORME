@@ -24,6 +24,7 @@ public class FactionPlugin extends JavaPlugin {
     @Getter private PetManager petManager;
     @Getter private AuctionManager auctionManager;
     @Getter private BanManager banManager;
+    @Getter private DiscordManager discordManager;
     @Getter private TabManager tabManager;
     @Getter private VanishManager vanishManager;
 
@@ -45,6 +46,7 @@ public class FactionPlugin extends JavaPlugin {
         this.petManager = new PetManager(this);
         this.auctionManager = new AuctionManager(this);
         this.banManager = new BanManager(this);
+        this.discordManager = new DiscordManager(this);
         this.tabManager = new TabManager(this);
         this.vanishManager = new VanishManager(this);
 
@@ -91,6 +93,8 @@ public class FactionPlugin extends JavaPlugin {
         getCommand("tempban").setExecutor(banCommand);
         getCommand("banip").setExecutor(banCommand);
         getCommand("unban").setExecutor(banCommand);
+        getCommand("mute").setExecutor(banCommand);
+        getCommand("unmute").setExecutor(banCommand);
     }
 
     private void registerListeners() {

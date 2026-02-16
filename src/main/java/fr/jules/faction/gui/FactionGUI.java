@@ -8,7 +8,9 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 public class FactionGUI {
@@ -252,15 +254,31 @@ public class FactionGUI {
     }
 
     public static void openPetMenu(Player player, fr.jules.faction.model.PlayerData data) {
-        Inventory inv = Bukkit.createInventory(new FactionInventoryHolder("PETS", data), 54, "§c§lVos Compagnons");
+        openPetMenu(player, data, 0);
+    }
+
+    public static void openPetMenu(Player player, fr.jules.faction.model.PlayerData data, int page) {
+        Inventory inv = Bukkit.createInventory(new FactionInventoryHolder("PETS", page), 54, "§c§lVos Compagnons (Page " + (page + 1) + ")");
         fillBorder(inv);
         inv.setItem(49, createItem(Material.SHEARS, "§7Retour", "§8Clic pour revenir"));
+        inv.setItem(4, createItem(Material.BARRIER, "§cRenvoyer", "§7Faire disparaitre le familier"));
+
+        List<Map.Entry<String, fr.jules.faction.model.PetInfo>> list = new ArrayList<>(data.getCapturedPets().entrySet());
+        int start = page * 28;
+        int end = Math.min(start + 28, list.size());
+
+        if (page > 0) inv.setItem(45, createItem(Material.ARROW, "§ePage Précédente"));
+        if (end < list.size()) inv.setItem(53, createItem(Material.ARROW, "§ePage Suivante"));
 
         int slot = 10;
-        for (Map.Entry<String, fr.jules.faction.model.PetInfo> entry : data.getCapturedPets().entrySet()) {
-            if (slot >= 44) break;
-            if (slot % 9 == 0 || slot % 9 == 8) slot++;
+        for (int i = start; i < end; i++) {
+            while (slot % 9 == 0 || slot % 9 == 8 || slot < 10 || slot > 43) {
+                slot++;
+                if (slot > 43) break;
+            }
+            if (slot > 43) break;
 
+            Map.Entry<String, fr.jules.faction.model.PetInfo> entry = list.get(i);
             String petId = entry.getKey();
             fr.jules.faction.model.PetInfo info = entry.getValue();
 
@@ -276,14 +294,15 @@ public class FactionGUI {
             inv.setItem(slot++, createItem(icon, "§e" + petId,
                 "§7Type: §f" + info.getType(),
                 "§7Bébé: §f" + (info.isBaby() ? "Oui" : "Non"),
-                "§aClic pour invoquer"));
+                "",
+                "§a▶ Clic Gauche: §7Invoquer",
+                "§c▶ Shift + Clic Droit: §7Supprimer définitivement"));
+            slot++;
         }
 
         if (data.getCapturedPets().isEmpty()) {
             inv.setItem(22, createItem(Material.BARRIER, "§cPas de compagnon", "§7Capturez des animaux sauvages", "§7avec un Lasso de Capture !"));
         }
-
-        inv.setItem(4, createItem(Material.BARRIER, "§cRenvoyer", "§7Faire disparaitre le familier"));
 
         player.openInventory(inv);
     }

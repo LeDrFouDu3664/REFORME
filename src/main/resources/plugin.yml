@@ -51,7 +51,11 @@ commands:
   banip:
     description: Bannir l'IP d'un joueur.
   unban:
-    description: Débannir un joueur.
+    description: Débannir un joueur (Pseudo, IP ou ID).
+  mute:
+    description: Rendre un joueur muet.
+  unmute:
+    description: Redonner la parole à un joueur.
 
 permissions:
   faction.command.*:

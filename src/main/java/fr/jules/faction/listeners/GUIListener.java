@@ -24,6 +24,16 @@ public class GUIListener implements Listener {
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
         if (!(event.getWhoClicked() instanceof Player player)) return;
+
+        // Verrouiller les items de staff
+        if (event.getCurrentItem() != null && event.getCurrentItem().hasItemMeta()) {
+            String dn = event.getCurrentItem().getItemMeta().getDisplayName();
+            if (dn.contains("§bVanish") || dn.contains("§bFreeze") || dn.contains("§eInvSee") || dn.contains("§6Outils Modération") || dn.contains("§cQuitter Staff Mode")) {
+                event.setCancelled(true);
+                return;
+            }
+        }
+
         if (!(event.getInventory().getHolder() instanceof fr.jules.faction.gui.FactionInventoryHolder holder)) return;
 
         event.setCancelled(true);
@@ -75,7 +85,7 @@ public class GUIListener implements Listener {
                 handlePowersMenuClick(player, name, data, faction);
                 break;
             case "PETS":
-                handlePetMenuClick(player, name, data, faction);
+                handlePetMenuClick(player, name, data, faction, event);
                 break;
             case "SHOP_MAIN":
                 handleAdminShopMainClick(player, name);
@@ -335,8 +345,18 @@ public class GUIListener implements Listener {
         }
     }
 
-    private void handlePetMenuClick(Player player, String name, PlayerData data, Faction faction) {
+    private void handlePetMenuClick(Player player, String name, PlayerData data, Faction faction, InventoryClickEvent event) {
         String petId = name; // Color already stripped in onInventoryClick
+        int page = (int) ((fr.jules.faction.gui.FactionInventoryHolder) event.getInventory().getHolder()).getData();
+
+        if (name.equalsIgnoreCase("Page Suivante")) {
+            fr.jules.faction.gui.FactionGUI.openPetMenu(player, data, page + 1);
+            return;
+        }
+        if (name.equalsIgnoreCase("Page Précédente")) {
+            fr.jules.faction.gui.FactionGUI.openPetMenu(player, data, page - 1);
+            return;
+        }
 
         if (name.equalsIgnoreCase("Retour")) {
             if (faction != null) fr.jules.faction.gui.FactionGUI.openMainMenu(player, faction);
@@ -346,6 +366,15 @@ public class GUIListener implements Listener {
         if (name.equalsIgnoreCase("Renvoyer")) {
             plugin.getPetManager().despawnPet(player);
             player.sendMessage("§aAnimal renvoyé.");
+            return;
+        }
+
+        if (event.getClick().isShiftClick() && event.getClick().isRightClick()) {
+            if (data.getCapturedPets().containsKey(petId)) {
+                data.getCapturedPets().remove(petId);
+                player.sendMessage("§cCompagnon " + petId + " supprimé.");
+                fr.jules.faction.gui.FactionGUI.openPetMenu(player, data);
+            }
             return;
         }
 

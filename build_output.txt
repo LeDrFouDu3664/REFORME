@@ -13,7 +13,7 @@
 [INFO]
 [INFO] --- compiler:3.11.0:compile (default-compile) @ tpc-faction ---
 [INFO] Changes detected - recompiling the module! :source
-[INFO] Compiling 54 source files with javac [debug target 21] to target/classes
+[INFO] Compiling 56 source files with javac [debug target 21] to target/classes
 [INFO] Annotation processing is enabled because one or more processors were found
   on the class path. A future release of javac may disable annotation processing
   unless at least one processor is specified by name (-processor), or a search
@@ -51,7 +51,7 @@
 [INFO]  T E S T S
 [INFO] -------------------------------------------------------
 [INFO] Running fr.jules.faction.FactionTest
-[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.114 s -- in fr.jules.faction.FactionTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.091 s -- in fr.jules.faction.FactionTest
 [INFO]
 [INFO] Results:
 [INFO]
@@ -63,6 +63,6 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  9.956 s
-[INFO] Finished at: 2026-02-16T01:30:52Z
+[INFO] Total time:  7.285 s
+[INFO] Finished at: 2026-02-16T23:07:58Z
 [INFO] ------------------------------------------------------------------------

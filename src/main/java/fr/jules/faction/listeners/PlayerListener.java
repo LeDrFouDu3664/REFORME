@@ -125,6 +125,17 @@ public class PlayerListener implements Listener {
     }
 
     @EventHandler
+    public void onDrop(PlayerDropItemEvent event) {
+        org.bukkit.inventory.ItemStack item = event.getItemDrop().getItemStack();
+        if (item.hasItemMeta()) {
+            String dn = item.getItemMeta().getDisplayName();
+            if (dn.contains("§bVanish") || dn.contains("§bFreeze") || dn.contains("§eInvSee") || dn.contains("§6Outils Modération") || dn.contains("§cQuitter Staff Mode")) {
+                event.setCancelled(true);
+            }
+        }
+    }
+
+    @EventHandler
     public void onMove(PlayerMoveEvent event) {
         PlayerData data = plugin.getPlayerManager().getPlayerData(event.getPlayer().getUniqueId());
 
