@@ -23,6 +23,7 @@ public class ProtectionListener implements Listener {
 
     @EventHandler
     public void onBlockBreak(BlockBreakEvent event) {
+        plugin.getAfkManager().updateActivity(event.getPlayer());
         if (!canPerformAction(event.getPlayer(), event.getBlock().getLocation(), "DESTROY")) {
             event.setCancelled(true);
             MessageUtils.sendMessage(event.getPlayer(), "claim-protection");
@@ -67,6 +68,7 @@ public class ProtectionListener implements Listener {
 
     @EventHandler
     public void onBlockPlace(BlockPlaceEvent event) {
+        plugin.getAfkManager().updateActivity(event.getPlayer());
         if (!canPerformAction(event.getPlayer(), event.getBlock().getLocation(), "BUILD")) {
             event.setCancelled(true);
             MessageUtils.sendMessage(event.getPlayer(), "claim-protection");

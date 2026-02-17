@@ -16,7 +16,7 @@ public class FactionTabCompleter implements TabCompleter {
             "create", "join", "leave", "disband", "invite", "kick", "promote", "demote", "leader",
             "claim", "unclaim", "map", "status", "faction", "player", "home", "sethome", "unsethome",
             "chat", "gui", "help", "seechunk", "unstuck", "admin", "relation", "ally", "enemy", "truce", "neutral", "toggle",
-            "money", "bal", "chest", "ah"
+            "money", "bal", "chest", "ah", "afk", "rank"
     );
 
     @Override
@@ -35,6 +35,7 @@ public class FactionTabCompleter implements TabCompleter {
             if (sub.equals("admin")) return Arrays.asList("disband", "bypass", "setpower", "setchateau", "setforteresse", "give", "petclear");
             if (sub.equals("chat")) return Arrays.asList("faction", "truce", "ally", "public");
             if (sub.equals("ah")) return Arrays.asList("sell", "gui");
+            if (sub.equals("rank")) return Arrays.asList("set");
         }
 
         if (args.length == 3) {

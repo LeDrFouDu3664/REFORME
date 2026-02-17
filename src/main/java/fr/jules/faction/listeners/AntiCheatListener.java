@@ -72,9 +72,9 @@ public class AntiCheatListener implements Listener {
         double deltaY = event.getTo().getY() - event.getFrom().getY();
         double dist = Math.sqrt(deltaX * deltaX + deltaZ * deltaZ);
 
-        double limit = player.isSprinting() ? 1.3 : 1.0;
-        if (dist > limit && !player.isFlying()) {
-             flag(player, "Speed / Step / Sprint", 2);
+        double limit = player.isSprinting() ? 1.5 : 1.1;
+        if (dist > limit && !player.isFlying() && player.getNoDamageTicks() <= 0) {
+             flag(player, "Speed / Step / Sprint", 1);
         }
 
         // 3. Jesus / Liquid Filler
@@ -82,11 +82,13 @@ public class AntiCheatListener implements Listener {
             flag(player, "Jesus / LiquidFiller", 4);
         }
 
-        // 4. Spider / FastClimb (More lenient: requires low horizontal movement + steep Y)
-        if (deltaY > 0.5 && player.getLocation().getBlock().getType() == Material.AIR && dist < 0.1) {
-             Material wall = player.getLocation().add(player.getLocation().getDirection().multiply(0.5)).getBlock().getType();
-             if (wall.isSolid() && wall != Material.LADDER && wall != Material.VINE) {
-                 flag(player, "Spider / FastClimb", 2);
+        // 4. Spider / FastClimb (Even more lenient: requires very low horizontal movement + steep Y near a wall)
+        if (deltaY > 0.6 && player.getLocation().getBlock().getType() == Material.AIR && dist < 0.05) {
+             // Check if there is a solid block in front of the player
+             Material wall = player.getLocation().add(player.getLocation().getDirection().setY(0).normalize().multiply(0.6)).getBlock().getType();
+             if (wall.isSolid() && wall != Material.LADDER && wall != Material.VINE && wall != Material.SCAFFOLDING) {
+                 // Final check: player must be "climbing" a vertical surface without a climbing block
+                 flag(player, "Spider / FastClimb", 1);
              }
         }
 

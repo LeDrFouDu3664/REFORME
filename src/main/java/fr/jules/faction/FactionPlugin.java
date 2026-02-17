@@ -25,6 +25,7 @@ public class FactionPlugin extends JavaPlugin {
     @Getter private AuctionManager auctionManager;
     @Getter private BanManager banManager;
     @Getter private DiscordManager discordManager;
+    @Getter private AFKManager afkManager;
     @Getter private TabManager tabManager;
     @Getter private VanishManager vanishManager;
 
@@ -47,6 +48,7 @@ public class FactionPlugin extends JavaPlugin {
         this.auctionManager = new AuctionManager(this);
         this.banManager = new BanManager(this);
         this.discordManager = new DiscordManager(this);
+        this.afkManager = new AFKManager(this);
         this.tabManager = new TabManager(this);
         this.vanishManager = new VanishManager(this);
 

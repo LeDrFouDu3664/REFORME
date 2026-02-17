@@ -9,13 +9,37 @@
 [INFO] Copying 2 resources from src/main/resources to target/classes
 [INFO]
 [INFO] --- compiler:3.11.0:compile (default-compile) @ tpc-faction ---
-[INFO] Nothing to compile - all classes are up to date
+[INFO] Changes detected - recompiling the module! :source
+[INFO] Compiling 58 source files with javac [debug target 21] to target/classes
+[INFO] Annotation processing is enabled because one or more processors were found
+  on the class path. A future release of javac may disable annotation processing
+  unless at least one processor is specified by name (-processor), or a search
+  path is specified (--processor-path, --processor-module-path), or annotation
+  processing is enabled explicitly (-proc:only, -proc:full).
+  Use -Xlint:-options to suppress this message.
+  Use -proc:none to disable annotation processing.
+[WARNING] /app/src/main/java/fr/jules/faction/manager/PetManager.java:[74,58] valueOf(java.lang.String) in org.bukkit.entity.Cat.Type has been deprecated and marked for removal
+[WARNING] /app/src/main/java/fr/jules/faction/manager/PetManager.java:[97,68] valueOf(java.lang.String) in org.bukkit.entity.Villager.Type has been deprecated and marked for removal
+[WARNING] /app/src/main/java/fr/jules/faction/listeners/PlayerListener.java:[113,74] name() in org.bukkit.util.OldEnum has been deprecated and marked for removal
+[WARNING] /app/src/main/java/fr/jules/faction/listeners/PlayerListener.java:[124,89] name() in org.bukkit.util.OldEnum has been deprecated and marked for removal
+[INFO] /app/src/main/java/fr/jules/faction/manager/AFKManager.java: Some input files use or override a deprecated API.
+[INFO] /app/src/main/java/fr/jules/faction/manager/AFKManager.java: Recompile with -Xlint:deprecation for details.
+[INFO] /app/src/main/java/fr/jules/faction/manager/DataManager.java: /app/src/main/java/fr/jules/faction/manager/DataManager.java uses unchecked or unsafe operations.
+[INFO] /app/src/main/java/fr/jules/faction/manager/DataManager.java: Recompile with -Xlint:unchecked for details.
 [INFO]
 [INFO] --- resources:3.3.1:testResources (default-testResources) @ tpc-faction ---
 [INFO] skip non existing resourceDirectory /app/src/test/resources
 [INFO]
 [INFO] --- compiler:3.11.0:testCompile (default-testCompile) @ tpc-faction ---
-[INFO] Nothing to compile - all classes are up to date
+[INFO] Changes detected - recompiling the module! :dependency
+[INFO] Compiling 1 source file with javac [debug target 21] to target/test-classes
+[INFO] Annotation processing is enabled because one or more processors were found
+  on the class path. A future release of javac may disable annotation processing
+  unless at least one processor is specified by name (-processor), or a search
+  path is specified (--processor-path, --processor-module-path), or annotation
+  processing is enabled explicitly (-proc:only, -proc:full).
+  Use -Xlint:-options to suppress this message.
+  Use -proc:none to disable annotation processing.
 [INFO]
 [INFO] --- surefire:3.2.5:test (default-test) @ tpc-faction ---
 [INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
@@ -24,7 +48,7 @@
 [INFO]  T E S T S
 [INFO] -------------------------------------------------------
 [INFO] Running fr.jules.faction.FactionTest
-[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.097 s -- in fr.jules.faction.FactionTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.081 s -- in fr.jules.faction.FactionTest
 [INFO]
 [INFO] Results:
 [INFO]
@@ -33,6 +57,6 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  2.136 s
-[INFO] Finished at: 2026-02-16T23:04:49Z
+[INFO] Total time:  6.476 s
+[INFO] Finished at: 2026-02-17T22:47:02Z
 [INFO] ------------------------------------------------------------------------

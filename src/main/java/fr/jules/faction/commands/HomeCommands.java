@@ -38,6 +38,13 @@ public class HomeCommands implements CommandExecutor {
     private void handleSetHome(Player player, String[] args) {
         String name = args.length > 0 ? args[0] : "home";
         PlayerData data = plugin.getPlayerManager().getPlayerData(player.getUniqueId());
+
+        int max = data.getRank().getMaxHomes();
+        if (data.getHomes().size() >= max && !data.getHomes().containsKey(name)) {
+            player.sendMessage("§cVous avez atteint votre limite de résidences (" + max + ").");
+            return;
+        }
+
         data.getHomes().put(name, player.getLocation());
         MessageUtils.sendMessage(player, "home-set", "%name%", name);
     }

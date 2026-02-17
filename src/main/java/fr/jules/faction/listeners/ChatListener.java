@@ -23,6 +23,7 @@ public class ChatListener implements Listener {
     @EventHandler
     public void onChat(AsyncChatEvent event) {
         Player player = event.getPlayer();
+        plugin.getAfkManager().updateActivity(player);
         PlayerData data = plugin.getPlayerManager().getPlayerData(player.getUniqueId());
 
         if (data.getMutedUntil() > System.currentTimeMillis()) {

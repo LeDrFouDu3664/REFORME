@@ -152,6 +152,7 @@ public class DataManager {
         config.set("uuid", data.getUuid().toString());
         config.set("name", data.getName());
         config.set("factionId", data.getFactionId() != null ? data.getFactionId().toString() : null);
+        config.set("rank", data.getRank().name());
         config.set("role", data.getRole().name());
         config.set("power", data.getPower());
         config.set("maxPower", data.getMaxPower());
@@ -196,6 +197,7 @@ public class DataManager {
         data.setName(config.getString("name"));
         String facIdStr = config.getString("factionId");
         if (facIdStr != null) data.setFactionId(UUID.fromString(facIdStr));
+        data.setRank(Rank.valueOf(config.getString("rank", "JOUEUR")));
         data.setRole(Grade.valueOf(config.getString("role", "MEMBER")));
         data.setPower(config.getDouble("power", 10.0));
         data.setMaxPower(config.getDouble("maxPower", 10.0));

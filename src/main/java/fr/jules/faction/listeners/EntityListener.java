@@ -51,8 +51,17 @@ public class EntityListener implements Listener {
 
             if (entity instanceof Tameable tameable && tameable.getOwner() instanceof Player owner) {
                 PlayerData data = plugin.getPlayerManager().getPlayerData(owner.getUniqueId());
-                data.setPetCooldown(System.currentTimeMillis() + 300000); // 5 min if dead
-                owner.sendMessage("§cTon compagnon est mort ! Cooldown de 5 minutes.");
+
+                long cooldown = 60000; // 1 min default
+                String message = "§cTon compagnon a été tué par un autre joueur ! Cooldown de 1 minute.";
+
+                if (event.getEntity().getKiller() != null && event.getEntity().getKiller().equals(owner)) {
+                    cooldown = 600000; // 10 min if owner killed it
+                    message = "§cTu as tué ton propre compagnon ! Cooldown de 10 minutes.";
+                }
+
+                data.setPetCooldown(System.currentTimeMillis() + cooldown);
+                owner.sendMessage(message);
             }
         }
     }

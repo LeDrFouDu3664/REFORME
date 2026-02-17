@@ -69,8 +69,46 @@ public class MiscCommands implements CommandExecutor {
                 player.openInventory(player.getEnderChest());
                 player.sendMessage("§aOuverture de l'ender chest.");
                 break;
+            case "rank":
+                handleRank(player, args);
+                break;
+            case "afk":
+                plugin.getAfkManager().setAFK(player, !plugin.getAfkManager().isAFK(player));
+                break;
         }
         return true;
+    }
+
+    private void handleRank(Player player, String[] args) {
+        if (!player.hasPermission("faction.admin")) {
+            player.sendMessage("§cVous n'avez pas la permission.");
+            return;
+        }
+        if (args.length < 3) {
+            player.sendMessage("§cUsage: /rank set <joueur> <rank>");
+            return;
+        }
+        if (args[0].equalsIgnoreCase("set")) {
+            PlayerData targetData = plugin.getPlayerManager().getPlayerDataByName(args[1]);
+            if (targetData == null) {
+                player.sendMessage("§cJoueur introuvable.");
+                return;
+            }
+            try {
+                fr.jules.faction.model.Rank rank = fr.jules.faction.model.Rank.valueOf(args[2].toUpperCase());
+                targetData.setRank(rank);
+                player.sendMessage("§aLe rank de " + targetData.getName() + " a été mis à " + rank.name());
+
+                Player targetPlayer = Bukkit.getPlayer(targetData.getUuid());
+                if (targetPlayer != null) {
+                    targetPlayer.sendMessage("§aVotre rank a été mis à " + rank.getPrefix());
+                    plugin.getTabManager().updateTab(targetPlayer);
+                }
+                plugin.getDataManager().savePlayerData(targetData);
+            } catch (IllegalArgumentException e) {
+                player.sendMessage("§cRank invalide. Ranks: JOUEUR, NOVICE, GUERRIER, ELITE, LEGENDE, HELPER, MODERATEUR, ADMINISTRATEUR");
+            }
+        }
     }
 
     private void handleShop(Player player) {

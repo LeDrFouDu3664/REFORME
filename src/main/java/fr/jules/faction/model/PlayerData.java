@@ -10,6 +10,7 @@ public class PlayerData {
     private final UUID uuid;
     private String name;
     private UUID factionId;
+    private Rank rank = Rank.JOUEUR;
     private Grade role = Grade.MEMBER;
     private double power = 10.0;
     private double maxPower = 10.0;

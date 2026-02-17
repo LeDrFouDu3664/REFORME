@@ -51,6 +51,7 @@ public class PlayerListener implements Listener {
         }
 
         plugin.getDataManager().savePlayerData(data);
+        plugin.getAfkManager().removePlayer(event.getPlayer().getUniqueId());
         plugin.getPlayerManager().removePlayerData(event.getPlayer().getUniqueId());
     }
 
@@ -68,6 +69,7 @@ public class PlayerListener implements Listener {
     @EventHandler
     public void onInteractEntity(PlayerInteractEntityEvent event) {
         Player player = event.getPlayer();
+        plugin.getAfkManager().updateActivity(player);
         org.bukkit.inventory.ItemStack item = player.getInventory().getItemInMainHand();
 
         if (item.getType() == org.bukkit.Material.LEAD && item.hasItemMeta() && item.getItemMeta().getDisplayName().contains("Lasso de Capture")) {
@@ -137,6 +139,10 @@ public class PlayerListener implements Listener {
 
     @EventHandler
     public void onMove(PlayerMoveEvent event) {
+        if (event.getFrom().getX() != event.getTo().getX() || event.getFrom().getZ() != event.getTo().getZ() || event.getFrom().getY() != event.getTo().getY()) {
+            plugin.getAfkManager().updateActivity(event.getPlayer());
+        }
+
         PlayerData data = plugin.getPlayerManager().getPlayerData(event.getPlayer().getUniqueId());
 
         // Power: Lava Speed
