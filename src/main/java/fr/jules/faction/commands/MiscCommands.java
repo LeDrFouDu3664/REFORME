@@ -67,7 +67,7 @@ public class MiscCommands implements CommandExecutor {
                 break;
             case "ec":
                 player.openInventory(player.getEnderChest());
-                player.sendMessage("§aOuverture de l'ender chest.");
+                MessageUtils.sendMessage(player, "ec-open");
                 break;
             case "rank":
                 handleRank(player, args);
@@ -81,36 +81,36 @@ public class MiscCommands implements CommandExecutor {
 
     private void handleRank(Player player, String[] args) {
         if (args.length < 1) {
-            player.sendMessage("§7Votre rank actuel: " + plugin.getPlayerManager().getPlayerData(player.getUniqueId()).getRank().getPrefix());
+            MessageUtils.sendMessage(player, "rank-status", "%rank%", plugin.getPlayerManager().getPlayerData(player.getUniqueId()).getRank().getPrefix());
             return;
         }
         if (!player.hasPermission("faction.admin")) {
-            player.sendMessage("§cUsage: /rank (pour voir votre rank)");
+            MessageUtils.sendMessage(player, "no-permission", "%perm%", "faction.admin");
             return;
         }
         if (args.length < 3) {
-            player.sendMessage("§cUsage: /rank set <joueur> <rank>");
+            MessageUtils.sendMessage(player, "rank-set-usage");
             return;
         }
         if (args[0].equalsIgnoreCase("set")) {
             PlayerData targetData = plugin.getPlayerManager().getPlayerDataByName(args[1]);
             if (targetData == null) {
-                player.sendMessage("§cJoueur introuvable.");
+                MessageUtils.sendMessage(player, "rank-not-found");
                 return;
             }
             try {
                 fr.jules.faction.model.Rank rank = fr.jules.faction.model.Rank.valueOf(args[2].toUpperCase());
                 targetData.setRank(rank);
-                player.sendMessage("§aLe rank de " + targetData.getName() + " a été mis à " + rank.name());
+                MessageUtils.sendMessage(player, "rank-updated", "%target%", targetData.getName(), "%rank%", rank.name());
 
                 Player targetPlayer = Bukkit.getPlayer(targetData.getUuid());
                 if (targetPlayer != null) {
-                    targetPlayer.sendMessage("§6§l[Rank] §aFélicitations ! Vous avez été promu au grade " + rank.getPrefix() + " §a!");
+                    MessageUtils.sendMessage(targetPlayer, "rank-received", "%rank%", rank.getPrefix());
                     plugin.getTabManager().updateTab(targetPlayer);
                 }
                 plugin.getDataManager().savePlayerData(targetData);
             } catch (IllegalArgumentException e) {
-                player.sendMessage("§cRank invalide. Ranks: JOUEUR, NOVICE, GUERRIER, ELITE, LEGENDE, HELPER, MODERATEUR, ADMINISTRATEUR");
+                MessageUtils.sendMessage(player, "rank-invalid");
             }
         }
     }
@@ -163,7 +163,7 @@ public class MiscCommands implements CommandExecutor {
             player.getInventory().setItem(4, createStaffItem(org.bukkit.Material.BOOK, "§6Outils Modération", "§7Ouvrir le menu"));
             player.getInventory().setItem(8, createStaffItem(org.bukkit.Material.BARRIER, "§cQuitter Staff Mode", "§7Désactiver"));
 
-            player.sendMessage("§a§l[Staff] §aMode Staff activé.");
+            MessageUtils.sendMessage(player, "staff-activated");
         } else {
             // Deactivate Staff Mode
             data.setStaffMode(false);
@@ -176,7 +176,7 @@ public class MiscCommands implements CommandExecutor {
                 Bukkit.getOnlinePlayers().forEach(p -> p.showPlayer(plugin, player));
             }
 
-            player.sendMessage("§c§l[Staff] §cMode Staff désactivé. Inventaire restauré.");
+            MessageUtils.sendMessage(player, "staff-deactivated");
         }
     }
 
@@ -240,9 +240,9 @@ public class MiscCommands implements CommandExecutor {
         }
         if (canTeleportToObjective(player, loc)) {
             player.teleport(loc);
-            player.sendMessage("§aTéléportation au château !");
+            MessageUtils.sendMessage(player, "objective-teleport", "%objective%", "château");
         } else {
-            player.sendMessage("§cVotre faction ne possède pas le château actuellement (contrôlez le territoire du château).");
+            MessageUtils.sendMessage(player, "objective-no-possession", "%objective%", "le château");
         }
     }
 
@@ -254,9 +254,9 @@ public class MiscCommands implements CommandExecutor {
         }
         if (canTeleportToObjective(player, loc)) {
             player.teleport(loc);
-            player.sendMessage("§aTéléportation à la forteresse !");
+            MessageUtils.sendMessage(player, "objective-teleport", "%objective%", "forteresse");
         } else {
-            player.sendMessage("§cVotre faction ne possède pas la forteresse actuellement (contrôlez le territoire de la forteresse).");
+            MessageUtils.sendMessage(player, "objective-no-possession", "%objective%", "la forteresse");
         }
     }
 

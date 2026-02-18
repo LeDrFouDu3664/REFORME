@@ -24,12 +24,19 @@ public abstract class Module implements Listener {
     public abstract void onDisable();
 
     protected void loadConfig() {
-        File moduleFolder = new File(plugin.getDataFolder(), "modules/" + name.toLowerCase());
-        if (!moduleFolder.exists()) moduleFolder.mkdirs();
+        String path = "modules/" + name.toLowerCase() + "/config.yml";
+        configFile = new File(plugin.getDataFolder(), path);
 
-        configFile = new File(moduleFolder, "config.yml");
         if (!configFile.exists()) {
-            plugin.saveResource("modules/" + name.toLowerCase() + "/config.yml", false);
+            plugin.getLogger().info("Génération de la configuration pour le module: " + name);
+            try {
+                plugin.saveResource(path, false);
+            } catch (IllegalArgumentException e) {
+                plugin.getLogger().warning("Ressource introuvable dans le JAR: " + path);
+                // Create empty if missing in JAR to avoid null config
+                if (!configFile.getParentFile().exists()) configFile.getParentFile().mkdirs();
+                try { configFile.createNewFile(); } catch (IOException ignored) {}
+            }
         }
         config = YamlConfiguration.loadConfiguration(configFile);
     }

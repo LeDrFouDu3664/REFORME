@@ -92,3 +92,16 @@ messages:
   admin-faction-disbanded: "§aFaction %name% dissoute par un administrateur."
   bypass-mode: "§aMode bypass: %status%"
   pvp-denied-safezone: "§cLe PVP est désactivé dans cette SafeZone."
+
+  # New
+  rank-status: "§7Votre rank actuel: %rank%"
+  rank-set-usage: "§cUsage: /rank set <joueur> <rank>"
+  rank-not-found: "§cJoueur introuvable."
+  rank-invalid: "§cRank invalide. Ranks: JOUEUR, NOVICE, GUERRIER, ELITE, LEGENDE, HELPER, MODERATEUR, ADMINISTRATEUR"
+  rank-updated: "§aLe rank de %target% a été mis à %rank%."
+  rank-received: "§6§l[Rank] §aFélicitations ! Vous avez été promu au grade %rank% !"
+  ec-open: "§aOuverture de l'ender chest."
+  staff-activated: "§a§l[Staff] §aMode Staff activé."
+  staff-deactivated: "§c§l[Staff] §cMode Staff désactivé. Inventaire restauré."
+  objective-no-possession: "§cVotre faction ne possède pas %objective% actuellement."
+  objective-teleport: "§aTéléportation au/à la %objective% !"

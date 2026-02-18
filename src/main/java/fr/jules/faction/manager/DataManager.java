@@ -158,6 +158,8 @@ public class DataManager {
         config.set("maxPower", data.getMaxPower());
         config.set("title", data.getTitle());
         config.set("lastJoin", data.getLastJoin());
+        config.set("balance", data.getBalance());
+        config.set("mutedUntil", data.getMutedUntil());
         config.set("job", data.getJob());
         config.set("jobExp", data.getJobExp());
         config.set("jobLevel", data.getJobLevel());
@@ -188,6 +190,7 @@ public class DataManager {
             pi.put("helmet", v.getHelmet());
             pi.put("chestplate", v.getChestplate());
             pi.put("saddle", v.getSaddle());
+            pi.put("lastDeath", v.getLastDeath());
             petsMap.put(k, pi);
         });
         config.set("capturedPets", petsMap);
@@ -225,6 +228,8 @@ public class DataManager {
         data.setJobExp(config.getDouble("jobExp", 0));
         data.setJobLevel(config.getInt("jobLevel", 1));
         data.setActivePower(config.getString("activePower", "NONE"));
+        data.setBalance(config.getDouble("balance", 0.0));
+        data.setMutedUntil(config.getLong("mutedUntil", 0));
 
         ConfigurationSection petsSec = config.getConfigurationSection("capturedPets");
         if (petsSec != null) {
@@ -257,6 +262,7 @@ public class DataManager {
                 pi.setHelmet(petsSec.getString(key + ".helmet"));
                 pi.setChestplate(petsSec.getString(key + ".chestplate"));
                 pi.setSaddle(petsSec.getString(key + ".saddle"));
+                pi.setLastDeath(petsSec.getLong(key + ".lastDeath", 0));
                 data.getCapturedPets().put(key, pi);
             }
         }

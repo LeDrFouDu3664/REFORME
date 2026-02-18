@@ -159,7 +159,7 @@ public class PetManager {
 
     private String getVariant(Entity entity) {
         try {
-            if (entity instanceof Cat cat) return cat.getCatType().name();
+            if (entity instanceof Cat cat) return cat.getCatType().getKey().getKey().toUpperCase();
             if (entity instanceof Parrot parrot) return parrot.getVariant().name();
             if (entity instanceof Fox fox) return fox.getFoxType().name();
             if (entity instanceof Rabbit rabbit) return rabbit.getRabbitType().name();
@@ -170,7 +170,7 @@ public class PetManager {
             if (entity instanceof MushroomCow mc) return mc.getVariant().name();
             if (entity instanceof Axolotl axo) return axo.getVariant().name();
             if (entity instanceof Frog frog) return frog.getVariant().getKey().getKey().toUpperCase();
-            if (entity instanceof Villager vil) return vil.getVillagerType().name();
+            if (entity instanceof Villager vil) return vil.getVillagerType().toString();
         } catch (Exception ignored) {}
         return null;
     }
@@ -179,7 +179,7 @@ public class PetManager {
         if (variant == null || variant.isEmpty()) return;
         try {
             if (entity instanceof Cat cat) {
-                cat.setCatType(org.bukkit.entity.Cat.Type.valueOf(variant));
+                cat.setCatType(org.bukkit.Registry.CAT_VARIANT.get(org.bukkit.NamespacedKey.minecraft(variant.toLowerCase())));
             } else if (entity instanceof Parrot parrot) {
                 parrot.setVariant(org.bukkit.entity.Parrot.Variant.valueOf(variant));
             } else if (entity instanceof Fox fox) {
@@ -202,7 +202,7 @@ public class PetManager {
             } else if (entity instanceof Frog frog) {
                 frog.setVariant(org.bukkit.Registry.FROG_VARIANT.get(org.bukkit.NamespacedKey.minecraft(variant.toLowerCase())));
             } else if (entity instanceof Villager vil) {
-                vil.setVillagerType(org.bukkit.entity.Villager.Type.valueOf(variant));
+                vil.setVillagerType(org.bukkit.Registry.VILLAGER_TYPE.get(org.bukkit.NamespacedKey.minecraft(variant.toLowerCase())));
             }
         } catch (Exception ignored) {}
     }
