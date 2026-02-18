@@ -64,7 +64,66 @@ public class PetManager {
         activePets.put(player.getUniqueId(), pet);
         data.setCurrentPet(petId);
         data.setPetCooldown(System.currentTimeMillis() + 20000); // 20s cooldown
-        player.sendMessage("§aVotre animal de compagnie §e" + petId + " §aa été invoqué !");
+
+        String customName = info.getCustomName() != null ? info.getCustomName() : petId;
+        player.sendMessage("§aVotre animal de compagnie §e" + customName + " §aa été invoqué !");
+
+        // Metadata for death listener
+        pet.setMetadata("is_pet", new org.bukkit.metadata.FixedMetadataValue(plugin, true));
+        pet.setMetadata("owner", new org.bukkit.metadata.FixedMetadataValue(plugin, player.getName()));
+    }
+
+    public void handlePetXPGain(Player player, double amount) {
+        PlayerData data = plugin.getPlayerManager().getPlayerData(player.getUniqueId());
+        String petId = data.getCurrentPet();
+        if (petId == null) return;
+
+        fr.jules.faction.model.PetInfo info = data.getCapturedPets().get(petId);
+        if (info == null) return;
+
+        info.setExp(info.getExp() + amount);
+        double req = 100 * Math.pow(1.5, info.getLevel() - 1);
+
+        if (info.getExp() >= req) {
+            info.setLevel(info.getLevel() + 1);
+            info.setExp(0);
+            player.sendMessage("§6§l[Compagnon] §e" + (info.getCustomName() != null ? info.getCustomName() : petId) + " est passé au niveau " + info.getLevel() + " !");
+            player.playSound(player.getLocation(), org.bukkit.Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
+        }
+    }
+
+    public void handleCapture(Player player, Entity entity) {
+        if (!(entity instanceof LivingEntity) || entity instanceof Player) return;
+
+        PlayerData data = plugin.getPlayerManager().getPlayerData(player.getUniqueId());
+        String petId = entity.getType().name() + "_" + (data.getCapturedPets().size() + 1);
+
+        fr.jules.faction.model.PetInfo info = new fr.jules.faction.model.PetInfo();
+        info.setType(entity.getType().name());
+        info.setBaby(entity instanceof Ageable ageable && !ageable.isAdult());
+        info.setVariant(getVariant(entity));
+
+        data.getCapturedPets().put(petId, info);
+        entity.remove();
+        player.sendMessage("§aVous avez capturé un " + entity.getType().name() + " ! Retrouvez-le dans /f gui.");
+    }
+
+    private String getVariant(Entity entity) {
+        try {
+            if (entity instanceof Cat cat) return cat.getCatType().name();
+            if (entity instanceof Parrot parrot) return parrot.getVariant().name();
+            if (entity instanceof Fox fox) return fox.getFoxType().name();
+            if (entity instanceof Rabbit rabbit) return rabbit.getRabbitType().name();
+            if (entity instanceof Llama llama) return llama.getColor().name();
+            if (entity instanceof Wolf wolf) return wolf.getVariant().getKey().getKey().toUpperCase();
+            if (entity instanceof Horse horse) return horse.getColor().name();
+            if (entity instanceof Sheep sheep) return sheep.getColor().name();
+            if (entity instanceof MushroomCow mc) return mc.getVariant().name();
+            if (entity instanceof Axolotl axo) return axo.getVariant().name();
+            if (entity instanceof Frog frog) return frog.getVariant().getKey().getKey().toUpperCase();
+            if (entity instanceof Villager vil) return vil.getVillagerType().name();
+        } catch (Exception ignored) {}
+        return null;
     }
 
     private void applyVariant(Entity entity, String variant) {

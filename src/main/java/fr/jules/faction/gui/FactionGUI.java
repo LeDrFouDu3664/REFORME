@@ -291,11 +291,17 @@ public class FactionGUI {
                 else icon = Material.EGG;
             }
 
-            inv.setItem(slot++, createItem(icon, "§e" + petId,
+            String displayName = info.getCustomName() != null ? info.getCustomName() : petId;
+            double req = 100 * Math.pow(1.5, info.getLevel() - 1);
+
+            inv.setItem(slot++, createItem(icon, "§e" + displayName,
                 "§7Type: §f" + info.getType(),
+                "§7Niveau: §6" + info.getLevel(),
+                "§7XP: §f" + String.format("%.0f", info.getExp()) + " / " + String.format("%.0f", req),
                 "§7Bébé: §f" + (info.isBaby() ? "Oui" : "Non"),
                 "",
                 "§a▶ Clic Gauche: §7Invoquer",
+                "§e▶ Clic Droit: §7Renommer (5000$)",
                 "§c▶ Shift + Clic Droit: §7Supprimer définitivement"));
             slot++;
         }

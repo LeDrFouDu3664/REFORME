@@ -23,6 +23,39 @@ public class ChatListener implements Listener {
     @EventHandler
     public void onChat(AsyncChatEvent event) {
         Player player = event.getPlayer();
+
+        if (player.hasMetadata("renaming_pet")) {
+            event.setCancelled(true);
+            String petId = player.getMetadata("renaming_pet").get(0).asString();
+            String message = PlainTextComponentSerializer.plainText().serialize(event.message());
+            player.removeMetadata("renaming_pet", plugin);
+
+            if (message.equalsIgnoreCase("cancel")) {
+                player.sendMessage("§cRenommage annulé.");
+                return;
+            }
+
+            if (message.length() > 16) {
+                player.sendMessage("§cNom trop long (16 caractères max).");
+                return;
+            }
+
+            Bukkit.getScheduler().runTask(plugin, () -> {
+                if (plugin.getEconomyManager().has(player, 5000)) {
+                    PlayerData data = plugin.getPlayerManager().getPlayerData(player.getUniqueId());
+                    fr.jules.faction.model.PetInfo info = data.getCapturedPets().get(petId);
+                    if (info != null) {
+                        plugin.getEconomyManager().withdraw(player, 5000);
+                        info.setCustomName(message.replace('&', '§'));
+                        player.sendMessage("§aCompagnon renommé en: " + info.getCustomName());
+                    }
+                } else {
+                    player.sendMessage("§cErreur: Pas assez d'argent.");
+                }
+            });
+            return;
+        }
+
         plugin.getAfkManager().updateActivity(player);
         PlayerData data = plugin.getPlayerManager().getPlayerData(player.getUniqueId());
 

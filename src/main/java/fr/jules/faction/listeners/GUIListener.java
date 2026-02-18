@@ -378,6 +378,17 @@ public class GUIListener implements Listener {
             return;
         }
 
+        if (event.getClick().isRightClick()) {
+            if (plugin.getEconomyManager().has(player, 5000)) {
+                player.sendMessage("§eEntrez le nouveau nom de votre compagnon dans le chat (ou 'cancel' pour annuler).");
+                player.setMetadata("renaming_pet", new org.bukkit.metadata.FixedMetadataValue(plugin, petId));
+                player.closeInventory();
+            } else {
+                player.sendMessage("§cPas assez d'argent (5000$).");
+            }
+            return;
+        }
+
         if (data.getCapturedPets().containsKey(petId)) {
             plugin.getPetManager().spawnPet(player, petId);
             player.closeInventory();

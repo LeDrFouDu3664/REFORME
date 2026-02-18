@@ -31,6 +31,7 @@ public class PlayerData {
     private long petCooldown = 0;
     private boolean bypass = false;
     private boolean autoClaim = false;
+    private boolean autoUnclaim = false;
     private boolean showTitles = true;
     private double powerBoost = 0;
     private long lastDeathTime = 0;

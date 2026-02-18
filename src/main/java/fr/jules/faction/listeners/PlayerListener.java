@@ -68,62 +68,7 @@ public class PlayerListener implements Listener {
 
     @EventHandler
     public void onInteractEntity(PlayerInteractEntityEvent event) {
-        Player player = event.getPlayer();
-        plugin.getAfkManager().updateActivity(player);
-        org.bukkit.inventory.ItemStack item = player.getInventory().getItemInMainHand();
-
-        if (item.getType() == org.bukkit.Material.LEAD && item.hasItemMeta() && item.getItemMeta().getDisplayName().contains("Lasso de Capture")) {
-            Entity entity = event.getRightClicked();
-
-            // Allow capturing any Animals, Ambient, Fish, non-hostile
-            if (entity instanceof org.bukkit.entity.Animals || entity instanceof org.bukkit.entity.Ambient || entity instanceof org.bukkit.entity.Fish) {
-                if (entity instanceof org.bukkit.entity.Monster) return; // Protection against hostile animals like Polar Bears or Wolves when angry (though they are Animals)
-
-                if (entity instanceof Wolf && ((Wolf) entity).isAngry()) return;
-
-                event.setCancelled(true);
-                PlayerData data = plugin.getPlayerManager().getPlayerData(player.getUniqueId());
-
-                String species = entity.getType().name();
-                boolean alreadyHasSpecies = data.getCapturedPets().values().stream()
-                        .anyMatch(p -> p.getType().equalsIgnoreCase(species));
-
-                if (alreadyHasSpecies) {
-                    player.sendMessage("§cVous possédez déjà un animal de cette espèce !");
-                    return;
-                }
-
-                String variant = getVariant(entity);
-                boolean baby = false;
-                if (entity instanceof Ageable) baby = !((Ageable) entity).isAdult();
-
-                fr.jules.faction.model.PetInfo info = new fr.jules.faction.model.PetInfo(entity.getType().name(), variant, baby);
-                data.getCapturedPets().put(entity.getType().name() + " (" + (variant != null ? variant : "Défaut") + ") [" + UUID.randomUUID().toString().substring(0, 4) + "]", info);
-
-                item.setAmount(item.getAmount() - 1);
-                entity.remove();
-                player.sendMessage("§aFélicitations ! Vous avez capturé un §e" + entity.getType().name() + " §a!");
-                plugin.getDataManager().savePlayerData(data);
-            }
-        }
-    }
-
-    private String getVariant(Entity entity) {
-        try {
-            if (entity instanceof Cat) return ((Cat) entity).getCatType().name();
-            if (entity instanceof Parrot) return ((Parrot) entity).getVariant().name();
-            if (entity instanceof Fox) return ((Fox) entity).getFoxType().name();
-            if (entity instanceof Rabbit) return ((Rabbit) entity).getRabbitType().name();
-            if (entity instanceof Llama) return ((Llama) entity).getColor().name();
-            if (entity instanceof Wolf) return ((Wolf) entity).getVariant().getKey().getKey().toUpperCase();
-            if (entity instanceof Horse) return ((Horse) entity).getColor().name();
-            if (entity instanceof Sheep) return ((Sheep) entity).getColor().name();
-            if (entity instanceof MushroomCow) return ((MushroomCow) entity).getVariant().name();
-            if (entity instanceof Axolotl) return ((Axolotl) entity).getVariant().name();
-            if (entity instanceof Frog) return ((Frog) entity).getVariant().getKey().getKey().toUpperCase();
-            if (entity instanceof Villager) return ((Villager) entity).getVillagerType().name();
-        } catch (Exception ignored) {}
-        return null;
+        plugin.getAfkManager().updateActivity(event.getPlayer());
     }
 
     @EventHandler
@@ -207,6 +152,19 @@ public class PlayerListener implements Listener {
                 // Appeler performClaim qui gère le reste (déjà sécurisé)
                 fr.jules.faction.commands.FactionCommand cmd = (fr.jules.faction.commands.FactionCommand) plugin.getCommand("f").getExecutor();
                 cmd.performClaim(event.getPlayer(), faction, event.getTo().getWorld().getName(), event.getTo().getChunk().getX(), event.getTo().getChunk().getZ(), false);
+            }
+        }
+
+        // Auto-unclaim logic
+        if (data.isAutoUnclaim() && data.getFactionId() != null) {
+            Faction faction = plugin.getFactionManager().getFaction(data.getFactionId());
+            if (faction != null && faction.isOfficer(event.getPlayer().getUniqueId())) {
+                Claim c = plugin.getClaimManager().getClaim(event.getTo().getWorld().getName(), event.getTo().getChunk().getX(), event.getTo().getChunk().getZ());
+                if (c != null && c.getFactionId().equals(faction.getId())) {
+                    plugin.getClaimManager().removeClaim(c.getWorld(), c.getX(), c.getZ());
+                    faction.getClaims().remove(c.toString());
+                    event.getPlayer().sendMessage("§c§l[TPC Faction] §aParcelle libérée via auto-unclaim.");
+                }
             }
         }
     }

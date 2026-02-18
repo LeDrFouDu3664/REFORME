@@ -170,6 +170,14 @@ public class DataManager {
             pi.put("type", v.getType());
             pi.put("variant", v.getVariant());
             pi.put("baby", v.isBaby());
+            pi.put("customName", v.getCustomName());
+            pi.put("level", v.getLevel());
+            pi.put("exp", v.getExp());
+            pi.put("activePower", v.getActivePower());
+            pi.put("skills", v.getSkills());
+            pi.put("helmet", v.getHelmet());
+            pi.put("chestplate", v.getChestplate());
+            pi.put("saddle", v.getSaddle());
             petsMap.put(k, pi);
         });
         config.set("capturedPets", petsMap);
@@ -211,10 +219,25 @@ public class DataManager {
         ConfigurationSection petsSec = config.getConfigurationSection("capturedPets");
         if (petsSec != null) {
             for (String key : petsSec.getKeys(false)) {
-                String type = petsSec.getString(key + ".type");
-                String variant = petsSec.getString(key + ".variant");
-                boolean baby = petsSec.getBoolean(key + ".baby");
-                data.getCapturedPets().put(key, new PetInfo(type, variant, baby));
+                PetInfo pi = new PetInfo();
+                pi.setType(petsSec.getString(key + ".type"));
+                pi.setVariant(petsSec.getString(key + ".variant"));
+                pi.setBaby(petsSec.getBoolean(key + ".baby"));
+                pi.setCustomName(petsSec.getString(key + ".customName"));
+                pi.setLevel(petsSec.getInt(key + ".level", 1));
+                pi.setExp(petsSec.getDouble(key + ".exp", 0));
+                pi.setActivePower(petsSec.getString(key + ".activePower", "NONE"));
+                pi.setHelmet(petsSec.getString(key + ".helmet"));
+                pi.setChestplate(petsSec.getString(key + ".chestplate"));
+                pi.setSaddle(petsSec.getString(key + ".saddle"));
+
+                ConfigurationSection skillsSec = petsSec.getConfigurationSection(key + ".skills");
+                if (skillsSec != null) {
+                    for (String sKey : skillsSec.getKeys(false)) {
+                        pi.getSkills().put(sKey, skillsSec.getInt(sKey));
+                    }
+                }
+                data.getCapturedPets().put(key, pi);
             }
         }
 

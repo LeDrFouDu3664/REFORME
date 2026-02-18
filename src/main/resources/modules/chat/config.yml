@@ -1,0 +1,20 @@
+# Configuration du Module Chat
+join:
+  welcome-first: "§6§lBIENVENUE ! §e%player% §fvient de rejoindre le serveur pour la première fois ! (§6#%count%§f)"
+  join-message: "§7[§a+§7] §f%player% a rejoint le combat."
+  quit-message: "§7[§c-§7] §f%player% a quitté le combat."
+
+death:
+  stupid:
+    - "§e%player% §fs'est pris les pieds dans le tapis (chute)."
+    - "§e%player% §fa voulu nager dans la lave."
+  accidental:
+    - "§e%player% §fa été foudroyé par le destin."
+    - "§e%player% §fne savait pas que ça explosait."
+  combat:
+    - "§e%player% §fa été terrassé par §c%killer%§f."
+    - "§c%killer% §fa mis fin au règne de §e%player%§f."
+  other:
+    - "§e%player% §fest mort de façon mystérieuse."
+
+pet-death: "§cLa pauvre bête %name% de %player% a rendu l'âme !"

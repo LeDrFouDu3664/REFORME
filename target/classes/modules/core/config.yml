@@ -1,0 +1,63 @@
+# Configuration du Module Core
+quests:
+  daily-refresh-hours: 24
+  list:
+    MINER_JOB:
+      name: "Mineur Pro"
+      desc: "Miner 50 minerais précieux."
+      goal: 50
+      reward: 1500
+    WOOD_JOB:
+      name: "Maître Bûcheron"
+      desc: "Couper 100 bûches."
+      goal: 100
+      reward: 1200
+    FARM_JOB:
+      name: "Grand Fermier"
+      desc: "Récolter 200 cultures."
+      goal: 200
+      reward: 1000
+    WARRIOR_JOB:
+      name: "Légende de Guerre"
+      desc: "Tuer 5 joueurs."
+      goal: 5
+      reward: 2500
+    CLAIM_MASTER:
+      name: "Expansion"
+      desc: "Revendiquer 10 territoires."
+      goal: 10
+      reward: 2000
+    KILL_MOBS:
+      name: "Chasseur"
+      desc: "Tuer 50 monstres."
+      goal: 50
+      reward: 800
+
+ranks:
+  JOUEUR:
+    prefix: "§7[Joueur]"
+    homes: 2
+  GUERRIER:
+    prefix: "§6[Guerrier]"
+    homes: 4
+  ELITE:
+    prefix: "§b[Élite]"
+    homes: 6
+  LEGENDE:
+    prefix: "§d[Légende]"
+    homes: 10
+  MODO:
+    prefix: "§9[Modo]"
+    homes: 15
+  ADMIN:
+    prefix: "§c[Admin]"
+    homes: 50
+  FONDATEUR:
+    prefix: "§4[Fondateur]"
+    homes: 100
+
+settings:
+  spawn-location: null
+  chateau-location: null
+  forteresse-location: null
+  clear-lag-interval-minutes: 60

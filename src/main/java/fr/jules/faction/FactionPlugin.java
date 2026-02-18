@@ -28,12 +28,18 @@ public class FactionPlugin extends JavaPlugin {
     @Getter private AFKManager afkManager;
     @Getter private TabManager tabManager;
     @Getter private VanishManager vanishManager;
+    @Getter private fr.jules.faction.modules.ModuleManager moduleManager;
 
     @Override
     public void onEnable() {
         saveDefaultConfig();
         loadLocations();
         fr.jules.faction.utils.MessageUtils.init(this);
+
+        this.moduleManager = new fr.jules.faction.modules.ModuleManager(this);
+        moduleManager.registerModule(new fr.jules.faction.modules.core.CoreModule(this));
+        moduleManager.registerModule(new fr.jules.faction.modules.chat.ChatModule(this));
+        moduleManager.registerModule(new fr.jules.faction.modules.pet.PetModule(this));
 
         this.factionManager = new FactionManager();
         this.playerManager = new PlayerManager(this);
@@ -172,6 +178,7 @@ public class FactionPlugin extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        if (moduleManager != null) moduleManager.disableModules();
         if (auctionManager != null) auctionManager.save();
         if (factionManager != null) {
             factionManager.getAllFactions().forEach(dataManager::saveFaction);

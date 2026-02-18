@@ -189,9 +189,14 @@ public class FactionCommand implements CommandExecutor {
             MessageUtils.sendMessage(player, "invited", "%target%", targetName);
             if (target != null) MessageUtils.sendMessage(target, "invite-received", "%name%", faction.getName());
         } else if (action.equals("revoke") || action.equals("r")) {
-            UUID targetUUID = Bukkit.getOfflinePlayer(targetName).getUniqueId();
-            faction.getInvites().remove(targetUUID);
-            player.sendMessage("§aInvitation révoquée.");
+            if (targetName.equalsIgnoreCase("all")) {
+                faction.getInvites().clear();
+                player.sendMessage("§aToutes les invitations ont été révoquées.");
+            } else {
+                UUID targetUUID = Bukkit.getOfflinePlayer(targetName).getUniqueId();
+                faction.getInvites().remove(targetUUID);
+                player.sendMessage("§aInvitation révoquée pour " + targetName + ".");
+            }
         }
     }
 
@@ -558,20 +563,33 @@ public class FactionCommand implements CommandExecutor {
         PlayerData data = plugin.getPlayerManager().getPlayerData(player.getUniqueId());
         Faction f = plugin.getFactionManager().getFaction(data.getFactionId());
         if (f == null || !f.hasPermission(data.getRole(), "UNCLAIM")) return;
-        if (args.length > 1 && args[1].equalsIgnoreCase("all")) {
-            for (String s : new ArrayList<>(f.getClaims())) {
-                Claim c = Claim.fromString(s);
-                plugin.getClaimManager().removeClaim(c.getWorld(), c.getX(), c.getZ());
+
+        if (args.length > 1) {
+            if (args[1].equalsIgnoreCase("all")) {
+                for (String s : new ArrayList<>(f.getClaims())) {
+                    Claim c = Claim.fromString(s);
+                    plugin.getClaimManager().removeClaim(c.getWorld(), c.getX(), c.getZ());
+                }
+                f.getClaims().clear();
+                plugin.getDataManager().saveFaction(f);
+                player.sendMessage("§aToutes les parcelles ont été libérées.");
+                return;
+            } else if (args[1].equalsIgnoreCase("auto")) {
+                data.setAutoUnclaim(!data.isAutoUnclaim());
+                player.sendMessage("§aAuto-unclaim: " + (data.isAutoUnclaim() ? "§aOn" : "§cOff"));
+                return;
             }
-            f.getClaims().clear();
-            plugin.getDataManager().saveFaction(f);
-            player.sendMessage("§aUnclaim total.");
-            return;
         }
-        plugin.getClaimManager().removeClaim(player.getWorld().getName(), player.getLocation().getChunk().getX(), player.getLocation().getChunk().getZ());
-        f.getClaims().remove(player.getWorld().getName() + "," + player.getLocation().getChunk().getX() + "," + player.getLocation().getChunk().getZ());
-        plugin.getDataManager().saveFaction(f);
-        player.sendMessage("§aUnclaim.");
+
+        String claimKey = player.getWorld().getName() + "," + player.getLocation().getChunk().getX() + "," + player.getLocation().getChunk().getZ();
+        if (f.getClaims().contains(claimKey)) {
+            plugin.getClaimManager().removeClaim(player.getWorld().getName(), player.getLocation().getChunk().getX(), player.getLocation().getChunk().getZ());
+            f.getClaims().remove(claimKey);
+            plugin.getDataManager().saveFaction(f);
+            player.sendMessage("§aParcelle libérée.");
+        } else {
+            player.sendMessage("§cCette parcelle ne vous appartient pas.");
+        }
     }
 
     private void handleClaimsCount(Player player) {
