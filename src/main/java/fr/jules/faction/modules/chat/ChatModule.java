@@ -77,7 +77,9 @@ public class ChatModule extends Module {
     @EventHandler
     public void onPetDeath(EntityDeathEvent event) {
         if (event.getEntity().hasMetadata("is_pet")) {
-            String ownerName = event.getEntity().getMetadata("owner").get(0).asString();
+            String uuidStr = event.getEntity().getMetadata("owner_uuid").get(0).asString();
+            Player owner = Bukkit.getPlayer(java.util.UUID.fromString(uuidStr));
+            String ownerName = owner != null ? owner.getName() : "Inconnu";
             String petName = event.getEntity().getCustomName();
             if (petName == null) petName = event.getEntity().getType().name();
 

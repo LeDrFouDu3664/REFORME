@@ -9,6 +9,7 @@ import fr.jules.faction.FactionPlugin;
 public class PlayerManager {
     private final FactionPlugin plugin;
     private final Map<UUID, PlayerData> players = new ConcurrentHashMap<>();
+    private final Map<UUID, String> nameCache = new ConcurrentHashMap<>();
 
     public PlayerManager(FactionPlugin plugin) {
         this.plugin = plugin;
@@ -50,6 +51,22 @@ public class PlayerManager {
 
     public void addPlayerData(PlayerData data) {
         players.put(data.getUuid(), data);
+        if (data.getName() != null) nameCache.put(data.getUuid(), data.getName());
+    }
+
+    public String getPlayerName(UUID uuid) {
+        String name = nameCache.get(uuid);
+        if (name == null) {
+            PlayerData data = getPlayerData(uuid);
+            if (data != null && data.getName() != null) {
+                name = data.getName();
+                nameCache.put(uuid, data.getName());
+            } else {
+                name = org.bukkit.Bukkit.getOfflinePlayer(uuid).getName();
+                if (name != null) nameCache.put(uuid, name);
+            }
+        }
+        return name != null ? name : "Inconnu";
     }
 
     public PlayerData getPlayerDataByName(String name) {

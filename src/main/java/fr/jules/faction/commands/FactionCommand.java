@@ -75,7 +75,8 @@ public class FactionCommand implements CommandExecutor {
             case "chest": handleChest(player); break;
             case "chat": case "c": handleChat(player, args); break;
             case "toggle": handleToggle(player); break;
-            case "gui": case "perm": handleGui(player); break;
+            case "perm": handlePerm(player); break;
+            case "gui": handleGui(player); break;
             case "unstuck": handleUnstuck(player); break;
             case "afk": player.performCommand("afk"); break;
             case "rank": handleRankSub(player, args); break;
@@ -393,13 +394,13 @@ public class FactionCommand implements CommandExecutor {
         player.sendMessage("");
 
         // Membres par grades
-        String leaderName = Bukkit.getOfflinePlayer(f.getLeader()).getName();
+        String leaderName = plugin.getPlayerManager().getPlayerName(f.getLeader());
         player.sendMessage(" §6§l▶ §eChef: §f" + (Bukkit.getPlayer(f.getLeader()) != null ? "§a" : "§7") + leaderName);
 
         if (!f.getOfficers().isEmpty()) {
             List<String> officerNames = new ArrayList<>();
             for (UUID id : f.getOfficers()) {
-                String name = Bukkit.getOfflinePlayer(id).getName();
+                String name = plugin.getPlayerManager().getPlayerName(id);
                 officerNames.add((Bukkit.getPlayer(id) != null ? "§a" : "§7") + name);
             }
             player.sendMessage(" §6§l▶ §eOfficiers: §f" + String.join("§7, §f", officerNames));
@@ -408,7 +409,7 @@ public class FactionCommand implements CommandExecutor {
         List<String> memberNames = new ArrayList<>();
         for (UUID id : f.getMembers()) {
             if (id.equals(f.getLeader()) || f.getOfficers().contains(id)) continue;
-            String name = Bukkit.getOfflinePlayer(id).getName();
+            String name = plugin.getPlayerManager().getPlayerName(id);
             memberNames.add((Bukkit.getPlayer(id) != null ? "§a" : "§7") + name);
         }
         if (!memberNames.isEmpty()) {
@@ -763,12 +764,21 @@ public class FactionCommand implements CommandExecutor {
     private void handleGui(Player player) {
         PlayerData pd = plugin.getPlayerManager().getPlayerData(player.getUniqueId());
         if (pd.getFactionId() == null) {
-            player.sendMessage("§cVous n'avez pas de faction. Accès restreint au menu.");
-            // On peut quand même ouvrir un menu minimal ou rien.
+            fr.jules.faction.gui.FactionGUI.openPetMenu(player, pd);
             return;
         }
         Faction f = plugin.getFactionManager().getFaction(pd.getFactionId());
         fr.jules.faction.gui.FactionGUI.openMainMenu(player, f);
+    }
+
+    private void handlePerm(Player player) {
+        PlayerData pd = plugin.getPlayerManager().getPlayerData(player.getUniqueId());
+        if (pd.getFactionId() == null) {
+            player.sendMessage("§cVous n'avez pas de faction.");
+            return;
+        }
+        Faction f = plugin.getFactionManager().getFaction(pd.getFactionId());
+        fr.jules.faction.gui.FactionGUI.openPermissionsMenu(player, f);
     }
 
     private void handleToggle(Player player) {

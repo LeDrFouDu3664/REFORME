@@ -87,6 +87,12 @@ public class GUIListener implements Listener {
             case "PETS":
                 handlePetMenuClick(player, name, data, faction, event);
                 break;
+            case "PET_DETAIL":
+                handlePetDetailClick(player, name, (String) holder.getData(), data, faction);
+                break;
+            case "PET_EQUIP":
+                handlePetEquipmentClick(player, name, (String) holder.getData(), data);
+                break;
             case "SHOP_MAIN":
                 handleAdminShopMainClick(player, name);
                 break;
@@ -346,19 +352,17 @@ public class GUIListener implements Listener {
     }
 
     private void handlePetMenuClick(Player player, String name, PlayerData data, Faction faction, InventoryClickEvent event) {
-        String petId = name; // Color already stripped in onInventoryClick
-        int page = (int) ((fr.jules.faction.gui.FactionInventoryHolder) event.getInventory().getHolder()).getData();
-
         if (name.equalsIgnoreCase("Page Suivante")) {
+            int page = (int) ((fr.jules.faction.gui.FactionInventoryHolder) event.getInventory().getHolder()).getData();
             fr.jules.faction.gui.FactionGUI.openPetMenu(player, data, page + 1);
             return;
         }
         if (name.equalsIgnoreCase("Page Précédente")) {
+            int page = (int) ((fr.jules.faction.gui.FactionInventoryHolder) event.getInventory().getHolder()).getData();
             fr.jules.faction.gui.FactionGUI.openPetMenu(player, data, page - 1);
             return;
         }
-
-        if (name.equalsIgnoreCase("Retour")) {
+        if (name.equalsIgnoreCase("Retour") || name.equalsIgnoreCase("Quitter")) {
             if (faction != null) fr.jules.faction.gui.FactionGUI.openMainMenu(player, faction);
             else player.closeInventory();
             return;
@@ -369,31 +373,91 @@ public class GUIListener implements Listener {
             return;
         }
 
-        if (event.getClick().isShiftClick() && event.getClick().isRightClick()) {
-            if (data.getCapturedPets().containsKey(petId)) {
-                data.getCapturedPets().remove(petId);
-                player.sendMessage("§cCompagnon " + petId + " supprimé.");
-                fr.jules.faction.gui.FactionGUI.openPetMenu(player, data);
+        // Search by pet ID or custom name
+        String petIdMatch = null;
+        for (String id : data.getCapturedPets().keySet()) {
+            fr.jules.faction.model.PetInfo pi = data.getCapturedPets().get(id);
+            String dn = org.bukkit.ChatColor.stripColor(pi.getCustomName() != null ? pi.getCustomName() : id);
+            if (dn.equalsIgnoreCase(name)) {
+                petIdMatch = id;
+                break;
             }
-            return;
         }
 
-        if (event.getClick().isRightClick()) {
+        if (petIdMatch != null) {
+            if (event.getClick().isShiftClick() && event.getClick().isRightClick()) {
+                data.getCapturedPets().remove(petIdMatch);
+                player.sendMessage("§cCompagnon supprimé.");
+                fr.jules.faction.gui.FactionGUI.openPetMenu(player, data);
+            } else {
+                fr.jules.faction.gui.FactionGUI.openPetDetailMenu(player, petIdMatch, data.getCapturedPets().get(petIdMatch));
+            }
+        }
+    }
+
+    private void handlePetDetailClick(Player player, String name, String petId, PlayerData data, Faction faction) {
+        fr.jules.faction.model.PetInfo info = data.getCapturedPets().get(petId);
+        if (info == null) return;
+
+        if (name.equalsIgnoreCase("Retour")) {
+            fr.jules.faction.gui.FactionGUI.openPetMenu(player, data);
+        } else if (name.equalsIgnoreCase("Invoquer")) {
+            plugin.getPetManager().spawnPet(player, petId);
+            player.closeInventory();
+        } else if (name.equalsIgnoreCase("Renommer")) {
             if (plugin.getEconomyManager().has(player, 5000)) {
-                player.sendMessage("§eEntrez le nouveau nom de votre compagnon dans le chat (ou 'cancel' pour annuler).");
+                player.sendMessage("§eEntrez le nouveau nom dans le chat.");
                 player.setMetadata("renaming_pet", new org.bukkit.metadata.FixedMetadataValue(plugin, petId));
                 player.closeInventory();
             } else {
-                player.sendMessage("§cPas assez d'argent (5000$).");
+                player.sendMessage("§cPas assez d'argent.");
             }
-            return;
+        } else if (name.equalsIgnoreCase("Equipement")) {
+            fr.jules.faction.gui.FactionGUI.openPetEquipmentMenu(player, petId, info);
+        } else if (name.equalsIgnoreCase("Renvoyer")) {
+            plugin.getPetManager().despawnPet(player);
+            player.sendMessage("§aAnimal renvoyé.");
         }
+    }
 
-        if (data.getCapturedPets().containsKey(petId)) {
-            plugin.getPetManager().spawnPet(player, petId);
-            player.closeInventory();
-        } else if (!name.equalsIgnoreCase("Pas de compagnon")) {
-            player.sendMessage("§cVous ne possédez pas cet animal. Capturez-le d'abord !");
+    private void handlePetEquipmentClick(Player player, String name, String petId, PlayerData data) {
+        fr.jules.faction.model.PetInfo info = data.getCapturedPets().get(petId);
+        if (info == null) return;
+
+        if (name.equalsIgnoreCase("Retour")) {
+            fr.jules.faction.gui.FactionGUI.openPetDetailMenu(player, petId, info);
+        } else if (name.equalsIgnoreCase("Selle")) {
+            if (info.getSaddle() != null) {
+                info.setSaddle(null);
+                player.getInventory().addItem(new org.bukkit.inventory.ItemStack(org.bukkit.Material.SADDLE));
+                player.sendMessage("§aSelle retirée.");
+            } else {
+                if (player.getInventory().contains(org.bukkit.Material.SADDLE)) {
+                    player.getInventory().removeItem(new org.bukkit.inventory.ItemStack(org.bukkit.Material.SADDLE, 1));
+                    info.setSaddle("SADDLE");
+                    player.sendMessage("§aSelle équipée !");
+                } else {
+                    player.sendMessage("§cVous n'avez pas de selle sur vous.");
+                }
+            }
+            fr.jules.faction.gui.FactionGUI.openPetEquipmentMenu(player, petId, info);
+        } else if (name.equalsIgnoreCase("Armure")) {
+            if (info.getChestplate() != null) {
+                org.bukkit.Material mat = org.bukkit.Material.valueOf(info.getChestplate());
+                info.setChestplate(null);
+                player.getInventory().addItem(new org.bukkit.inventory.ItemStack(mat));
+                player.sendMessage("§aArmure retirée.");
+            } else {
+                org.bukkit.inventory.ItemStack hand = player.getInventory().getItemInMainHand();
+                if (hand.getType().name().contains("HORSE_ARMOR")) {
+                    info.setChestplate(hand.getType().name());
+                    hand.setAmount(hand.getAmount() - 1);
+                    player.sendMessage("§aArmure équipée !");
+                } else {
+                    player.sendMessage("§cTenez une armure pour cheval en main.");
+                }
+            }
+            fr.jules.faction.gui.FactionGUI.openPetEquipmentMenu(player, petId, info);
         }
     }
 

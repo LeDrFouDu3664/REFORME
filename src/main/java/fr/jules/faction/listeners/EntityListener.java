@@ -44,24 +44,36 @@ public class EntityListener implements Listener {
     @EventHandler
     public void onDeath(EntityDeathEvent event) {
         Entity entity = event.getEntity();
-        if (entity.getCustomName() != null && entity.getCustomName().contains("§c§l")) {
-            // C'est un compagnon
+        if (entity.hasMetadata("is_pet")) {
             event.getDrops().clear();
             event.setDroppedExp(0);
 
-            if (entity instanceof Tameable tameable && tameable.getOwner() instanceof Player owner) {
+            String uuidStr = entity.getMetadata("owner_uuid").get(0).asString();
+            Player owner = org.bukkit.Bukkit.getPlayer(UUID.fromString(uuidStr));
+
+            if (owner != null) {
                 PlayerData data = plugin.getPlayerManager().getPlayerData(owner.getUniqueId());
+                String petId = data.getCurrentPet();
+                if (petId != null) {
+                    fr.jules.faction.model.PetInfo info = data.getCapturedPets().get(petId);
+                    if (info != null) {
+                        info.setLastDeath(System.currentTimeMillis());
 
-                long cooldown = 60000; // 1 min default
-                String message = "§cTon compagnon a été tué par un autre joueur ! Cooldown de 1 minute.";
+                        long cooldown;
+                        String message;
 
-                if (event.getEntity().getKiller() != null && event.getEntity().getKiller().equals(owner)) {
-                    cooldown = 600000; // 10 min if owner killed it
-                    message = "§cTu as tué ton propre compagnon ! Cooldown de 10 minutes.";
+                        if (event.getEntity().getKiller() != null && event.getEntity().getKiller().equals(owner)) {
+                            cooldown = 600000; // 10 min
+                            message = "§cTu as tué ton propre compagnon ! Cooldown de 10 minutes.";
+                        } else {
+                            cooldown = 60000; // 1 min
+                            message = "§cTon compagnon a été tué ! Cooldown de 1 minute.";
+                        }
+
+                        data.setPetCooldown(System.currentTimeMillis() + cooldown);
+                        owner.sendMessage(message);
+                    }
                 }
-
-                data.setPetCooldown(System.currentTimeMillis() + cooldown);
-                owner.sendMessage(message);
             }
         }
     }

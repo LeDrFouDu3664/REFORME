@@ -2,6 +2,7 @@ package fr.jules.faction.gui;
 
 import fr.jules.faction.model.Faction;
 import org.bukkit.Bukkit;
+import fr.jules.faction.FactionPlugin;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
@@ -129,13 +130,15 @@ public class FactionGUI {
         fillBorder(inv);
         inv.setItem(49, createItem(Material.SHEARS, "§7Retour", "§8Clic pour revenir"));
 
+        FactionPlugin plugin = (FactionPlugin) Bukkit.getPluginManager().getPlugin("FactionPlugin");
         int slot = 10;
         for (java.util.UUID memberId : faction.getMembers()) {
             if (slot >= 44) break;
             if (slot % 9 == 0 || slot % 9 == 8) slot++;
             String role = faction.getLeader().equals(memberId) ? "Chef" :
                          (faction.getOfficers().contains(memberId) ? "Officier" : "Membre");
-            inv.setItem(slot++, createItem(Material.PLAYER_HEAD, "§e" + Bukkit.getOfflinePlayer(memberId).getName(), "§7Grade: " + role, "§7Clic gauche: Promouvoir", "§7Clic droit: Rétrograder", "§7Shift+Clic: Exclure"));
+            String name = (plugin != null) ? plugin.getPlayerManager().getPlayerName(memberId) : Bukkit.getOfflinePlayer(memberId).getName();
+            inv.setItem(slot++, createItem(Material.PLAYER_HEAD, "§e" + name, "§7Grade: " + role, "§7Clic gauche: Promouvoir", "§7Clic droit: Rétrograder", "§7Shift+Clic: Exclure"));
         }
         player.openInventory(inv);
     }
@@ -257,10 +260,40 @@ public class FactionGUI {
         openPetMenu(player, data, 0);
     }
 
+    public static void openPetDetailMenu(Player player, String petId, fr.jules.faction.model.PetInfo info) {
+        Inventory inv = Bukkit.createInventory(new FactionInventoryHolder("PET_DETAIL", petId), 27, "§c§lCompagnon: " + (info.getCustomName() != null ? info.getCustomName() : petId));
+        fillBorder(inv);
+        inv.setItem(22, createItem(Material.SHEARS, "§7Retour", "§8Revenir à la liste"));
+
+        double req = 100 * Math.pow(1.5, info.getLevel() - 1);
+        inv.setItem(10, createItem(Material.BOOK, "§eInformations",
+            "§7Type: §f" + info.getType(),
+            "§7Niveau: §6" + info.getLevel(),
+            "§7XP: §f" + String.format("%.0f", info.getExp()) + " / " + String.format("%.0f", req)));
+
+        inv.setItem(12, createItem(Material.NAME_TAG, "§eRenommer", "§7Prix: §a5000$", "§7Change le nom affiché"));
+        inv.setItem(13, createItem(Material.BONE, "§aInvoquer", "§7Appeler votre compagnon"));
+        inv.setItem(14, createItem(Material.SADDLE, "§eEquipement", "§7Gérer la selle et l'armure"));
+        inv.setItem(16, createItem(Material.BARRIER, "§cRenvoyer", "§7Ranger l'animal"));
+
+        player.openInventory(inv);
+    }
+
+    public static void openPetEquipmentMenu(Player player, String petId, fr.jules.faction.model.PetInfo info) {
+        Inventory inv = Bukkit.createInventory(new FactionInventoryHolder("PET_EQUIP", petId), 27, "§c§lEquipement: " + petId);
+        fillBorder(inv);
+        inv.setItem(22, createItem(Material.SHEARS, "§7Retour", "§8Revenir aux détails"));
+
+        inv.setItem(10, createItem(Material.SADDLE, "§eSelle", "§7Statut: " + (info.getSaddle() != null ? "§aInstallée" : "§cAbsente"), "", "§7Placez une selle dans votre inventaire", "§7puis cliquez ici pour l'équiper."));
+        inv.setItem(12, createItem(Material.IRON_HORSE_ARMOR, "§eArmure", "§7Statut: " + (info.getChestplate() != null ? "§aEquipée (" + info.getChestplate() + ")" : "§cAbsente"), "", "§7Cliquez pour équiper l'armure", "§7que vous tenez en main."));
+
+        player.openInventory(inv);
+    }
+
     public static void openPetMenu(Player player, fr.jules.faction.model.PlayerData data, int page) {
         Inventory inv = Bukkit.createInventory(new FactionInventoryHolder("PETS", page), 54, "§c§lVos Compagnons (Page " + (page + 1) + ")");
         fillBorder(inv);
-        inv.setItem(49, createItem(Material.SHEARS, "§7Retour", "§8Clic pour revenir"));
+        inv.setItem(49, (data.getFactionId() != null) ? createItem(Material.SHEARS, "§7Retour", "§8Clic pour revenir") : createItem(Material.BARRIER, "§cQuitter", "§8Fermer le menu"));
         inv.setItem(4, createItem(Material.BARRIER, "§cRenvoyer", "§7Faire disparaitre le familier"));
 
         List<Map.Entry<String, fr.jules.faction.model.PetInfo>> list = new ArrayList<>(data.getCapturedPets().entrySet());
@@ -300,8 +333,7 @@ public class FactionGUI {
                 "§7XP: §f" + String.format("%.0f", info.getExp()) + " / " + String.format("%.0f", req),
                 "§7Bébé: §f" + (info.isBaby() ? "Oui" : "Non"),
                 "",
-                "§a▶ Clic Gauche: §7Invoquer",
-                "§e▶ Clic Droit: §7Renommer (5000$)",
+                "§a▶ Clic Gauche: §7Gérer / Détails",
                 "§c▶ Shift + Clic Droit: §7Supprimer définitivement"));
             slot++;
         }

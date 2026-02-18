@@ -4,6 +4,7 @@ import fr.jules.faction.FactionPlugin;
 import fr.jules.faction.model.PlayerData;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.*;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
@@ -32,6 +33,12 @@ public class PetManager {
         fr.jules.faction.model.PetInfo info = data.getCapturedPets().get(petId);
         if (info == null) {
             player.sendMessage("§cVous ne possédez pas cet animal.");
+            return;
+        }
+
+        long deathRemaining = (info.getLastDeath() + 600000 - System.currentTimeMillis()) / 1000; // 10 min
+        if (deathRemaining > 0) {
+            player.sendMessage("§cVotre compagnon est blessé ! Revenez dans " + (deathRemaining / 60) + " min " + (deathRemaining % 60) + " s.");
             return;
         }
 
@@ -70,7 +77,7 @@ public class PetManager {
 
         // Metadata for death listener
         pet.setMetadata("is_pet", new org.bukkit.metadata.FixedMetadataValue(plugin, true));
-        pet.setMetadata("owner", new org.bukkit.metadata.FixedMetadataValue(plugin, player.getName()));
+        pet.setMetadata("owner_uuid", new org.bukkit.metadata.FixedMetadataValue(plugin, player.getUniqueId().toString()));
     }
 
     public void handlePetXPGain(Player player, double amount) {
@@ -95,7 +102,24 @@ public class PetManager {
     public void handleCapture(Player player, Entity entity) {
         if (!(entity instanceof LivingEntity) || entity instanceof Player) return;
 
+        if (entity instanceof Tameable tameable && tameable.isTamed()) {
+            if (tameable.getOwner() != null && !tameable.getOwner().getUniqueId().equals(player.getUniqueId())) {
+                player.sendMessage("§cCet animal appartient déjà à quelqu'un !");
+                return;
+            }
+        }
+
         PlayerData data = plugin.getPlayerManager().getPlayerData(player.getUniqueId());
+
+        String species = entity.getType().name();
+        boolean alreadyHasSpecies = data.getCapturedPets().values().stream()
+                .anyMatch(p -> p.getType().equalsIgnoreCase(species));
+
+        if (alreadyHasSpecies) {
+            player.sendMessage("§cVous possédez déjà un animal de cette espèce !");
+            return;
+        }
+
         String petId = entity.getType().name() + "_" + (data.getCapturedPets().size() + 1);
 
         fr.jules.faction.model.PetInfo info = new fr.jules.faction.model.PetInfo();
@@ -105,7 +129,11 @@ public class PetManager {
 
         data.getCapturedPets().put(petId, info);
         entity.remove();
-        player.sendMessage("§aVous avez capturé un " + entity.getType().name() + " ! Retrouvez-le dans /f gui.");
+        player.sendMessage("§aFélicitations ! Vous avez capturé un §e" + entity.getType().name() + " §a!");
+
+        // Consume Lasso
+        ItemStack lasso = player.getInventory().getItemInMainHand();
+        lasso.setAmount(lasso.getAmount() - 1);
     }
 
     private String getVariant(Entity entity) {

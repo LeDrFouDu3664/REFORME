@@ -12,28 +12,26 @@ public class DiscordWebhook {
         this.url = url;
     }
 
-    public void sendMessage(String content) {
+    public void execute(String content) {
         if (url == null || url.isEmpty() || url.equals("votre_webhook_ici")) return;
 
-        new Thread(() -> {
-            try {
-                URL urlObj = new URL(this.url);
-                HttpURLConnection conn = (HttpURLConnection) urlObj.openConnection();
-                conn.setRequestMethod("POST");
-                conn.setDoOutput(true);
-                conn.setRequestProperty("Content-Type", "application/json");
-                conn.setRequestProperty("User-Agent", "Mozilla/5.0");
+        try {
+            URL urlObj = new URL(this.url);
+            HttpURLConnection conn = (HttpURLConnection) urlObj.openConnection();
+            conn.setRequestMethod("POST");
+            conn.setDoOutput(true);
+            conn.setRequestProperty("Content-Type", "application/json");
+            conn.setRequestProperty("User-Agent", "Mozilla/5.0");
 
-                String json = "{\"content\": \"" + content.replace("\"", "\\\"") + "\"}";
+            String json = "{\"content\": \"" + content.replace("\"", "\\\"") + "\"}";
 
-                try (OutputStream os = conn.getOutputStream()) {
-                    byte[] input = json.getBytes(StandardCharsets.UTF_8);
-                    os.write(input, 0, input.length);
-                }
+            try (OutputStream os = conn.getOutputStream()) {
+                byte[] input = json.getBytes(StandardCharsets.UTF_8);
+                os.write(input, 0, input.length);
+            }
 
-                conn.getResponseCode();
-                conn.disconnect();
-            } catch (Exception ignored) {}
-        }).start();
+            conn.getResponseCode();
+            conn.disconnect();
+        } catch (Exception ignored) {}
     }
 }

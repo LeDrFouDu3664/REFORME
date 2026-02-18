@@ -2,6 +2,7 @@ package fr.jules.faction.manager;
 
 import fr.jules.faction.FactionPlugin;
 import fr.jules.faction.utils.DiscordWebhook;
+import org.bukkit.Bukkit;
 
 public class DiscordManager {
     private final FactionPlugin plugin;
@@ -19,7 +20,9 @@ public class DiscordManager {
 
     public void log(String message, String type) {
         if (plugin.getConfig().getBoolean("settings.discord.log-" + type, true)) {
-            webhook.sendMessage(message);
+            Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+                webhook.execute(message);
+            });
         }
     }
 }
