@@ -25,7 +25,7 @@ public class MiscCommands implements CommandExecutor {
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         if (!(sender instanceof Player player)) return true;
 
-        String cmd = label.toLowerCase();
+        String cmd = command.getName().toLowerCase();
         String perm = "faction.command." + cmd;
         if (!player.hasPermission(perm)) {
             MessageUtils.sendMessage(player, "no-permission", "%perm%", perm);
@@ -80,8 +80,12 @@ public class MiscCommands implements CommandExecutor {
     }
 
     private void handleRank(Player player, String[] args) {
+        if (args.length < 1) {
+            player.sendMessage("§7Votre rank actuel: " + plugin.getPlayerManager().getPlayerData(player.getUniqueId()).getRank().getPrefix());
+            return;
+        }
         if (!player.hasPermission("faction.admin")) {
-            player.sendMessage("§cVous n'avez pas la permission.");
+            player.sendMessage("§cUsage: /rank (pour voir votre rank)");
             return;
         }
         if (args.length < 3) {
@@ -101,7 +105,7 @@ public class MiscCommands implements CommandExecutor {
 
                 Player targetPlayer = Bukkit.getPlayer(targetData.getUuid());
                 if (targetPlayer != null) {
-                    targetPlayer.sendMessage("§aVotre rank a été mis à " + rank.getPrefix());
+                    targetPlayer.sendMessage("§6§l[Rank] §aFélicitations ! Vous avez été promu au grade " + rank.getPrefix() + " §a!");
                     plugin.getTabManager().updateTab(targetPlayer);
                 }
                 plugin.getDataManager().savePlayerData(targetData);

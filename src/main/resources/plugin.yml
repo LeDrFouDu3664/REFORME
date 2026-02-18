@@ -102,6 +102,8 @@ permissions:
       faction.command.eco: true
       faction.command.mod: true
       faction.command.ec: true
+      faction.command.rank: true
+      faction.command.afk: true
   faction.admin:
     description: Accès aux commandes d'administration faction.
     default: op

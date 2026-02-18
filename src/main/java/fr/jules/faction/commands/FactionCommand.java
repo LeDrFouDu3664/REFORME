@@ -77,6 +77,8 @@ public class FactionCommand implements CommandExecutor {
             case "toggle": handleToggle(player); break;
             case "gui": case "perm": handleGui(player); break;
             case "unstuck": handleUnstuck(player); break;
+            case "afk": player.performCommand("afk"); break;
+            case "rank": handleRankSub(player, args); break;
             case "help": displayHelp(player, args); break;
             case "admin": handleAdmin(player, args); break;
             case "sethome": handleFactionSetHome(player); break;
@@ -972,6 +974,16 @@ public class FactionCommand implements CommandExecutor {
     }
 
     private void handleBalance(Player player) { handleMoney(player, null); }
+
+    private void handleRankSub(Player player, String[] args) {
+        if (args.length < 2) {
+            player.sendMessage("§7Votre rank actuel: " + plugin.getPlayerManager().getPlayerData(player.getUniqueId()).getRank().getPrefix());
+            return;
+        }
+        StringBuilder sb = new StringBuilder("rank ");
+        for (int i = 1; i < args.length; i++) sb.append(args[i]).append(" ");
+        player.performCommand(sb.toString().trim());
+    }
 
     private void handleAuctionSub(Player player, String[] args) {
         if (args.length < 2) {
