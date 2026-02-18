@@ -87,6 +87,8 @@ public class FactionPlugin extends JavaPlugin {
         getCommand("eco").setExecutor(misc);
         getCommand("mod").setExecutor(misc);
         getCommand("ec").setExecutor(misc);
+        getCommand("afk").setExecutor(misc);
+        getCommand("rank").setExecutor(misc);
         getCommand("jobs").setExecutor(new JobCommand(this));
         getCommand("quests").setExecutor(new QuestCommand(this));
         getCommand("ah").setExecutor(new AuctionCommand(this));
@@ -114,6 +116,7 @@ public class FactionPlugin extends JavaPlugin {
         Bukkit.getPluginManager().registerEvents(new SpawnerListener(this), this);
         Bukkit.getPluginManager().registerEvents(new PowerListener(this), this);
         Bukkit.getPluginManager().registerEvents(new BanListener(this), this);
+        Bukkit.getPluginManager().registerEvents(new CommandListener(this), this);
     }
 
     private void startTasks() {

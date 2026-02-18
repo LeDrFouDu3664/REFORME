@@ -4,23 +4,24 @@
 [INFO] Building tpc-faction 1.0-SNAPSHOT
 [INFO]   from pom.xml
 [INFO] --------------------------------[ jar ]---------------------------------
-Downloading from jitpack.io: https://jitpack.io/io/papermc/paper/paper-api/1.21.1-R0.1-SNAPSHOT/maven-metadata.xml
 Downloading from papermc: https://repo.papermc.io/repository/maven-public/io/papermc/paper/paper-api/1.21.1-R0.1-SNAPSHOT/maven-metadata.xml
-Progress (1): 2.4 kB                    Downloaded from papermc: https://repo.papermc.io/repository/maven-public/io/papermc/paper/paper-api/1.21.1-R0.1-SNAPSHOT/maven-metadata.xml (2.4 kB at 2.6 kB/s)
-Downloading from jitpack.io: https://jitpack.io/org/bukkit/bukkit/1.13.1-R0.1-SNAPSHOT/maven-metadata.xml
-Downloading from papermc: https://repo.papermc.io/repository/maven-public/org/bukkit/bukkit/1.13.1-R0.1-SNAPSHOT/maven-metadata.xml
+Downloading from jitpack.io: https://jitpack.io/io/papermc/paper/paper-api/1.21.1-R0.1-SNAPSHOT/maven-metadata.xml
+Progress (1): 2.4 kB                    Downloaded from papermc: https://repo.papermc.io/repository/maven-public/io/papermc/paper/paper-api/1.21.1-R0.1-SNAPSHOT/maven-metadata.xml (2.4 kB at 2.5 kB/s)
 Downloading from spigot-repo: https://hub.spigotmc.org/nexus/content/groups/public/org/bukkit/bukkit/1.13.1-R0.1-SNAPSHOT/maven-metadata.xml
-Progress (1): 1.4 kB                    Downloaded from papermc: https://repo.papermc.io/repository/maven-public/org/bukkit/bukkit/1.13.1-R0.1-SNAPSHOT/maven-metadata.xml (1.4 kB at 8.1 kB/s)
-Progress (1): 1.4 kB                    Downloaded from spigot-repo: https://hub.spigotmc.org/nexus/content/groups/public/org/bukkit/bukkit/1.13.1-R0.1-SNAPSHOT/maven-metadata.xml (1.4 kB at 5.2 kB/s)
+Downloading from papermc: https://repo.papermc.io/repository/maven-public/org/bukkit/bukkit/1.13.1-R0.1-SNAPSHOT/maven-metadata.xml
+Downloading from jitpack.io: https://jitpack.io/org/bukkit/bukkit/1.13.1-R0.1-SNAPSHOT/maven-metadata.xml
+Progress (1): 1.4 kB                    Downloaded from spigot-repo: https://hub.spigotmc.org/nexus/content/groups/public/org/bukkit/bukkit/1.13.1-R0.1-SNAPSHOT/maven-metadata.xml (1.4 kB at 8.9 kB/s)
+Progress (1): 1.4 kB                    Downloaded from papermc: https://repo.papermc.io/repository/maven-public/org/bukkit/bukkit/1.13.1-R0.1-SNAPSHOT/maven-metadata.xml (1.4 kB at 7.4 kB/s)
 [INFO]
 [INFO] --- clean:3.2.0:clean (default-clean) @ tpc-faction ---
+[INFO] Deleting /app/target
 [INFO]
 [INFO] --- resources:3.3.1:resources (default-resources) @ tpc-faction ---
 [INFO] Copying 2 resources from src/main/resources to target/classes
 [INFO]
 [INFO] --- compiler:3.11.0:compile (default-compile) @ tpc-faction ---
 [INFO] Changes detected - recompiling the module! :source
-[INFO] Compiling 58 source files with javac [debug target 21] to target/classes
+[INFO] Compiling 59 source files with javac [debug target 21] to target/classes
 [INFO] Annotation processing is enabled because one or more processors were found
   on the class path. A future release of javac may disable annotation processing
   unless at least one processor is specified by name (-processor), or a search
@@ -58,7 +59,7 @@ Progress (1): 1.4 kB                    Downloaded from spigot-repo: https://h
 [INFO]  T E S T S
 [INFO] -------------------------------------------------------
 [INFO] Running fr.jules.faction.FactionTest
-[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.096 s -- in fr.jules.faction.FactionTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.105 s -- in fr.jules.faction.FactionTest
 [INFO]
 [INFO] Results:
 [INFO]
@@ -70,6 +71,6 @@ Progress (1): 1.4 kB                    Downloaded from spigot-repo: https://h
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  10.794 s
-[INFO] Finished at: 2026-02-17T22:43:46Z
+[INFO] Total time:  11.346 s
+[INFO] Finished at: 2026-02-18T00:30:54Z
 [INFO] ------------------------------------------------------------------------

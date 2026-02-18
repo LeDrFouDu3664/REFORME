@@ -1007,7 +1007,13 @@ public class FactionCommand implements CommandExecutor {
         if (target != null) target.setPower(Double.parseDouble(args[2]));
     }
 
-    private void handleReload(Player player) { if (player.hasPermission("faction.admin")) { plugin.reloadConfig(); player.sendMessage("§aReload."); } }
+    private void handleReload(Player player) {
+        if (player.hasPermission("faction.admin")) {
+            plugin.reloadConfig();
+            plugin.getDiscordManager().load(); // Reload webhook url
+            player.sendMessage("§a[TPC Faction] Configuration rechargée avec succès !");
+        }
+    }
 
     private void displayHelp(Player player, String[] args) {
         int page = 1;

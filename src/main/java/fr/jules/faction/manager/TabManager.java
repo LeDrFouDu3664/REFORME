@@ -52,9 +52,12 @@ public class TabManager {
         else if (data.getJob().equals("FERMIER")) color = "§a";
         else if (data.getJob().equals("GUERRIER")) color = "§c";
 
-        String prefix = data.getFactionId() != null ? "§8[§6" + factionName.substring(2) + "§8] " : "§7";
-        String suffix = player.hasMetadata("vanished") ? " §7[VANISH]" : "";
-        player.setPlayerListName(prefix + color + player.getName() + suffix);
+        String rankPrefix = data.getRank().getPrefix() + " ";
+        String factionPrefix = data.getFactionId() != null ? "§8[§6" + factionName.substring(2) + "§8] " : "§7";
+        String vanishSuffix = player.hasMetadata("vanished") ? " §7[VANISH]" : "";
+        String afkSuffix = plugin.getAfkManager().isAFK(player) ? " §8[AFK]" : "";
+
+        player.setPlayerListName(factionPrefix + rankPrefix + color + player.getName() + vanishSuffix + afkSuffix);
     }
 
     private void startUpdateTask() {

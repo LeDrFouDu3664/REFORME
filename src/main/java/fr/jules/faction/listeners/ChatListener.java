@@ -35,6 +35,21 @@ public class ChatListener implements Listener {
 
         String message = PlainTextComponentSerializer.plainText().serialize(event.message());
 
+        // Format Chat for Public
+        if (data.getChatMode().equalsIgnoreCase("PUBLIC")) {
+            String rankPrefix = data.getRank().getPrefix() + " ";
+            String factionTag = "";
+            if (data.getFactionId() != null) {
+                Faction f = plugin.getFactionManager().getFaction(data.getFactionId());
+                if (f != null) factionTag = "§8[§6" + f.getName() + "§8] ";
+            }
+            String title = data.getTitle().isEmpty() ? "" : data.getTitle() + " ";
+
+            event.setCancelled(true);
+            Bukkit.broadcastMessage(factionTag + rankPrefix + "§f" + title + player.getName() + " §8» §f" + message);
+            return;
+        }
+
         // Anti-Spam
         if (!player.hasPermission("faction.staff")) {
             if (System.currentTimeMillis() - data.getLastMessageTime() < 2000) { // 2s cooldown

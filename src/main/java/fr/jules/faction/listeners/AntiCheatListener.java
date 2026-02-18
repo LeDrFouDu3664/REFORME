@@ -57,7 +57,7 @@ public class AntiCheatListener implements Listener {
             if (ground == Material.AIR) {
                 long time = airTime.getOrDefault(player.getUniqueId(), 0L);
                 if (time == 0) airTime.put(player.getUniqueId(), System.currentTimeMillis());
-                else if (System.currentTimeMillis() - time > 4000) {
+                else if (System.currentTimeMillis() - time > 6000) {
                     flag(player, "Fly / AirJump / Airstrike+", 2);
                     airTime.put(player.getUniqueId(), System.currentTimeMillis());
                 }
@@ -72,7 +72,7 @@ public class AntiCheatListener implements Listener {
         double deltaY = event.getTo().getY() - event.getFrom().getY();
         double dist = Math.sqrt(deltaX * deltaX + deltaZ * deltaZ);
 
-        double limit = player.isSprinting() ? 1.5 : 1.1;
+        double limit = player.isSprinting() ? 1.8 : 1.3;
         if (dist > limit && !player.isFlying() && player.getNoDamageTicks() <= 0) {
              flag(player, "Speed / Step / Sprint", 1);
         }

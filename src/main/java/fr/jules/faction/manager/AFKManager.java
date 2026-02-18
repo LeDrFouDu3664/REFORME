@@ -30,10 +30,11 @@ public class AFKManager {
 
         afkPlayers.put(player.getUniqueId(), status);
         if (status) {
-            Bukkit.broadcastMessage("§7[AFK] §e" + player.getName() + " §7est désormais AFK.");
+            Bukkit.broadcastMessage("§7[AFK] §e" + player.getName() + " §7est désormais §6AFK.");
         } else {
             Bukkit.broadcastMessage("§7[AFK] §e" + player.getName() + " §7n'est plus AFK.");
         }
+        plugin.getTabManager().updateTab(player);
     }
 
     public boolean isAFK(Player player) {

@@ -26,7 +26,7 @@ public class ModerationListener implements Listener {
     @EventHandler
     public void onDamage(org.bukkit.event.entity.EntityDamageEvent event) {
         if (event.getEntity() instanceof Player player) {
-            if (player.hasMetadata("godmode")) {
+            if (player.hasMetadata("godmode") || plugin.getAfkManager().isAFK(player)) {
                 event.setCancelled(true);
             }
         }

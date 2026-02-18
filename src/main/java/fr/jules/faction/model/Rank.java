@@ -11,7 +11,8 @@ public enum Rank {
     LEGENDE("§dLégende", 10, 2.0),
     HELPER("§2Helper", 15, 2.0),
     MODERATEUR("§9Modérateur", 20, 2.0),
-    ADMINISTRATEUR("§cAdministrateur", 50, 5.0);
+    ADMINISTRATEUR("§cAdministrateur", 50, 5.0),
+    FONDATEUR("§4Fondateur", 100, 10.0);
 
     private final String prefix;
     private final int maxHomes;

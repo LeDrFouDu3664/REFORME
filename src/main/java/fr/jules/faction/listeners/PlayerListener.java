@@ -139,6 +139,14 @@ public class PlayerListener implements Listener {
 
     @EventHandler
     public void onMove(PlayerMoveEvent event) {
+        if (plugin.getAfkManager().isAFK(event.getPlayer())) {
+            if (event.getFrom().getX() != event.getTo().getX() || event.getFrom().getZ() != event.getTo().getZ() || event.getFrom().getY() != event.getTo().getY()) {
+                event.setCancelled(true);
+                event.getPlayer().sendMessage("§cVous êtes en mode AFK. Utilisez /afk pour bouger.");
+                return;
+            }
+        }
+
         if (event.getFrom().getX() != event.getTo().getX() || event.getFrom().getZ() != event.getTo().getZ() || event.getFrom().getY() != event.getTo().getY()) {
             plugin.getAfkManager().updateActivity(event.getPlayer());
         }
