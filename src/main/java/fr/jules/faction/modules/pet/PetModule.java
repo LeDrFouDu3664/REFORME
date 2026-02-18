@@ -19,12 +19,10 @@ public class PetModule extends Module {
 
     @Override
     public void onEnable() {
-        // Initialization
     }
 
     @Override
     public void onDisable() {
-        // Cleanup
     }
 
     @EventHandler
@@ -43,7 +41,6 @@ public class PetModule extends Module {
                 return;
             }
 
-            // Redirect to existing PetManager logic for the rest
             plugin.getPetManager().handleCapture(player, event.getRightClicked());
         }
     }
@@ -53,7 +50,6 @@ public class PetModule extends Module {
         Player killer = event.getEntity().getKiller();
         if (killer == null) return;
 
-        // If the killer has a pet summoned, give it XP
-        plugin.getPetManager().handlePetXPGain(killer, config.getInt("leveling.xp-per-kill", 10));
+        plugin.getPetManager().handlePetXPGain(killer, config.getDouble("leveling.xp-per-kill", 10.0));
     }
 }

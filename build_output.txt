@@ -21,10 +21,10 @@
   processing is enabled explicitly (-proc:only, -proc:full).
   Use -Xlint:-options to suppress this message.
   Use -proc:none to disable annotation processing.
-[WARNING] /app/src/main/java/fr/jules/faction/manager/PetManager.java:[141,67] name() in org.bukkit.util.OldEnum has been deprecated and marked for removal
-[WARNING] /app/src/main/java/fr/jules/faction/manager/PetManager.java:[152,77] name() in org.bukkit.util.OldEnum has been deprecated and marked for removal
-[WARNING] /app/src/main/java/fr/jules/faction/manager/PetManager.java:[161,58] valueOf(java.lang.String) in org.bukkit.entity.Cat.Type has been deprecated and marked for removal
-[WARNING] /app/src/main/java/fr/jules/faction/manager/PetManager.java:[184,68] valueOf(java.lang.String) in org.bukkit.entity.Villager.Type has been deprecated and marked for removal
+[WARNING] /app/src/main/java/fr/jules/faction/manager/PetManager.java:[162,67] name() in org.bukkit.util.OldEnum has been deprecated and marked for removal
+[WARNING] /app/src/main/java/fr/jules/faction/manager/PetManager.java:[173,77] name() in org.bukkit.util.OldEnum has been deprecated and marked for removal
+[WARNING] /app/src/main/java/fr/jules/faction/manager/PetManager.java:[182,58] valueOf(java.lang.String) in org.bukkit.entity.Cat.Type has been deprecated and marked for removal
+[WARNING] /app/src/main/java/fr/jules/faction/manager/PetManager.java:[205,68] valueOf(java.lang.String) in org.bukkit.entity.Villager.Type has been deprecated and marked for removal
 [INFO] /app/src/main/java/fr/jules/faction/manager/AFKManager.java: Some input files use or override a deprecated API.
 [INFO] /app/src/main/java/fr/jules/faction/manager/AFKManager.java: Recompile with -Xlint:deprecation for details.
 [INFO] /app/src/main/java/fr/jules/faction/manager/DataManager.java: /app/src/main/java/fr/jules/faction/manager/DataManager.java uses unchecked or unsafe operations.
@@ -52,6 +52,6 @@
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  5.987 s
-[INFO] Finished at: 2026-02-18T17:50:17Z
+[INFO] Total time:  6.633 s
+[INFO] Finished at: 2026-02-18T19:06:17Z
 [INFO] ------------------------------------------------------------------------

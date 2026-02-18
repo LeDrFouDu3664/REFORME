@@ -7,6 +7,7 @@ import fr.jules.faction.model.PlayerData;
 import org.bukkit.Bukkit;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.List;
 
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
@@ -38,6 +39,18 @@ public class PlayerListener implements Listener {
             }
         }
         plugin.getPowerManager().refreshPowerEffects(event.getPlayer());
+        applyRankPermissions(event.getPlayer(), data);
+    }
+
+    private void applyRankPermissions(Player player, PlayerData data) {
+        fr.jules.faction.modules.core.CoreModule core = (fr.jules.faction.modules.core.CoreModule) plugin.getModuleManager().getModule("Core");
+        if (core == null) return;
+
+        org.bukkit.permissions.PermissionAttachment attachment = player.addAttachment(plugin);
+        List<String> perms = core.getConfig().getStringList("ranks." + data.getRank().name() + ".permissions");
+        for (String perm : perms) {
+            attachment.setPermission(perm, true);
+        }
     }
 
     @EventHandler

@@ -38,14 +38,17 @@ public class ChatModule extends Module {
         }
 
         String joinMsg = config.getString("join.join-message")
-                .replace("%player%", player.getName());
+                .replace("%player%", player.getName())
+                .replace("%world%", player.getWorld().getName());
         event.setJoinMessage(joinMsg);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onQuit(PlayerQuitEvent event) {
+        Player player = event.getPlayer();
         String quitMsg = config.getString("join.quit-message")
-                .replace("%player%", event.getPlayer().getName());
+                .replace("%player%", player.getName())
+                .replace("%world%", player.getWorld().getName());
         event.setQuitMessage(quitMsg);
     }
 
@@ -59,8 +62,10 @@ public class ChatModule extends Module {
             category = "combat";
         } else if (player.getLastDamageCause() != null) {
             switch (player.getLastDamageCause().getCause()) {
-                case FALL: case LAVA: case FIRE_TICK: category = "stupid"; break;
-                case LIGHTNING: case BLOCK_EXPLOSION: case ENTITY_EXPLOSION: category = "accidental"; break;
+                case FALL: case LAVA: case FIRE_TICK: case DROWNING: case SUFFOCATION: case STARVATION:
+                    category = "stupid"; break;
+                case LIGHTNING: case BLOCK_EXPLOSION: case ENTITY_EXPLOSION: case CONTACT: case FLY_INTO_WALL:
+                    category = "accidental"; break;
             }
         }
 
@@ -69,6 +74,7 @@ public class ChatModule extends Module {
 
         String msg = messages.get(random.nextInt(messages.size()))
                 .replace("%player%", player.getName())
+                .replace("%world%", player.getWorld().getName())
                 .replace("%killer%", killer != null ? killer.getName() : "Inconnu");
 
         event.setDeathMessage(msg);

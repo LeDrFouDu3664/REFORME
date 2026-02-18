@@ -15,6 +15,12 @@ import java.util.List;
 import java.util.Map;
 
 public class FactionGUI {
+    private static FactionPlugin plugin;
+
+    public static void init(FactionPlugin instance) {
+        plugin = instance;
+    }
+
     public static void openMainMenu(Player player, Faction faction) {
         Inventory inv = Bukkit.createInventory(new FactionInventoryHolder("MAIN", faction), 27, "§c§lGestion: " + faction.getName());
         fillBorder(inv);
@@ -40,6 +46,52 @@ public class FactionGUI {
         inv.setItem(23, createItem(Material.WRITABLE_BOOK, "§eQuêtes", "§7Voir les quêtes"));
         inv.setItem(24, createItem(Material.BONE, "§eCompagnon", "§7Gérer votre familier"));
 
+        player.openInventory(inv);
+    }
+
+    public static void openPetPowersMenu(Player player, String petId, fr.jules.faction.model.PetInfo info) {
+        Inventory inv = Bukkit.createInventory(new FactionInventoryHolder("PET_POWERS", petId), 27, "§c§lPouvoirs: " + petId);
+        fillBorder(inv);
+        inv.setItem(22, createItem(Material.SHEARS, "§7Retour", "§8Revenir aux détails"));
+
+        fr.jules.faction.modules.pet.PetModule petModule = (fr.jules.faction.modules.pet.PetModule) plugin.getModuleManager().getModule("Pet");
+        org.bukkit.configuration.ConfigurationSection powersSec = petModule.getConfig().getConfigurationSection("powers");
+
+        int slot = 11;
+        for (String powerId : powersSec.getKeys(false)) {
+            String name = powersSec.getString(powerId + ".name");
+            fr.jules.faction.model.PetInfo.PowerData data = info.getPowers().computeIfAbsent(powerId, k -> new fr.jules.faction.model.PetInfo.PowerData());
+
+            boolean active = info.getActivePower().equals(powerId);
+            inv.setItem(slot++, createItem(active ? Material.ENCHANTED_BOOK : Material.BOOK, "§e" + name,
+                "§7Niveau: §6" + data.getLevel(),
+                "§7XP: §f" + String.format("%.0f", data.getExp()),
+                "",
+                "§a▶ Clic Gauche: §7Activer",
+                "§e▶ Clic Droit: §7Voir Compétences"));
+            if (slot == 16) break;
+        }
+        player.openInventory(inv);
+    }
+
+    public static void openPetSkillsMenu(Player player, String petId, fr.jules.faction.model.PetInfo info, String powerId) {
+        Inventory inv = Bukkit.createInventory(new FactionInventoryHolder("PET_SKILLS", new String[]{petId, powerId}), 27, "§c§lCompétences: " + powerId);
+        fillBorder(inv);
+        inv.setItem(22, createItem(Material.SHEARS, "§7Retour", "§8Revenir aux pouvoirs"));
+
+        fr.jules.faction.modules.pet.PetModule petModule = (fr.jules.faction.modules.pet.PetModule) plugin.getModuleManager().getModule("Pet");
+        org.bukkit.configuration.ConfigurationSection skillsSec = petModule.getConfig().getConfigurationSection("powers." + powerId + ".skills");
+
+        fr.jules.faction.model.PetInfo.PowerData pData = info.getPowers().getOrDefault(powerId, new fr.jules.faction.model.PetInfo.PowerData());
+
+        int slot = 10;
+        for (String skillId : skillsSec.getKeys(false)) {
+            String name = skillsSec.getString(skillId);
+            int level = pData.getSkills().getOrDefault(skillId, 1);
+
+            inv.setItem(slot++, createItem(Material.NETHER_STAR, "§b" + name, "§7Niveau: §f" + level, "", "§e▶ Clic pour améliorer", "§7(Coûte de l'XP de pouvoir)"));
+            if (slot == 17) break;
+        }
         player.openInventory(inv);
     }
 
@@ -266,14 +318,21 @@ public class FactionGUI {
         inv.setItem(22, createItem(Material.SHEARS, "§7Retour", "§8Revenir à la liste"));
 
         double req = 100 * Math.pow(1.5, info.getLevel() - 1);
+
+        long deathRem = (info.getLastDeath() + 600000 - System.currentTimeMillis()) / 1000;
+        String state = deathRem > 0 ? "§cMort (" + (deathRem / 60) + "m)" : (petId.equals(plugin.getPlayerManager().getPlayerData(player.getUniqueId()).getCurrentPet()) ? "§aInvoqué" : "§eRangé");
+
         inv.setItem(10, createItem(Material.BOOK, "§eInformations",
             "§7Type: §f" + info.getType(),
             "§7Niveau: §6" + info.getLevel(),
-            "§7XP: §f" + String.format("%.0f", info.getExp()) + " / " + String.format("%.0f", req)));
+            "§7XP: §f" + String.format("%.0f", info.getExp()) + " / " + String.format("%.0f", req),
+            "§7Pouvoir Actif: §b" + info.getActivePower(),
+            "§7État: " + state));
 
         inv.setItem(12, createItem(Material.NAME_TAG, "§eRenommer", "§7Prix: §a5000$", "§7Change le nom affiché"));
         inv.setItem(13, createItem(Material.BONE, "§aInvoquer", "§7Appeler votre compagnon"));
         inv.setItem(14, createItem(Material.SADDLE, "§eEquipement", "§7Gérer la selle et l'armure"));
+        inv.setItem(15, createItem(Material.BLAZE_POWDER, "§6Pouvoirs & Compétences", "§7Améliorer les capacités"));
         inv.setItem(16, createItem(Material.BARRIER, "§cRenvoyer", "§7Ranger l'animal"));
 
         player.openInventory(inv);

@@ -37,24 +37,56 @@ ranks:
   JOUEUR:
     prefix: "§7[Joueur]"
     homes: 2
+    multiplier: 1.0
+    permissions:
+      - "faction.command.create"
+      - "faction.command.join"
   GUERRIER:
     prefix: "§6[Guerrier]"
     homes: 4
+    multiplier: 1.1
+    permissions:
+      - "faction.command.create"
+      - "faction.command.join"
+      - "faction.command.claim"
   ELITE:
     prefix: "§b[Élite]"
     homes: 6
+    multiplier: 1.2
+    permissions:
+      - "faction.command.create"
+      - "faction.command.join"
+      - "faction.command.claim"
+      - "faction.command.map"
   LEGENDE:
     prefix: "§d[Légende]"
     homes: 10
+    multiplier: 1.5
+    permissions:
+      - "faction.command.create"
+      - "faction.command.join"
+      - "faction.command.claim"
+      - "faction.command.map"
+      - "faction.command.sethome"
   MODO:
     prefix: "§9[Modo]"
     homes: 15
+    multiplier: 2.0
+    permissions:
+      - "faction.staff"
+      - "faction.command.mute"
   ADMIN:
     prefix: "§c[Admin]"
     homes: 50
+    multiplier: 5.0
+    permissions:
+      - "faction.admin"
   FONDATEUR:
     prefix: "§4[Fondateur]"
     homes: 100
+    multiplier: 10.0
+    permissions:
+      - "*"
 
 settings:
   spawn-location: null

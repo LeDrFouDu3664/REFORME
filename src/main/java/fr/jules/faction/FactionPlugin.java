@@ -35,11 +35,7 @@ public class FactionPlugin extends JavaPlugin {
         saveDefaultConfig();
         loadLocations();
         fr.jules.faction.utils.MessageUtils.init(this);
-
-        this.moduleManager = new fr.jules.faction.modules.ModuleManager(this);
-        moduleManager.registerModule(new fr.jules.faction.modules.core.CoreModule(this));
-        moduleManager.registerModule(new fr.jules.faction.modules.chat.ChatModule(this));
-        moduleManager.registerModule(new fr.jules.faction.modules.pet.PetModule(this));
+        fr.jules.faction.gui.FactionGUI.init(this);
 
         this.factionManager = new FactionManager();
         this.playerManager = new PlayerManager(this);
@@ -57,6 +53,11 @@ public class FactionPlugin extends JavaPlugin {
         this.afkManager = new AFKManager(this);
         this.tabManager = new TabManager(this);
         this.vanishManager = new VanishManager(this);
+
+        this.moduleManager = new fr.jules.faction.modules.ModuleManager(this);
+        moduleManager.registerModule(new fr.jules.faction.modules.core.CoreModule(this));
+        moduleManager.registerModule(new fr.jules.faction.modules.chat.ChatModule(this));
+        moduleManager.registerModule(new fr.jules.faction.modules.pet.PetModule(this));
 
         dataManager.loadFactions(factionManager, claimManager);
         factionManager.getAllFactions().forEach(f -> factionManager.recalculatePower(f, playerManager));

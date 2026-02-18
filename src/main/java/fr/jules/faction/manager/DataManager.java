@@ -174,7 +174,17 @@ public class DataManager {
             pi.put("level", v.getLevel());
             pi.put("exp", v.getExp());
             pi.put("activePower", v.getActivePower());
-            pi.put("skills", v.getSkills());
+
+            Map<String, Map<String, Object>> powersMap = new HashMap<>();
+            v.getPowers().forEach((pk, pv) -> {
+                Map<String, Object> pd = new HashMap<>();
+                pd.put("level", pv.getLevel());
+                pd.put("exp", pv.getExp());
+                pd.put("skills", pv.getSkills());
+                powersMap.put(pk, pd);
+            });
+            pi.put("powers", powersMap);
+
             pi.put("helmet", v.getHelmet());
             pi.put("chestplate", v.getChestplate());
             pi.put("saddle", v.getSaddle());
@@ -227,16 +237,26 @@ public class DataManager {
                 pi.setLevel(petsSec.getInt(key + ".level", 1));
                 pi.setExp(petsSec.getDouble(key + ".exp", 0));
                 pi.setActivePower(petsSec.getString(key + ".activePower", "NONE"));
+
+                ConfigurationSection powersSec = petsSec.getConfigurationSection(key + ".powers");
+                if (powersSec != null) {
+                    for (String pKey : powersSec.getKeys(false)) {
+                        PetInfo.PowerData pd = new PetInfo.PowerData();
+                        pd.setLevel(powersSec.getInt(pKey + ".level", 1));
+                        pd.setExp(powersSec.getDouble(pKey + ".exp", 0));
+                        ConfigurationSection pSkillsSec = powersSec.getConfigurationSection(pKey + ".skills");
+                        if (pSkillsSec != null) {
+                            for (String sKey : pSkillsSec.getKeys(false)) {
+                                pd.getSkills().put(sKey, pSkillsSec.getInt(sKey));
+                            }
+                        }
+                        pi.getPowers().put(pKey, pd);
+                    }
+                }
+
                 pi.setHelmet(petsSec.getString(key + ".helmet"));
                 pi.setChestplate(petsSec.getString(key + ".chestplate"));
                 pi.setSaddle(petsSec.getString(key + ".saddle"));
-
-                ConfigurationSection skillsSec = petsSec.getConfigurationSection(key + ".skills");
-                if (skillsSec != null) {
-                    for (String sKey : skillsSec.getKeys(false)) {
-                        pi.getSkills().put(sKey, skillsSec.getInt(sKey));
-                    }
-                }
                 data.getCapturedPets().put(key, pi);
             }
         }

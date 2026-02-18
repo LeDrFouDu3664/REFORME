@@ -11,6 +11,7 @@ capture:
     - DOLPHIN
     - GUARDIAN
     - ELDER_GUARDIAN
+    - TADPOLE
   refusal-message: "§cCette créature ne peut pas vivre hors de l'eau ! Impossible de la capturer."
 
 leveling:
@@ -23,9 +24,43 @@ gui:
   title: "§c§lGestion du Compagnon"
   rename-cost: 5000
   rename-permission: "faction.pet.rename"
+  items:
+    info:
+      slot: 10
+      material: BOOK
+      name: "§eInformations"
+    rename:
+      slot: 12
+      material: NAME_TAG
+      name: "§eRenommer"
+    summon:
+      slot: 13
+      material: BONE
+      name: "§aInvoquer"
+    equipment:
+      slot: 14
+      material: SADDLE
+      name: "§eEquipement"
+    dismiss:
+      slot: 16
+      material: BARRIER
+      name: "§cRenvoyer"
+
+powers:
+  combat:
+    name: "Guerrier"
+    skills:
+      sharpness: "Tranchant"
+      defense: "Peau de Pierre"
+  utility:
+    name: "Soutien"
+    skills:
+      healing: "Soin Rapide"
+      speed: "Vitesse"
 
 messages:
   death: "§cVotre compagnon %name% est mort ! Il sera indisponible pendant 10 minutes."
   summon: "§aVous avez invoqué %name% !"
   store: "§eVous avez rangé %name%."
   level-up: "§6§lFÉLICITATIONS ! §e%name% est passé au niveau %level% !"
+  capture-success: "§aFélicitations ! Vous avez capturé un §e%type% §a!"

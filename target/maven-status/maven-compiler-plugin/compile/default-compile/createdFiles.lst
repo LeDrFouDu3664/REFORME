@@ -43,6 +43,7 @@ fr/jules/faction/gui/ModGUI.class
 fr/jules/faction/manager/BanManager.class
 fr/jules/faction/manager/AFKManager.class
 fr/jules/faction/manager/DiscordManager.class
+fr/jules/faction/model/PetInfo$PowerData.class
 fr/jules/faction/manager/EconomyManager.class
 fr/jules/faction/listeners/AntiCheatListener.class
 fr/jules/faction/listeners/CommandListener.class

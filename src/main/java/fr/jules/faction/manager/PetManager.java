@@ -72,8 +72,11 @@ public class PetManager {
         data.setCurrentPet(petId);
         data.setPetCooldown(System.currentTimeMillis() + 20000); // 20s cooldown
 
+        fr.jules.faction.modules.pet.PetModule petModule = (fr.jules.faction.modules.pet.PetModule) plugin.getModuleManager().getModule("Pet");
         String customName = info.getCustomName() != null ? info.getCustomName() : petId;
-        player.sendMessage("§aVotre animal de compagnie §e" + customName + " §aa été invoqué !");
+        String msg = petModule.getConfig().getString("messages.summon", "§aVous avez invoqué %name% !")
+                .replace("%name%", customName);
+        player.sendMessage(msg);
 
         // Metadata for death listener
         pet.setMetadata("is_pet", new org.bukkit.metadata.FixedMetadataValue(plugin, true));
@@ -88,6 +91,7 @@ public class PetManager {
         fr.jules.faction.model.PetInfo info = data.getCapturedPets().get(petId);
         if (info == null) return;
 
+        // Pet Level
         info.setExp(info.getExp() + amount);
         double req = 100 * Math.pow(1.5, info.getLevel() - 1);
 
@@ -96,6 +100,19 @@ public class PetManager {
             info.setExp(0);
             player.sendMessage("§6§l[Compagnon] §e" + (info.getCustomName() != null ? info.getCustomName() : petId) + " est passé au niveau " + info.getLevel() + " !");
             player.playSound(player.getLocation(), org.bukkit.Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
+        }
+
+        // Active Power Level
+        String activePower = info.getActivePower();
+        if (!activePower.equals("NONE")) {
+            fr.jules.faction.model.PetInfo.PowerData pData = info.getPowers().computeIfAbsent(activePower, k -> new fr.jules.faction.model.PetInfo.PowerData());
+            pData.setExp(pData.getExp() + amount);
+            double pReq = 200 * Math.pow(1.8, pData.getLevel() - 1);
+            if (pData.getExp() >= pReq) {
+                pData.setLevel(pData.getLevel() + 1);
+                pData.setExp(0);
+                player.sendMessage("§6§l[Compagnon] §eLe pouvoir " + activePower + " de votre compagnon est passé au niveau " + pData.getLevel() + " !");
+            }
         }
     }
 
@@ -110,6 +127,7 @@ public class PetManager {
         }
 
         PlayerData data = plugin.getPlayerManager().getPlayerData(player.getUniqueId());
+        fr.jules.faction.modules.pet.PetModule petModule = (fr.jules.faction.modules.pet.PetModule) plugin.getModuleManager().getModule("Pet");
 
         String species = entity.getType().name();
         boolean alreadyHasSpecies = data.getCapturedPets().values().stream()
@@ -129,7 +147,10 @@ public class PetManager {
 
         data.getCapturedPets().put(petId, info);
         entity.remove();
-        player.sendMessage("§aFélicitations ! Vous avez capturé un §e" + entity.getType().name() + " §a!");
+
+        String msg = petModule.getConfig().getString("messages.capture-success", "§aFélicitations ! Vous avez capturé un §e%type% §a!")
+                .replace("%type%", entity.getType().name());
+        player.sendMessage(msg);
 
         // Consume Lasso
         ItemStack lasso = player.getInventory().getItemInMainHand();
@@ -190,6 +211,16 @@ public class PetManager {
         Entity pet = activePets.remove(player.getUniqueId());
         if (pet != null) {
             pet.remove();
+            fr.jules.faction.modules.pet.PetModule petModule = (fr.jules.faction.modules.pet.PetModule) plugin.getModuleManager().getModule("Pet");
+            PlayerData data = plugin.getPlayerManager().getPlayerData(player.getUniqueId());
+            String customName = data.getCurrentPet();
+            if (data.getCurrentPet() != null && data.getCapturedPets().containsKey(data.getCurrentPet())) {
+                fr.jules.faction.model.PetInfo info = data.getCapturedPets().get(data.getCurrentPet());
+                if (info.getCustomName() != null) customName = info.getCustomName();
+            }
+            String msg = petModule.getConfig().getString("messages.store", "§eVous avez rangé %name%.")
+                    .replace("%name%", customName != null ? customName : "l'animal");
+            player.sendMessage(msg);
         }
     }
 
