@@ -358,10 +358,14 @@ public class FactionCommand implements CommandExecutor {
     private void handleList(Player player) {
         List<Faction> factions = new ArrayList<>(plugin.getFactionManager().getAllFactions());
         factions.sort((f1, f2) -> Double.compare(f2.getPower(), f1.getPower()));
-        player.sendMessage("§6--- Liste des Factions ---");
+        player.sendMessage(plugin.getConfig().getString("messages.list-header", "§6--- Liste des Factions ---"));
         for (int i = 0; i < factions.size(); i++) {
             Faction f = factions.get(i);
-            player.sendMessage("§e" + (i + 1) + ". " + f.getName() + " §7(Power: " + String.format("%.1f", f.getPower()) + ")");
+            String entry = plugin.getConfig().getString("messages.list-entry", "§e%pos%. %name% §7(Power: %power%)")
+                    .replace("%pos%", String.valueOf(i + 1))
+                    .replace("%name%", f.getName())
+                    .replace("%power%", String.format("%.1f", f.getPower()));
+            player.sendMessage(entry);
         }
     }
 
@@ -369,11 +373,16 @@ public class FactionCommand implements CommandExecutor {
         PlayerData data = plugin.getPlayerManager().getPlayerData(player.getUniqueId());
         Faction faction = plugin.getFactionManager().getFaction(data.getFactionId());
         if (faction == null) return;
-        player.sendMessage("§6--- Statut: " + faction.getName() + " ---");
+        player.sendMessage(plugin.getConfig().getString("messages.status-header", "§6--- Statut: %name% ---")
+                .replace("%name%", faction.getName()));
         for (UUID mid : faction.getMembers()) {
             PlayerData md = plugin.getPlayerManager().getPlayerData(mid);
             String status = Bukkit.getPlayer(mid) != null ? "§a[On]" : "§c[Off]";
-            player.sendMessage("§e" + md.getName() + " §7- Power: " + String.format("%.1f", md.getPower()) + " " + status);
+            String entry = plugin.getConfig().getString("messages.status-entry", "§e%player% §7- Power: %power% %status%")
+                    .replace("%player%", md.getName())
+                    .replace("%power%", String.format("%.1f", md.getPower()))
+                    .replace("%status%", status);
+            player.sendMessage(entry);
         }
     }
 

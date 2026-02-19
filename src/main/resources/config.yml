@@ -105,3 +105,38 @@ messages:
   staff-deactivated: "§c§l[Staff] §cMode Staff désactivé. Inventaire restauré."
   objective-no-possession: "§cVotre faction ne possède pas %objective% actuellement."
   objective-teleport: "§aTéléportation au/à la %objective% !"
+
+  # Faction Lists
+  list-header: "§6--- Liste des Factions ---"
+  list-entry: "§e%pos%. %name% §7(Power: %power%)"
+  status-header: "§6--- Statut: %name% ---"
+  status-entry: "§e%player% §7- Power: %power% %status%"
+
+gui:
+  main:
+    title: "§c§lGestion: %faction%"
+    stats: "§eStatistiques"
+    members: "§eMembres"
+    claims: "§eTerritoires"
+    bank: "§eBanque"
+    relations: "§eRelations"
+    settings: "§eParamètres"
+    perms: "§ePermissions"
+    levels: "§eNiveaux Faction"
+    jobs: "§eMétiers"
+    powers: "§ePouvoirs"
+    quests: "§eQuêtes"
+    pet: "§eCompagnon"
+  pet:
+    title: "§c§lCompagnon: %name%"
+    info: "§eInformations"
+    rename: "§eRenommer"
+    summon: "§aInvoquer"
+    equipment: "§eEquipement"
+    powers: "§6Pouvoirs & Compétences"
+    dismiss: "§cRenvoyer"
+    powers_title: "§c§lPouvoirs: %name%"
+    skills_title: "§c§lCompétences: %power%"
+  shared:
+    back: "§7Retour"
+    quit: "§cQuitter"

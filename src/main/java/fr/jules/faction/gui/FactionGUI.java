@@ -22,10 +22,11 @@ public class FactionGUI {
     }
 
     public static void openMainMenu(Player player, Faction faction) {
-        Inventory inv = Bukkit.createInventory(new FactionInventoryHolder("MAIN", faction), 27, "§c§lGestion: " + faction.getName());
+        String title = plugin.getConfig().getString("gui.main.title", "§c§lGestion: %faction%").replace("%faction%", faction.getName());
+        Inventory inv = Bukkit.createInventory(new FactionInventoryHolder("MAIN", faction), 27, title);
         fillBorder(inv);
 
-        inv.setItem(10, createItem(Material.BOOK, "§eStatistiques",
+        inv.setItem(10, createItem(Material.BOOK, plugin.getConfig().getString("gui.main.stats", "§eStatistiques"),
             "§7• §fNiveau: §6" + faction.getLevel(),
             "§7• §fExp: §7" + String.format("%.1f", faction.getExp()) + " / " + (faction.getLevel() * 1000 * 1.5),
             "§7• §fPower: §b" + String.format("%.1f", faction.getPower()),
@@ -33,18 +34,18 @@ public class FactionGUI {
             "§7• §fBanque: §a" + faction.getBalance() + "$",
             "§7• §fMembres: §b" + faction.getMembers().size()));
 
-        inv.setItem(11, createItem(Material.PLAYER_HEAD, "§eMembres", "§7Gérer les membres et grades"));
-        inv.setItem(12, createItem(Material.GRASS_BLOCK, "§eTerritoires", "§7Voir les parcelles et auto-claim"));
-        inv.setItem(13, createItem(Material.GOLD_INGOT, "§eBanque", "§7Gérer l'argent de la faction"));
-        inv.setItem(14, createItem(Material.MAP, "§eRelations", "§7Gérer les Alliés et Ennemis"));
-        inv.setItem(15, createItem(Material.COMPARATOR, "§eParamètres", "§7Flags de faction (TNT, PVP, etc)"));
-        inv.setItem(16, createItem(Material.REDSTONE_TORCH, "§ePermissions", "§7Actions autorisées par grade"));
+        inv.setItem(11, createItem(Material.PLAYER_HEAD, plugin.getConfig().getString("gui.main.members", "§eMembres"), "§7Gérer les membres et grades"));
+        inv.setItem(12, createItem(Material.GRASS_BLOCK, plugin.getConfig().getString("gui.main.claims", "§eTerritoires"), "§7Voir les parcelles et auto-claim"));
+        inv.setItem(13, createItem(Material.GOLD_INGOT, plugin.getConfig().getString("gui.main.bank", "§eBanque"), "§7Gérer l'argent de la faction"));
+        inv.setItem(14, createItem(Material.MAP, plugin.getConfig().getString("gui.main.relations", "§eRelations"), "§7Gérer les Alliés et Ennemis"));
+        inv.setItem(15, createItem(Material.COMPARATOR, plugin.getConfig().getString("gui.main.settings", "§eParamètres"), "§7Flags de faction (TNT, PVP, etc)"));
+        inv.setItem(16, createItem(Material.REDSTONE_TORCH, plugin.getConfig().getString("gui.main.perms", "§ePermissions"), "§7Actions autorisées par grade"));
 
-        inv.setItem(20, createItem(Material.EXPERIENCE_BOTTLE, "§eNiveaux Faction", "§7Voir les récompenses de niveau"));
-        inv.setItem(21, createItem(Material.IRON_SWORD, "§eMétiers", "§7Choisir un métier"));
-        inv.setItem(22, createItem(Material.BLAZE_POWDER, "§ePouvoirs", "§7Débloquer des capacités"));
-        inv.setItem(23, createItem(Material.WRITABLE_BOOK, "§eQuêtes", "§7Voir les quêtes"));
-        inv.setItem(24, createItem(Material.BONE, "§eCompagnon", "§7Gérer votre familier"));
+        inv.setItem(20, createItem(Material.EXPERIENCE_BOTTLE, plugin.getConfig().getString("gui.main.levels", "§eNiveaux Faction"), "§7Voir les récompenses de niveau"));
+        inv.setItem(21, createItem(Material.IRON_SWORD, plugin.getConfig().getString("gui.main.jobs", "§eMétiers"), "§7Choisir un métier"));
+        inv.setItem(22, createItem(Material.BLAZE_POWDER, plugin.getConfig().getString("gui.main.powers", "§ePouvoirs"), "§7Débloquer des capacités"));
+        inv.setItem(23, createItem(Material.WRITABLE_BOOK, plugin.getConfig().getString("gui.main.quests", "§eQuêtes"), "§7Voir les quêtes"));
+        inv.setItem(24, createItem(Material.BONE, plugin.getConfig().getString("gui.main.pet", "§eCompagnon"), "§7Gérer votre familier"));
 
         player.openInventory(inv);
     }
@@ -313,27 +314,28 @@ public class FactionGUI {
     }
 
     public static void openPetDetailMenu(Player player, String petId, fr.jules.faction.model.PetInfo info) {
-        Inventory inv = Bukkit.createInventory(new FactionInventoryHolder("PET_DETAIL", petId), 27, "§c§lCompagnon: " + (info.getCustomName() != null ? info.getCustomName() : petId));
+        String petName = info.getCustomName() != null ? info.getCustomName() : petId;
+        String title = plugin.getConfig().getString("gui.pet.title", "§c§lCompagnon: %name%").replace("%name%", petName);
+        Inventory inv = Bukkit.createInventory(new FactionInventoryHolder("PET_DETAIL", petId), 27, title);
         fillBorder(inv);
-        inv.setItem(22, createItem(Material.SHEARS, "§7Retour", "§8Revenir à la liste"));
+        inv.setItem(22, createItem(Material.SHEARS, plugin.getConfig().getString("gui.shared.back", "§7Retour"), "§8Revenir à la liste"));
 
         double req = 100 * Math.pow(1.5, info.getLevel() - 1);
-
         long deathRem = (info.getLastDeath() + 600000 - System.currentTimeMillis()) / 1000;
         String state = deathRem > 0 ? "§cMort (" + (deathRem / 60) + "m)" : (petId.equals(plugin.getPlayerManager().getPlayerData(player.getUniqueId()).getCurrentPet()) ? "§aInvoqué" : "§eRangé");
 
-        inv.setItem(10, createItem(Material.BOOK, "§eInformations",
+        inv.setItem(10, createItem(Material.BOOK, plugin.getConfig().getString("gui.pet.info", "§eInformations"),
             "§7Type: §f" + info.getType(),
             "§7Niveau: §6" + info.getLevel(),
             "§7XP: §f" + String.format("%.0f", info.getExp()) + " / " + String.format("%.0f", req),
             "§7Pouvoir Actif: §b" + info.getActivePower(),
             "§7État: " + state));
 
-        inv.setItem(12, createItem(Material.NAME_TAG, "§eRenommer", "§7Prix: §a5000$", "§7Change le nom affiché"));
-        inv.setItem(13, createItem(Material.BONE, "§aInvoquer", "§7Appeler votre compagnon"));
-        inv.setItem(14, createItem(Material.SADDLE, "§eEquipement", "§7Gérer la selle et l'armure"));
-        inv.setItem(15, createItem(Material.BLAZE_POWDER, "§6Pouvoirs & Compétences", "§7Améliorer les capacités"));
-        inv.setItem(16, createItem(Material.BARRIER, "§cRenvoyer", "§7Ranger l'animal"));
+        inv.setItem(12, createItem(Material.NAME_TAG, plugin.getConfig().getString("gui.pet.rename", "§eRenommer"), "§7Prix: §a5000$", "§7Change le nom affiché"));
+        inv.setItem(13, createItem(Material.BONE, plugin.getConfig().getString("gui.pet.summon", "§aInvoquer"), "§7Appeler votre compagnon"));
+        inv.setItem(14, createItem(Material.SADDLE, plugin.getConfig().getString("gui.pet.equipment", "§eEquipement"), "§7Gérer la selle et l'armure"));
+        inv.setItem(15, createItem(Material.BLAZE_POWDER, plugin.getConfig().getString("gui.pet.powers", "§6Pouvoirs & Compétences"), "§7Améliorer les capacités"));
+        inv.setItem(16, createItem(Material.BARRIER, plugin.getConfig().getString("gui.pet.dismiss", "§cRenvoyer"), "§7Ranger l'animal"));
 
         player.openInventory(inv);
     }
@@ -341,7 +343,7 @@ public class FactionGUI {
     public static void openPetEquipmentMenu(Player player, String petId, fr.jules.faction.model.PetInfo info) {
         Inventory inv = Bukkit.createInventory(new FactionInventoryHolder("PET_EQUIP", petId), 27, "§c§lEquipement: " + petId);
         fillBorder(inv);
-        inv.setItem(22, createItem(Material.SHEARS, "§7Retour", "§8Revenir aux détails"));
+        inv.setItem(22, createItem(Material.SHEARS, plugin.getConfig().getString("gui.shared.back", "§7Retour"), "§8Revenir aux détails"));
 
         inv.setItem(10, createItem(Material.SADDLE, "§eSelle", "§7Statut: " + (info.getSaddle() != null ? "§aInstallée" : "§cAbsente"), "", "§7Placez une selle dans votre inventaire", "§7puis cliquez ici pour l'équiper."));
         inv.setItem(12, createItem(Material.IRON_HORSE_ARMOR, "§eArmure", "§7Statut: " + (info.getChestplate() != null ? "§aEquipée (" + info.getChestplate() + ")" : "§cAbsente"), "", "§7Cliquez pour équiper l'armure", "§7que vous tenez en main."));
