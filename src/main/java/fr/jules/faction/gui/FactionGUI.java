@@ -182,7 +182,7 @@ public class FactionGUI {
         fillBorder(inv);
         inv.setItem(49, createItem(Material.SHEARS, "§7Retour", "§8Clic pour revenir"));
 
-        FactionPlugin plugin = (FactionPlugin) Bukkit.getPluginManager().getPlugin("FactionPlugin");
+        FactionPlugin plugin = (FactionPlugin) Bukkit.getPluginManager().getPlugin("TPCFaction");
         int slot = 10;
         for (java.util.UUID memberId : faction.getMembers()) {
             if (slot >= 44) break;
