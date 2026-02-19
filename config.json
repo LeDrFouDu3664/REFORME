@@ -1,3 +1,4 @@
 {
-  "token": "VOTRE_TOKEN_DISCORD_ICI"
+  "token": "VOTRE_TOKEN_DISCORD_ICI",
+  "prefix": "r "
 }

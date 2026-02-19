@@ -1,0 +1,12 @@
+{
+  "name": "tpc-discord-bot",
+  "version": "1.0.0",
+  "description": "Discord bot for TPC Faction",
+  "main": "index.js",
+  "dependencies": {
+    "discord.js": "^14.11.0"
+  },
+  "scripts": {
+    "start": "node index.js"
+  }
+}

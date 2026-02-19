@@ -62,7 +62,6 @@ typings/
 
 # Java/Maven
 target/
-*.jar
 *.class
 *.txt
 *.log
