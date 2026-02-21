@@ -119,6 +119,11 @@ public class PetManager {
     public void handleCapture(Player player, Entity entity) {
         if (!(entity instanceof LivingEntity) || entity instanceof Player) return;
 
+        if (entity instanceof Monster) {
+            player.sendMessage("§cVous ne pouvez pas capturer de monstres hostiles !");
+            return;
+        }
+
         if (entity instanceof Tameable tameable && tameable.isTamed()) {
             if (tameable.getOwner() != null && !tameable.getOwner().getUniqueId().equals(player.getUniqueId())) {
                 player.sendMessage("§cCet animal appartient déjà à quelqu'un !");
@@ -239,11 +244,12 @@ public class PetManager {
                     pet.teleport(player.getLocation());
                 }
 
-                // Pet Buffs based on type
+                // Pet Buffs based on type and active power
                 String petId = plugin.getPlayerManager().getPlayerData(player.getUniqueId()).getCurrentPet();
                 fr.jules.faction.model.PetInfo info = plugin.getPlayerManager().getPlayerData(player.getUniqueId()).getCapturedPets().get(petId);
                 if (info == null) continue;
 
+                // Base species buff
                 String type = info.getType();
                 if (type.equals("WOLF")) player.addPotionEffect(new PotionEffect(PotionEffectType.STRENGTH, 40, 0, false, false));
                 else if (type.equals("CAT")) player.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 40, 0, false, false));
@@ -251,6 +257,29 @@ public class PetManager {
                 else if (type.equals("FOX")) player.addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, 300, 0, false, false));
                 else if (type.equals("SHEEP")) player.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 40, 0, false, false));
                 else player.addPotionEffect(new PotionEffect(PotionEffectType.LUCK, 40, 0, false, false));
+
+                // Active Power Buff
+                String activePower = info.getActivePower();
+                if (!activePower.equals("NONE")) {
+                    fr.jules.faction.model.PetInfo.PowerData pData = info.getPowers().get(activePower);
+                    int pLevel = pData != null ? pData.getLevel() : 1;
+                    int amplifier = (pLevel / 5); // Level 5 = II, Level 10 = III, etc.
+
+                    switch (activePower) {
+                        case "MINER":
+                            player.addPotionEffect(new PotionEffect(PotionEffectType.HASTE, 40, amplifier, false, false));
+                            break;
+                        case "TANK":
+                            player.addPotionEffect(new PotionEffect(PotionEffectType.RESISTANCE, 40, amplifier, false, false));
+                            break;
+                        case "FIGHTER":
+                            player.addPotionEffect(new PotionEffect(PotionEffectType.STRENGTH, 40, amplifier, false, false));
+                            break;
+                        case "SCOUT":
+                            player.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 40, amplifier + 1, false, false));
+                            break;
+                    }
+                }
             }
         }, 20, 20);
     }

@@ -126,6 +126,9 @@ public class GUIListener implements Listener {
             case "SPAWNER":
                 handleSpawnerClick(player, name, (org.bukkit.block.Block) holder.getData(), event);
                 break;
+            case "RANK_MENU":
+                handleRankMenuClick(player, name);
+                break;
         }
     }
 
@@ -337,15 +340,30 @@ public class GUIListener implements Listener {
     private void handlePetPowersClick(Player player, InventoryClickEvent event, String name, String petId, PlayerData data) {
         PetInfo info = data.getCapturedPets().get(petId);
         if (info == null) return;
-        if (event.getRawSlot() == 22) { fr.jules.faction.gui.FactionGUI.openPetDetailMenu(player, petId, info); return; }
-        fr.jules.faction.modules.pet.PetModule petModule = (fr.jules.faction.modules.pet.PetModule) plugin.getModuleManager().getModule("Pet");
-        org.bukkit.configuration.ConfigurationSection ps = petModule.getConfig().getConfigurationSection("powers");
-        for (String pid : ps.getKeys(false)) {
-            if (ChatColor.stripColor(ps.getString(pid + ".name")).equalsIgnoreCase(name)) {
-                if (event.getClick().isLeftClick()) { info.setActivePower(pid); player.sendMessage("§aActivé: " + name); fr.jules.faction.gui.FactionGUI.openPetPowersMenu(player, petId, info); }
-                else if (event.getClick().isRightClick()) fr.jules.faction.gui.FactionGUI.openPetSkillsMenu(player, petId, info, pid);
-                break;
+        if (event.getRawSlot() == 26) { fr.jules.faction.gui.FactionGUI.openPetDetailMenu(player, petId, info); return; }
+
+        String powerId = null;
+        double cost = 0;
+        if (name.contains("Mineur")) { powerId = "MINER"; cost = 5000; }
+        else if (name.contains("Tank")) { powerId = "TANK"; cost = 8000; }
+        else if (name.contains("Combattant")) { powerId = "FIGHTER"; cost = 10000; }
+        else if (name.contains("Éclaireur")) { powerId = "SCOUT"; cost = 6000; }
+
+        if (powerId != null) {
+            if (info.getUnlockedPowers().contains(powerId)) {
+                info.setActivePower(powerId);
+                player.sendMessage("§aPouvoir §e" + name + " §aactivé !");
+            } else {
+                if (plugin.getEconomyManager().has(player, cost)) {
+                    plugin.getEconomyManager().withdraw(player, cost);
+                    info.getUnlockedPowers().add(powerId);
+                    info.setActivePower(powerId);
+                    player.sendMessage("§aVous avez débloqué le pouvoir §e" + name + " §apour §e" + cost + "$ §a!");
+                } else {
+                    player.sendMessage("§cVous n'avez pas assez d'argent !");
+                }
             }
+            fr.jules.faction.gui.PetPowersGUI.openPowersMenu(player, plugin, petId);
         }
     }
 
@@ -439,6 +457,23 @@ public class GUIListener implements Listener {
     private void handleSpawnerClick(Player p, String name, org.bukkit.block.Block s, InventoryClickEvent e) {
         if (name.contains("Statut")) { if (s.hasMetadata("inactive")) s.removeMetadata("inactive", plugin); else s.setMetadata("inactive", new org.bukkit.metadata.FixedMetadataValue(plugin, true)); fr.jules.faction.gui.SpawnerGUI.openSpawnerMenu(p, s); }
         else if (name.contains("Récupérer")) { ItemStack pick = p.getInventory().getItemInMainHand(); if (pick.getType() == Material.DIAMOND_PICKAXE && pick.hasItemMeta() && pick.getItemMeta().getDisplayName().contains("Pioche")) giveSpawner(p, s); }
+    }
+
+    private void handleRankMenuClick(Player player, String name) {
+        String rankStr = null;
+        if (name.contains("Joueur")) rankStr = "JOUEUR";
+        else if (name.contains("Novice")) rankStr = "NOVICE";
+        else if (name.contains("Guerrier")) rankStr = "GUERRIER";
+        else if (name.contains("Élite")) rankStr = "ELITE";
+        else if (name.contains("Légende")) rankStr = "LEGENDE";
+        else if (name.contains("Helper")) rankStr = "HELPER";
+        else if (name.contains("Modérateur")) rankStr = "MODERATEUR";
+        else if (name.contains("Administrateur")) rankStr = "ADMINISTRATEUR";
+
+        if (rankStr != null) {
+            player.performCommand("rank set " + player.getName() + " " + rankStr);
+            player.closeInventory();
+        }
     }
 
     private void giveSpawner(Player p, org.bukkit.block.Block b) {

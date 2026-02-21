@@ -80,12 +80,8 @@ public class MiscCommands implements CommandExecutor {
     }
 
     private void handleRank(Player player, String[] args) {
-        if (args.length < 1) {
-            MessageUtils.sendMessage(player, "rank-status", "%rank%", plugin.getPlayerManager().getPlayerData(player.getUniqueId()).getRank().getPrefix());
-            return;
-        }
-        if (!player.hasPermission("faction.admin")) {
-            MessageUtils.sendMessage(player, "no-permission", "%perm%", "faction.admin");
+        if (args.length < 1 || args[0].equalsIgnoreCase("gui") || args[0].equalsIgnoreCase("menu")) {
+            fr.jules.faction.gui.RankGUI.openRankMenu(player, plugin);
             return;
         }
         if (args.length < 3) {
@@ -93,6 +89,7 @@ public class MiscCommands implements CommandExecutor {
             return;
         }
         if (args[0].equalsIgnoreCase("set")) {
+            if (args.length < 3) { MessageUtils.sendMessage(player, "rank-set-usage"); return; }
             PlayerData targetData = plugin.getPlayerManager().getPlayerDataByName(args[1]);
             if (targetData == null) {
                 MessageUtils.sendMessage(player, "rank-not-found");
@@ -100,6 +97,19 @@ public class MiscCommands implements CommandExecutor {
             }
             try {
                 fr.jules.faction.model.Rank rank = fr.jules.faction.model.Rank.valueOf(args[2].toUpperCase());
+
+                // Security: Only admins can set staff ranks or set ranks for others
+                if (!player.hasPermission("faction.admin")) {
+                    if (!player.getName().equalsIgnoreCase(args[1])) {
+                        MessageUtils.sendMessage(player, "no-permission", "%perm%", "faction.admin");
+                        return;
+                    }
+                    if (rank.isStaff() || rank == fr.jules.faction.model.Rank.FONDATEUR) {
+                        player.sendMessage("§cVous ne pouvez pas vous attribuer un grade Staff gratuitement.");
+                        return;
+                    }
+                }
+
                 targetData.setRank(rank);
                 MessageUtils.sendMessage(player, "rank-updated", "%target%", targetData.getName(), "%rank%", rank.name());
 
@@ -107,6 +117,8 @@ public class MiscCommands implements CommandExecutor {
                 if (targetPlayer != null) {
                     MessageUtils.sendMessage(targetPlayer, "rank-received", "%rank%", rank.getPrefix());
                     plugin.getTabManager().updateTab(targetPlayer);
+                    // Refresh permissions
+                    plugin.getPlayerManager().applyRankPermissions(targetPlayer);
                 }
                 plugin.getDataManager().savePlayerData(targetData);
             } catch (IllegalArgumentException e) {

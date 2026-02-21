@@ -36,32 +36,24 @@ quests:
 ranks:
   JOUEUR:
     prefix: "§7[Joueur]"
-    homes: 2
+    homes: 1
     multiplier: 1.0
     permissions:
-      - "faction.command.create"
-      - "faction.command.join"
       - "faction.command.tpa"
-      - "faction.command.tpahere"
       - "faction.command.tpyes"
       - "faction.command.tpno"
       - "faction.command.spawn"
       - "faction.command.home"
       - "faction.command.money"
       - "faction.command.power"
-      - "faction.command.ah"
-      - "faction.command.jobs"
-      - "faction.command.quests"
       - "faction.command.gui"
       - "faction.command.chat"
-  GUERRIER:
-    prefix: "§6[Guerrier]"
-    homes: 4
+      - "faction.command.rank"
+  NOVICE:
+    prefix: "§a[Novice]"
+    homes: 2
     multiplier: 1.1
     permissions:
-      - "faction.command.create"
-      - "faction.command.join"
-      - "faction.command.claim"
       - "faction.command.tpa"
       - "faction.command.tpahere"
       - "faction.command.tpyes"
@@ -70,71 +62,75 @@ ranks:
       - "faction.command.home"
       - "faction.command.money"
       - "faction.command.power"
-      - "faction.command.ah"
       - "faction.command.jobs"
       - "faction.command.quests"
       - "faction.command.gui"
       - "faction.command.chat"
-  ELITE:
-    prefix: "§b[Élite]"
-    homes: 6
+      - "faction.command.rank"
+      - "faction.command.create"
+      - "faction.command.join"
+  GUERRIER:
+    prefix: "§6[Guerrier]"
+    homes: 3
     multiplier: 1.2
     permissions:
-      - "faction.command.create"
-      - "faction.command.join"
-      - "faction.command.claim"
-      - "faction.command.map"
-      - "faction.command.tpa"
-      - "faction.command.tpahere"
-      - "faction.command.tpyes"
-      - "faction.command.tpno"
-      - "faction.command.spawn"
-      - "faction.command.home"
-      - "faction.command.money"
-      - "faction.command.power"
-      - "faction.command.ah"
-      - "faction.command.jobs"
-      - "faction.command.quests"
-      - "faction.command.gui"
-      - "faction.command.chat"
+      - "faction.command.*"
+      - "faction.command.rank"
+      - "-faction.admin"
+      - "-faction.staff"
+  ELITE:
+    prefix: "§b[Élite]"
+    homes: 5
+    multiplier: 1.5
+    permissions:
+      - "faction.command.*"
       - "faction.command.ec"
+      - "faction.command.rank"
+      - "-faction.admin"
+      - "-faction.staff"
   LEGENDE:
     prefix: "§d[Légende]"
     homes: 10
-    multiplier: 1.5
+    multiplier: 2.0
     permissions:
-      - "faction.command.create"
-      - "faction.command.join"
-      - "faction.command.claim"
-      - "faction.command.map"
-      - "faction.command.sethome"
-      - "faction.command.tpa"
-      - "faction.command.tpahere"
-      - "faction.command.tpyes"
-      - "faction.command.tpno"
-      - "faction.command.spawn"
-      - "faction.command.home"
-      - "faction.command.money"
-      - "faction.command.power"
-      - "faction.command.ah"
-      - "faction.command.jobs"
-      - "faction.command.quests"
-      - "faction.command.gui"
-      - "faction.command.chat"
+      - "faction.command.*"
       - "faction.command.ec"
-  MODO:
-    prefix: "§9[Modo]"
+      - "faction.command.seechunk"
+      - "faction.command.rank"
+      - "-faction.admin"
+      - "-faction.staff"
+  HELPER:
+    prefix: "§2[Helper]"
     homes: 15
     multiplier: 2.0
     permissions:
+      - "faction.command.*"
       - "faction.staff"
       - "faction.command.mute"
-  ADMIN:
+      - "faction.command.unmute"
+      - "faction.command.rank"
+      - "-faction.admin"
+  MODERATEUR:
+    prefix: "§9[Modo]"
+    homes: 20
+    multiplier: 2.0
+    permissions:
+      - "faction.command.*"
+      - "faction.staff"
+      - "faction.command.mute"
+      - "faction.command.unmute"
+      - "faction.command.tempban"
+      - "faction.command.banip"
+      - "faction.command.rank"
+      - "-faction.admin"
+  ADMINISTRATEUR:
     prefix: "§c[Admin]"
     homes: 50
     multiplier: 5.0
     permissions:
       - "faction.admin"
+      - "faction.staff"
+      - "faction.command.*"
   FONDATEUR:
     prefix: "§4[Fondateur]"
     homes: 100

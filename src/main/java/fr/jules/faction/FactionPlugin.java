@@ -147,8 +147,8 @@ public class FactionPlugin extends JavaPlugin {
             });
         }, 20 * 60 * interval, 20 * 60 * interval);
 
-        // Auto-save every 5 minutes
-        Bukkit.getScheduler().runTaskTimerAsynchronously(this, () -> {
+        // Auto-save every 5 minutes (Synchronous to avoid ConcurrentModificationException)
+        Bukkit.getScheduler().runTaskTimer(this, () -> {
             getLogger().info("Auto-sauvegarde des données...");
             dataManager.saveAll(factionManager, playerManager, claimManager);
         }, 6000L, 6000L);

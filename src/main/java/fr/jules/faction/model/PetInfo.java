@@ -17,6 +17,7 @@ public class PetInfo {
     private int level = 1;
     private double exp = 0;
     private String activePower = "NONE";
+    private java.util.List<String> unlockedPowers = new java.util.ArrayList<>();
     private Map<String, PowerData> powers = new HashMap<>();
     private String helmet; // For armor
     private String chestplate;

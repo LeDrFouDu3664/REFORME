@@ -51,28 +51,7 @@ public class FactionGUI {
     }
 
     public static void openPetPowersMenu(Player player, String petId, fr.jules.faction.model.PetInfo info) {
-        Inventory inv = Bukkit.createInventory(new FactionInventoryHolder("PET_POWERS", petId), 27, "§c§lPouvoirs: " + petId);
-        fillBorder(inv);
-        inv.setItem(22, createItem(Material.SHEARS, "§7Retour", "§8Revenir aux détails"));
-
-        fr.jules.faction.modules.pet.PetModule petModule = (fr.jules.faction.modules.pet.PetModule) plugin.getModuleManager().getModule("Pet");
-        org.bukkit.configuration.ConfigurationSection powersSec = petModule.getConfig().getConfigurationSection("powers");
-
-        int slot = 11;
-        for (String powerId : powersSec.getKeys(false)) {
-            String name = powersSec.getString(powerId + ".name");
-            fr.jules.faction.model.PetInfo.PowerData data = info.getPowers().computeIfAbsent(powerId, k -> new fr.jules.faction.model.PetInfo.PowerData());
-
-            boolean active = info.getActivePower().equals(powerId);
-            inv.setItem(slot++, createItem(active ? Material.ENCHANTED_BOOK : Material.BOOK, "§e" + name,
-                "§7Niveau: §6" + data.getLevel(),
-                "§7XP: §f" + String.format("%.0f", data.getExp()),
-                "",
-                "§a▶ Clic Gauche: §7Activer",
-                "§e▶ Clic Droit: §7Voir Compétences"));
-            if (slot == 16) break;
-        }
-        player.openInventory(inv);
+        fr.jules.faction.gui.PetPowersGUI.openPowersMenu(player, plugin, petId);
     }
 
     public static void openPetSkillsMenu(Player player, String petId, fr.jules.faction.model.PetInfo info, String powerId) {

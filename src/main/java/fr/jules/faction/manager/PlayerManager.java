@@ -54,6 +54,22 @@ public class PlayerManager {
         if (data.getName() != null) nameCache.put(data.getUuid(), data.getName());
     }
 
+    public void applyRankPermissions(org.bukkit.entity.Player player) {
+        PlayerData data = getPlayerData(player.getUniqueId());
+        fr.jules.faction.modules.core.CoreModule core = (fr.jules.faction.modules.core.CoreModule) plugin.getModuleManager().getModule("Core");
+        if (core == null) return;
+
+        org.bukkit.permissions.PermissionAttachment attachment = player.addAttachment(plugin);
+        java.util.List<String> perms = core.getConfig().getStringList("ranks." + data.getRank().name() + ".permissions");
+        for (String perm : perms) {
+            if (perm.startsWith("-")) {
+                attachment.setPermission(perm.substring(1), false);
+            } else {
+                attachment.setPermission(perm, true);
+            }
+        }
+    }
+
     public String getPlayerName(UUID uuid) {
         String name = nameCache.get(uuid);
         if (name == null) {

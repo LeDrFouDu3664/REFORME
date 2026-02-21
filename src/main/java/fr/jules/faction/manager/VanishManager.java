@@ -15,12 +15,12 @@ public class VanishManager {
     public void toggleVanish(Player player) {
         if (player.hasMetadata("vanished")) {
             player.removeMetadata("vanished", plugin);
-            Bukkit.broadcastMessage("§e" + player.getName() + " a rejoint la partie");
+            Bukkit.broadcastMessage("§7[§a+§7] §f" + player.getName());
             player.sendMessage("§aVanish: §cDésactivé");
             plugin.getTabManager().updateVisibility(player);
         } else {
             player.setMetadata("vanished", new FixedMetadataValue(plugin, true));
-            Bukkit.broadcastMessage("§e" + player.getName() + " a quitté la partie");
+            Bukkit.broadcastMessage("§7[§c-§7] §f" + player.getName());
             player.sendMessage("§aVanish: §aActivé");
             plugin.getTabManager().updateVisibility(player);
         }

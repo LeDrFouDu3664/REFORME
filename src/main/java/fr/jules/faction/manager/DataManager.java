@@ -176,6 +176,7 @@ public class DataManager {
             pi.put("level", v.getLevel());
             pi.put("exp", v.getExp());
             pi.put("activePower", v.getActivePower());
+            pi.put("unlockedPowers", v.getUnlockedPowers());
 
             Map<String, Map<String, Object>> powersMap = new HashMap<>();
             v.getPowers().forEach((pk, pv) -> {
@@ -242,6 +243,7 @@ public class DataManager {
                 pi.setLevel(petsSec.getInt(key + ".level", 1));
                 pi.setExp(petsSec.getDouble(key + ".exp", 0));
                 pi.setActivePower(petsSec.getString(key + ".activePower", "NONE"));
+                pi.setUnlockedPowers(petsSec.getStringList(key + ".unlockedPowers"));
 
                 ConfigurationSection powersSec = petsSec.getConfigurationSection(key + ".powers");
                 if (powersSec != null) {

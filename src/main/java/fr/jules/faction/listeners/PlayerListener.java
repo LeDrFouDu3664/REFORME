@@ -23,6 +23,7 @@ public class PlayerListener implements Listener {
 
     @EventHandler
     public void onJoin(PlayerJoinEvent event) {
+        event.setJoinMessage("§7[§a+§7] §f" + event.getPlayer().getName());
         PlayerData data = plugin.getDataManager().loadPlayerData(event.getPlayer().getUniqueId());
         if (data == null) {
             data = plugin.getPlayerManager().getPlayerData(event.getPlayer().getUniqueId());
@@ -39,28 +40,24 @@ public class PlayerListener implements Listener {
             }
         }
         plugin.getPowerManager().refreshPowerEffects(event.getPlayer());
-        applyRankPermissions(event.getPlayer(), data);
-    }
-
-    private void applyRankPermissions(Player player, PlayerData data) {
-        fr.jules.faction.modules.core.CoreModule core = (fr.jules.faction.modules.core.CoreModule) plugin.getModuleManager().getModule("Core");
-        if (core == null) return;
-
-        org.bukkit.permissions.PermissionAttachment attachment = player.addAttachment(plugin);
-        List<String> perms = core.getConfig().getStringList("ranks." + data.getRank().name() + ".permissions");
-        for (String perm : perms) {
-            attachment.setPermission(perm, true);
-        }
+        plugin.getPlayerManager().applyRankPermissions(event.getPlayer());
     }
 
     @EventHandler
     public void onQuit(PlayerQuitEvent event) {
-        PlayerData data = plugin.getPlayerManager().getPlayerData(event.getPlayer().getUniqueId());
+        Player player = event.getPlayer();
+        PlayerData data = plugin.getPlayerManager().getPlayerData(player.getUniqueId());
+
+        if (player.hasMetadata("vanished")) {
+            event.setQuitMessage(null);
+        } else {
+            event.setQuitMessage("§7[§c-§7] §f" + player.getName());
+        }
 
         // Anti-combat log
         if (System.currentTimeMillis() - data.getCombatLoggedTime() < 15000) {
-            event.getPlayer().setHealth(0);
-            Bukkit.broadcastMessage("§c" + event.getPlayer().getName() + " s'est déconnecté en combat !");
+            player.setHealth(0);
+            Bukkit.broadcastMessage("§c" + player.getName() + " s'est déconnecté en combat !");
         }
 
         plugin.getDataManager().savePlayerData(data);
