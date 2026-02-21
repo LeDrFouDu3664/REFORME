@@ -1,0 +1,10 @@
+{
+  "prefix": "r ",
+  "logChannelId": "111111111111111111",
+  "auditLogChannelId": "222222222222222222",
+  "ticketCategoryId": "333333333333333333",
+  "recruitmentCategoryId": "444444444444444444",
+  "staffRoleId": "555555555555555555",
+  "adminRoleId": "666666666666666666",
+  "recruitmentRoleId": "777777777777777777"
+}
