@@ -124,6 +124,12 @@ public class PetManager {
             return;
         }
 
+        org.bukkit.World.Environment env = entity.getWorld().getEnvironment();
+        if (env == org.bukkit.World.Environment.NETHER || env == org.bukkit.World.Environment.THE_END) {
+            player.sendMessage("§cVous ne pouvez pas capturer de créatures provenant du Nether ou de l'End !");
+            return;
+        }
+
         if (entity instanceof Tameable tameable && tameable.isTamed()) {
             if (tameable.getOwner() != null && !tameable.getOwner().getUniqueId().equals(player.getUniqueId())) {
                 player.sendMessage("§cCet animal appartient déjà à quelqu'un !");

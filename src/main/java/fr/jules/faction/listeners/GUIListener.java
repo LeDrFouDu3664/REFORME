@@ -326,13 +326,43 @@ public class GUIListener implements Listener {
         PetInfo info = data.getCapturedPets().get(petId);
         if (info == null) return;
         if (slot == 22) { fr.jules.faction.gui.FactionGUI.openPetDetailMenu(player, petId, info); return; }
-        if (slot == 10) {
-            if (info.getSaddle() != null) { info.setSaddle(null); player.getInventory().addItem(new ItemStack(Material.SADDLE)); }
-            else if (player.getInventory().contains(Material.SADDLE)) { player.getInventory().removeItem(new ItemStack(Material.SADDLE, 1)); info.setSaddle("SADDLE"); }
+        if (slot == 10) { // SADDLE
+            if (info.getSaddle() != null) {
+                info.setSaddle(null);
+                Map<Integer, ItemStack> remaining = player.getInventory().addItem(new ItemStack(Material.SADDLE));
+                if (!remaining.isEmpty()) player.getWorld().dropItem(player.getLocation(), new ItemStack(Material.SADDLE));
+                player.sendMessage("§aSelle retirée.");
+            } else {
+                int saddleSlot = player.getInventory().first(Material.SADDLE);
+                if (saddleSlot != -1) {
+                    ItemStack saddleItem = player.getInventory().getItem(saddleSlot);
+                    saddleItem.setAmount(saddleItem.getAmount() - 1);
+                    info.setSaddle("SADDLE");
+                    player.sendMessage("§aSelle équipée !");
+                } else {
+                    player.sendMessage("§cVous n'avez pas de selle dans votre inventaire.");
+                }
+            }
             fr.jules.faction.gui.FactionGUI.openPetEquipmentMenu(player, petId, info);
-        } else if (slot == 12) {
-            if (info.getChestplate() != null) { Material m = Material.valueOf(info.getChestplate()); info.setChestplate(null); player.getInventory().addItem(new ItemStack(m)); }
-            else { ItemStack h = player.getInventory().getItemInMainHand(); if (h.getType().name().contains("HORSE_ARMOR")) { info.setChestplate(h.getType().name()); h.setAmount(h.getAmount() - 1); } }
+        } else if (slot == 12) { // ARMOR
+            if (info.getChestplate() != null) {
+                try {
+                    Material m = Material.valueOf(info.getChestplate());
+                    info.setChestplate(null);
+                    Map<Integer, ItemStack> remaining = player.getInventory().addItem(new ItemStack(m));
+                    if (!remaining.isEmpty()) player.getWorld().dropItem(player.getLocation(), new ItemStack(m));
+                    player.sendMessage("§aArmure retirée.");
+                } catch (Exception ignored) {}
+            } else {
+                ItemStack armorItem = player.getInventory().getItemInMainHand();
+                if (armorItem != null && armorItem.getType().name().contains("HORSE_ARMOR")) {
+                    info.setChestplate(armorItem.getType().name());
+                    armorItem.setAmount(armorItem.getAmount() - 1);
+                    player.sendMessage("§aArmure équipée !");
+                } else {
+                    player.sendMessage("§cTenez l'armure pour cheval dans votre main principale !");
+                }
+            }
             fr.jules.faction.gui.FactionGUI.openPetEquipmentMenu(player, petId, info);
         }
     }

@@ -60,7 +60,7 @@ public class AFKManager {
                     player.kickPlayer("§cVous avez été expulsé pour inactivité (1 heure).");
                 }
             }
-        }, 20 * 60, 20 * 60); // Check every minute
+        }, 400L, 400L); // Check every 20 seconds
     }
 
     public void removePlayer(UUID uuid) {

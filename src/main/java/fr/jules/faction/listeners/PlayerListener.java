@@ -24,6 +24,7 @@ public class PlayerListener implements Listener {
     @EventHandler
     public void onJoin(PlayerJoinEvent event) {
         event.setJoinMessage("§7[§a+§7] §f" + event.getPlayer().getName());
+        plugin.getAfkManager().updateActivity(event.getPlayer());
         PlayerData data = plugin.getDataManager().loadPlayerData(event.getPlayer().getUniqueId());
         if (data == null) {
             data = plugin.getPlayerManager().getPlayerData(event.getPlayer().getUniqueId());
@@ -94,15 +95,13 @@ public class PlayerListener implements Listener {
 
     @EventHandler
     public void onMove(PlayerMoveEvent event) {
-        if (plugin.getAfkManager().isAFK(event.getPlayer())) {
-            if (event.getFrom().getX() != event.getTo().getX() || event.getFrom().getZ() != event.getTo().getZ() || event.getFrom().getY() != event.getTo().getY()) {
-                event.setCancelled(true);
-                event.getPlayer().sendMessage("§cVous êtes en mode AFK. Utilisez /afk pour bouger.");
-                return;
-            }
-        }
+        // Check for intentional movement (Yaw/Pitch change)
+        boolean rotationChanged = event.getFrom().getYaw() != event.getTo().getYaw() || event.getFrom().getPitch() != event.getTo().getPitch();
 
-        if (event.getFrom().getX() != event.getTo().getX() || event.getFrom().getZ() != event.getTo().getZ() || event.getFrom().getY() != event.getTo().getY()) {
+        if (rotationChanged) {
+            if (plugin.getAfkManager().isAFK(event.getPlayer())) {
+                plugin.getAfkManager().setAFK(event.getPlayer(), false);
+            }
             plugin.getAfkManager().updateActivity(event.getPlayer());
         }
 
