@@ -45,8 +45,6 @@ public class AFKManager {
         Bukkit.getScheduler().runTaskTimer(plugin, () -> {
             long now = System.currentTimeMillis();
             for (Player player : Bukkit.getOnlinePlayers()) {
-                if (player.hasPermission("faction.staff.noafk")) continue;
-
                 long last = lastActivity.getOrDefault(player.getUniqueId(), now);
                 long diff = now - last;
 

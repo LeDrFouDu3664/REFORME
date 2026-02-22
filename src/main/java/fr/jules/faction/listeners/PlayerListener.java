@@ -95,14 +95,17 @@ public class PlayerListener implements Listener {
 
     @EventHandler
     public void onMove(PlayerMoveEvent event) {
-        // Check for intentional movement (Yaw/Pitch change)
-        boolean rotationChanged = event.getFrom().getYaw() != event.getTo().getYaw() || event.getFrom().getPitch() != event.getTo().getPitch();
+        Player player = event.getPlayer();
 
-        if (rotationChanged) {
-            if (plugin.getAfkManager().isAFK(event.getPlayer())) {
-                plugin.getAfkManager().setAFK(event.getPlayer(), false);
+        // Check for intentional movement: rotation OR sneaking OR sprinting
+        boolean rotationChanged = event.getFrom().getYaw() != event.getTo().getYaw() || event.getFrom().getPitch() != event.getTo().getPitch();
+        boolean activeInput = rotationChanged || player.isSneaking() || player.isSprinting();
+
+        if (activeInput) {
+            if (plugin.getAfkManager().isAFK(player)) {
+                plugin.getAfkManager().setAFK(player, false);
             }
-            plugin.getAfkManager().updateActivity(event.getPlayer());
+            plugin.getAfkManager().updateActivity(player);
         }
 
         PlayerData data = plugin.getPlayerManager().getPlayerData(event.getPlayer().getUniqueId());

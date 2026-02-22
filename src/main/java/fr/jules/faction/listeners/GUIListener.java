@@ -329,35 +329,42 @@ public class GUIListener implements Listener {
         if (slot == 10) { // SADDLE
             if (info.getSaddle() != null) {
                 info.setSaddle(null);
-                Map<Integer, ItemStack> remaining = player.getInventory().addItem(new ItemStack(Material.SADDLE));
-                if (!remaining.isEmpty()) player.getWorld().dropItem(player.getLocation(), new ItemStack(Material.SADDLE));
+                ItemStack item = new ItemStack(Material.SADDLE);
+                if (player.getInventory().firstEmpty() == -1) player.getWorld().dropItem(player.getLocation(), item);
+                else player.getInventory().addItem(item);
                 player.sendMessage("§aSelle retirée.");
             } else {
-                int saddleSlot = player.getInventory().first(Material.SADDLE);
-                if (saddleSlot != -1) {
-                    ItemStack saddleItem = player.getInventory().getItem(saddleSlot);
-                    saddleItem.setAmount(saddleItem.getAmount() - 1);
+                ItemStack itemInHand = player.getInventory().getItemInMainHand();
+                if (itemInHand.getType() == Material.SADDLE) {
+                    itemInHand.setAmount(itemInHand.getAmount() - 1);
                     info.setSaddle("SADDLE");
                     player.sendMessage("§aSelle équipée !");
                 } else {
-                    player.sendMessage("§cVous n'avez pas de selle dans votre inventaire.");
+                    int firstSaddle = player.getInventory().first(Material.SADDLE);
+                    if (firstSaddle != -1) {
+                        ItemStack saddle = player.getInventory().getItem(firstSaddle);
+                        saddle.setAmount(saddle.getAmount() - 1);
+                        info.setSaddle("SADDLE");
+                        player.sendMessage("§aSelle équipée !");
+                    } else {
+                        player.sendMessage("§cTenez une selle en main ou ayez-en une dans votre inventaire !");
+                    }
                 }
             }
             fr.jules.faction.gui.FactionGUI.openPetEquipmentMenu(player, petId, info);
         } else if (slot == 12) { // ARMOR
             if (info.getChestplate() != null) {
-                try {
-                    Material m = Material.valueOf(info.getChestplate());
-                    info.setChestplate(null);
-                    Map<Integer, ItemStack> remaining = player.getInventory().addItem(new ItemStack(m));
-                    if (!remaining.isEmpty()) player.getWorld().dropItem(player.getLocation(), new ItemStack(m));
-                    player.sendMessage("§aArmure retirée.");
-                } catch (Exception ignored) {}
+                Material m = Material.valueOf(info.getChestplate());
+                info.setChestplate(null);
+                ItemStack item = new ItemStack(m);
+                if (player.getInventory().firstEmpty() == -1) player.getWorld().dropItem(player.getLocation(), item);
+                else player.getInventory().addItem(item);
+                player.sendMessage("§aArmure retirée.");
             } else {
-                ItemStack armorItem = player.getInventory().getItemInMainHand();
-                if (armorItem != null && armorItem.getType().name().contains("HORSE_ARMOR")) {
-                    info.setChestplate(armorItem.getType().name());
-                    armorItem.setAmount(armorItem.getAmount() - 1);
+                ItemStack itemInHand = player.getInventory().getItemInMainHand();
+                if (itemInHand.getType().name().contains("HORSE_ARMOR")) {
+                    info.setChestplate(itemInHand.getType().name());
+                    itemInHand.setAmount(itemInHand.getAmount() - 1);
                     player.sendMessage("§aArmure équipée !");
                 } else {
                     player.sendMessage("§cTenez l'armure pour cheval dans votre main principale !");

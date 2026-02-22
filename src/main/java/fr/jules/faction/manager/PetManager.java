@@ -52,7 +52,8 @@ public class PetManager {
         }
 
         Entity pet = player.getWorld().spawnEntity(player.getLocation(), et);
-        pet.setCustomName("§c§lCompagnon de " + player.getName());
+        String petName = info.getCustomName() != null ? info.getCustomName() : info.getType();
+        pet.setCustomName("§c§l" + petName);
         pet.setCustomNameVisible(true);
 
         if (pet instanceof Tameable tameable) {
@@ -119,7 +120,10 @@ public class PetManager {
     public void handleCapture(Player player, Entity entity) {
         if (!(entity instanceof LivingEntity) || entity instanceof Player) return;
 
-        if (entity instanceof Monster) {
+        // Block Hostile and Nether/End Mobs
+        if (entity instanceof Monster || entity instanceof Ghast || entity instanceof Slime || entity instanceof MagmaCube ||
+            entity instanceof Phantom || entity instanceof Shulker || entity instanceof Hoglin || entity instanceof Piglin ||
+            entity instanceof Warden) {
             player.sendMessage("§cVous ne pouvez pas capturer de monstres hostiles !");
             return;
         }
@@ -127,6 +131,20 @@ public class PetManager {
         org.bukkit.World.Environment env = entity.getWorld().getEnvironment();
         if (env == org.bukkit.World.Environment.NETHER || env == org.bukkit.World.Environment.THE_END) {
             player.sendMessage("§cVous ne pouvez pas capturer de créatures provenant du Nether ou de l'End !");
+            return;
+        }
+
+        // Block Villagers, Golems and NPC-like
+        if (entity instanceof Villager || entity instanceof IronGolem || entity instanceof Snowman ||
+            entity instanceof WanderingTrader || entity instanceof AbstractVillager) {
+            player.sendMessage("§cVous ne pouvez pas capturer cette créature !");
+            return;
+        }
+
+        // Block Large Creatures
+        if (entity instanceof Ravager || entity instanceof ElderGuardian || entity instanceof Wither ||
+            entity instanceof EnderDragon || entity instanceof Giant) {
+            player.sendMessage("§cCette créature est beaucoup trop imposante pour être capturée !");
             return;
         }
 
