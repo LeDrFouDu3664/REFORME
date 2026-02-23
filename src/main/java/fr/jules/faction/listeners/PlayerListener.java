@@ -23,7 +23,9 @@ public class PlayerListener implements Listener {
 
     @EventHandler
     public void onJoin(PlayerJoinEvent event) {
-        event.setJoinMessage("§7[§a+§7] §f" + event.getPlayer().getName());
+        String msg = plugin.getConfig().getString("messages.join-message", "§7[§a+§7] §f%player% a rejoint la partie")
+                .replace("%player%", event.getPlayer().getName());
+        event.setJoinMessage(msg);
         plugin.getAfkManager().updateActivity(event.getPlayer());
         PlayerData data = plugin.getDataManager().loadPlayerData(event.getPlayer().getUniqueId());
         if (data == null) {
@@ -52,7 +54,9 @@ public class PlayerListener implements Listener {
         if (player.hasMetadata("vanished")) {
             event.setQuitMessage(null);
         } else {
-            event.setQuitMessage("§7[§c-§7] §f" + player.getName());
+            String msg = plugin.getConfig().getString("messages.quit-message", "§7[§c-§7] §f%player% a quitté la partie")
+                    .replace("%player%", player.getName());
+            event.setQuitMessage(msg);
         }
 
         // Anti-combat log

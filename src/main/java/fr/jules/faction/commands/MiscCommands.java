@@ -160,6 +160,7 @@ public class MiscCommands implements CommandExecutor {
     private void handleMod(Player player) {
         if (!player.hasPermission("faction.staff")) return;
         PlayerData data = plugin.getPlayerManager().getPlayerData(player.getUniqueId());
+        fr.jules.faction.modules.staff.StaffModule staffMod = (fr.jules.faction.modules.staff.StaffModule) plugin.getModuleManager().getModule("Staff");
 
         if (!data.isStaffMode()) {
             // Activate Staff Mode
@@ -169,13 +170,13 @@ public class MiscCommands implements CommandExecutor {
 
             player.getInventory().clear();
 
-            player.getInventory().setItem(0, createStaffItem(org.bukkit.Material.COMPASS, "§bVanish", "§7Clic pour alterner"));
-            player.getInventory().setItem(1, createStaffItem(org.bukkit.Material.PACKED_ICE, "§bFreeze", "§7Clic droit sur joueur"));
-            player.getInventory().setItem(2, createStaffItem(org.bukkit.Material.CHEST, "§eInvSee", "§7Clic droit sur joueur"));
-            player.getInventory().setItem(4, createStaffItem(org.bukkit.Material.BOOK, "§6Outils Modération", "§7Ouvrir le menu"));
-            player.getInventory().setItem(8, createStaffItem(org.bukkit.Material.BARRIER, "§cQuitter Staff Mode", "§7Désactiver"));
+            player.getInventory().setItem(0, createStaffItem(org.bukkit.Material.valueOf(staffMod.getConfig().getString("items.vanish.material")), staffMod.getConfig().getString("items.vanish.name"), staffMod.getConfig().getString("items.vanish.lore")));
+            player.getInventory().setItem(1, createStaffItem(org.bukkit.Material.valueOf(staffMod.getConfig().getString("items.freeze.material")), staffMod.getConfig().getString("items.freeze.name"), staffMod.getConfig().getString("items.freeze.lore")));
+            player.getInventory().setItem(2, createStaffItem(org.bukkit.Material.valueOf(staffMod.getConfig().getString("items.invsee.material")), staffMod.getConfig().getString("items.invsee.name"), staffMod.getConfig().getString("items.invsee.lore")));
+            player.getInventory().setItem(4, createStaffItem(org.bukkit.Material.valueOf(staffMod.getConfig().getString("items.tools.material")), staffMod.getConfig().getString("items.tools.name"), staffMod.getConfig().getString("items.tools.lore")));
+            player.getInventory().setItem(8, createStaffItem(org.bukkit.Material.valueOf(staffMod.getConfig().getString("items.exit.material")), staffMod.getConfig().getString("items.exit.name"), staffMod.getConfig().getString("items.exit.lore")));
 
-            MessageUtils.sendMessage(player, "staff-activated");
+            player.sendMessage(staffMod.getConfig().getString("messages.staff-activated"));
         } else {
             // Deactivate Staff Mode
             data.setStaffMode(false);
@@ -184,11 +185,10 @@ public class MiscCommands implements CommandExecutor {
             if (data.getSavedArmor() != null) player.getInventory().setArmorContents(data.getSavedArmor());
 
             if (player.hasMetadata("vanished")) {
-                player.removeMetadata("vanished", plugin);
-                Bukkit.getOnlinePlayers().forEach(p -> p.showPlayer(plugin, player));
+                plugin.getVanishManager().toggleVanish(player);
             }
 
-            MessageUtils.sendMessage(player, "staff-deactivated");
+            player.sendMessage(staffMod.getConfig().getString("messages.staff-deactivated"));
         }
     }
 

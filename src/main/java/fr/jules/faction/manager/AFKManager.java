@@ -31,6 +31,7 @@ public class AFKManager {
         afkPlayers.put(player.getUniqueId(), status);
         player.setSleepingIgnored(status);
         player.setCollidable(!status);
+        player.setInvulnerable(status);
 
         if (status) {
             Bukkit.broadcastMessage("§7[AFK] §e" + player.getName() + " §7est désormais §6AFK.");

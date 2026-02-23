@@ -144,10 +144,9 @@ public class PetManager {
             return;
         }
 
-        // Block Large Creatures
+        // Block Large Creatures (Except Camel)
         if (entity instanceof Ravager || entity instanceof ElderGuardian || entity instanceof Wither ||
-            entity instanceof EnderDragon || entity instanceof Giant || entity instanceof Sniffer ||
-            entity instanceof Camel) {
+            entity instanceof EnderDragon || entity instanceof Giant || entity instanceof Sniffer) {
             player.sendMessage("§cCette créature est beaucoup trop imposante pour être capturée !");
             return;
         }
@@ -227,7 +226,7 @@ public class PetManager {
             }
         } else if (entity instanceof Wolf wolf && info.getChestplate() != null) {
             try {
-                // In 1.21.1 Wolves use a specific body armor slot or method
+                // For 1.21.1, Wolf Armor uses the chestplate slot in EntityEquipment
                 wolf.getEquipment().setChestplate(new ItemStack(Material.valueOf(info.getChestplate())));
             } catch (Exception ignored) {}
         } else if (entity instanceof Camel camel && info.getSaddle() != null) {

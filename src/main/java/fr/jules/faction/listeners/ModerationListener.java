@@ -82,14 +82,15 @@ public class ModerationListener implements Listener {
     }
 
     private void toggleFreeze(Player target, Player staff) {
+        fr.jules.faction.modules.staff.StaffModule staffMod = (fr.jules.faction.modules.staff.StaffModule) plugin.getModuleManager().getModule("Staff");
         if (target.hasMetadata("frozen")) {
             target.removeMetadata("frozen", plugin);
-            target.sendMessage("§aVous avez été libéré !");
-            staff.sendMessage("§aJoueur libéré.");
+            target.sendMessage(staffMod.getConfig().getString("messages.freeze-off"));
+            staff.sendMessage(staffMod.getConfig().getString("messages.freeze-staff-off"));
         } else {
             target.setMetadata("frozen", new org.bukkit.metadata.FixedMetadataValue(plugin, true));
-            target.sendMessage("§cVous avez été gelé par un modérateur !");
-            staff.sendMessage("§cJoueur gelé.");
+            target.sendMessage(staffMod.getConfig().getString("messages.freeze-on"));
+            staff.sendMessage(staffMod.getConfig().getString("messages.freeze-staff-on"));
         }
     }
 }

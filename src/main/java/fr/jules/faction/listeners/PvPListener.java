@@ -30,6 +30,15 @@ public class PvPListener implements Listener {
     }
 
     @EventHandler
+    public void onTarget(org.bukkit.event.entity.EntityTargetEvent event) {
+        if (event.getTarget() instanceof Player player) {
+            if (plugin.getAfkManager().isAFK(player)) {
+                event.setCancelled(true);
+            }
+        }
+    }
+
+    @EventHandler
     public void onDamage(org.bukkit.event.entity.EntityDamageEvent event) {
         if (event.getEntity() instanceof Player player) {
             if (plugin.getAfkManager().isAFK(player)) {

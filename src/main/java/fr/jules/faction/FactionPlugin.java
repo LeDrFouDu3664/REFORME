@@ -58,6 +58,8 @@ public class FactionPlugin extends JavaPlugin {
         moduleManager.registerModule(new fr.jules.faction.modules.core.CoreModule(this));
         moduleManager.registerModule(new fr.jules.faction.modules.chat.ChatModule(this));
         moduleManager.registerModule(new fr.jules.faction.modules.pet.PetModule(this));
+        moduleManager.registerModule(new fr.jules.faction.modules.staff.StaffModule(this));
+        moduleManager.registerModule(new fr.jules.faction.modules.shop.ShopModule(this));
 
         dataManager.loadFactions(factionManager, claimManager);
         factionManager.getAllFactions().forEach(f -> factionManager.recalculatePower(f, playerManager));

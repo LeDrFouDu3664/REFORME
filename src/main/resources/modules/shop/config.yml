@@ -1,0 +1,21 @@
+# Configuration du Module Shop
+categories:
+  Blocs:
+    icon: "GRASS_BLOCK"
+    items:
+      - { material: "STONE", amount: 64, buy: 100, sell: 20 }
+      - { material: "COBBLESTONE", amount: 64, buy: 50, sell: 10 }
+  Combat:
+    icon: "DIAMOND_SWORD"
+    items:
+      - { material: "IRON_SWORD", amount: 1, buy: 500, sell: 100 }
+      - { material: "DIAMOND_SWORD", amount: 1, buy: 2500, sell: 500 }
+  Agriculture:
+    icon: "WHEAT"
+    items:
+      - { material: "BREAD", amount: 16, buy: 100, sell: 20 }
+  Special:
+    icon: "LEAD"
+    items:
+      - { material: "LEAD", name: "§bLasso de Capture", amount: 1, buy: 10000, sell: 0 }
+      - { material: "DIAMOND_PICKAXE", name: "§dPioche à Spawner", amount: 1, buy: 50000, sell: 0 }

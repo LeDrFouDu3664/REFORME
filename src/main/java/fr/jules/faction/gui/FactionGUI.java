@@ -9,6 +9,9 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import org.bukkit.NamespacedKey;
+import org.bukkit.persistence.PersistentDataType;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -34,18 +37,18 @@ public class FactionGUI {
             "§7• §fBanque: §a" + faction.getBalance() + "$",
             "§7• §fMembres: §b" + faction.getMembers().size()));
 
-        inv.setItem(11, createItem(Material.PLAYER_HEAD, plugin.getConfig().getString("gui.main.members", "§eMembres"), "§7Gérer les membres et grades"));
-        inv.setItem(12, createItem(Material.GRASS_BLOCK, plugin.getConfig().getString("gui.main.claims", "§eTerritoires"), "§7Voir les parcelles et auto-claim"));
-        inv.setItem(13, createItem(Material.GOLD_INGOT, plugin.getConfig().getString("gui.main.bank", "§eBanque"), "§7Gérer l'argent de la faction"));
-        inv.setItem(14, createItem(Material.MAP, plugin.getConfig().getString("gui.main.relations", "§eRelations"), "§7Gérer les Alliés et Ennemis"));
-        inv.setItem(15, createItem(Material.COMPARATOR, plugin.getConfig().getString("gui.main.settings", "§eParamètres"), "§7Flags de faction (TNT, PVP, etc)"));
-        inv.setItem(16, createItem(Material.REDSTONE_TORCH, plugin.getConfig().getString("gui.main.perms", "§ePermissions"), "§7Actions autorisées par grade"));
+        inv.setItem(11, createGuiItem(Material.PLAYER_HEAD, plugin.getConfig().getString("gui.main.members", "§eMembres"), "MEMBERS", "§7Gérer les membres et grades"));
+        inv.setItem(12, createGuiItem(Material.GRASS_BLOCK, plugin.getConfig().getString("gui.main.claims", "§eTerritoires"), "CLAIMS", "§7Voir les parcelles et auto-claim"));
+        inv.setItem(13, createGuiItem(Material.GOLD_INGOT, plugin.getConfig().getString("gui.main.bank", "§eBanque"), "BANK", "§7Gérer l'argent de la faction"));
+        inv.setItem(14, createGuiItem(Material.MAP, plugin.getConfig().getString("gui.main.relations", "§eRelations"), "RELATIONS", "§7Gérer les Alliés et Ennemis"));
+        inv.setItem(15, createGuiItem(Material.COMPARATOR, plugin.getConfig().getString("gui.main.settings", "§eParamètres"), "PARAMETERS", "§7Flags de faction (TNT, PVP, etc)"));
+        inv.setItem(16, createGuiItem(Material.REDSTONE_TORCH, plugin.getConfig().getString("gui.main.perms", "§ePermissions"), "PERMISSIONS", "§7Actions autorisées par grade"));
 
-        inv.setItem(20, createItem(Material.EXPERIENCE_BOTTLE, plugin.getConfig().getString("gui.main.levels", "§eNiveaux Faction"), "§7Voir les récompenses de niveau"));
-        inv.setItem(21, createItem(Material.IRON_SWORD, plugin.getConfig().getString("gui.main.jobs", "§eMétiers"), "§7Choisir un métier"));
-        inv.setItem(22, createItem(Material.BLAZE_POWDER, plugin.getConfig().getString("gui.main.powers", "§ePouvoirs"), "§7Débloquer des capacités"));
-        inv.setItem(23, createItem(Material.WRITABLE_BOOK, plugin.getConfig().getString("gui.main.quests", "§eQuêtes"), "§7Voir les quêtes"));
-        inv.setItem(24, createItem(Material.BONE, plugin.getConfig().getString("gui.main.pet", "§eCompagnon"), "§7Gérer votre familier"));
+        inv.setItem(20, createGuiItem(Material.EXPERIENCE_BOTTLE, plugin.getConfig().getString("gui.main.levels", "§eNiveaux Faction"), "LEVELS", "§7Voir les récompenses de niveau"));
+        inv.setItem(21, createGuiItem(Material.IRON_SWORD, plugin.getConfig().getString("gui.main.jobs", "§eMétiers"), "JOBS", "§7Choisir un métier"));
+        inv.setItem(22, createGuiItem(Material.BLAZE_POWDER, plugin.getConfig().getString("gui.main.powers", "§ePouvoirs"), "POWERS", "§7Débloquer des capacités"));
+        inv.setItem(23, createGuiItem(Material.WRITABLE_BOOK, plugin.getConfig().getString("gui.main.quests", "§eQuêtes"), "QUESTS", "§7Voir les quêtes"));
+        inv.setItem(24, createGuiItem(Material.BONE, plugin.getConfig().getString("gui.main.pet", "§eCompagnon"), "PETS", "§7Gérer votre familier"));
 
         player.openInventory(inv);
     }
@@ -332,25 +335,32 @@ public class FactionGUI {
 
     public static void openPetMenu(Player player, fr.jules.faction.model.PlayerData data, int page) {
         Inventory inv = Bukkit.createInventory(new FactionInventoryHolder("PETS", page), 54, "§c§lVos Compagnons (Page " + (page + 1) + ")");
+
+        // Fill background
+        ItemStack bg = createItem(Material.BLACK_STAINED_GLASS_PANE, " ");
+        for (int i = 0; i < 54; i++) inv.setItem(i, bg);
+
         fillBorder(inv);
-        inv.setItem(49, (data.getFactionId() != null) ? createItem(Material.SHEARS, "§7Retour", "§8Clic pour revenir") : createItem(Material.BARRIER, "§cQuitter", "§8Fermer le menu"));
-        inv.setItem(4, createItem(Material.BARRIER, "§cRenvoyer", "§7Faire disparaitre le familier"));
+
+        inv.setItem(4, createItem(Material.NETHER_STAR, "§6§lCompagnons", "§7Gérez vos alliés de combat", "§7Total: §e" + data.getCapturedPets().size()));
+        inv.setItem(49, (data.getFactionId() != null) ? createItem(Material.ARROW, "§7Retour", "§8Clic pour revenir") : createItem(Material.BARRIER, "§cQuitter", "§8Fermer le menu"));
+        inv.setItem(48, createItem(Material.MILK_BUCKET, "§cRenvoyer", "§7Faire disparaitre le familier"));
 
         List<Map.Entry<String, fr.jules.faction.model.PetInfo>> list = new ArrayList<>(data.getCapturedPets().entrySet());
-        int start = page * 28;
-        int end = Math.min(start + 28, list.size());
+        int start = page * 21; // 3 rows of 7
+        int end = Math.min(start + 21, list.size());
 
-        if (page > 0) inv.setItem(45, createItem(Material.ARROW, "§ePage Précédente"));
-        if (end < list.size()) inv.setItem(53, createItem(Material.ARROW, "§ePage Suivante"));
+        if (page > 0) inv.setItem(45, createItem(Material.PAPER, "§e◀ Page Précédente", "§7Vers la page " + page));
+        if (end < list.size()) inv.setItem(53, createItem(Material.PAPER, "§ePage Suivante ▶", "§7Vers la page " + (page + 2)));
 
-        int slot = 10;
-        for (int i = start; i < end; i++) {
-            while (slot % 9 == 0 || slot % 9 == 8 || slot < 10 || slot > 43) {
-                slot++;
-            }
-            if (slot > 43) break;
+        int[] slots = {
+            10, 11, 12, 13, 14, 15, 16,
+            19, 20, 21, 22, 23, 24, 25,
+            28, 29, 30, 31, 32, 33, 34
+        };
 
-            Map.Entry<String, fr.jules.faction.model.PetInfo> entry = list.get(i);
+        for (int i = 0; i < (end - start); i++) {
+            Map.Entry<String, fr.jules.faction.model.PetInfo> entry = list.get(start + i);
             String petId = entry.getKey();
             fr.jules.faction.model.PetInfo info = entry.getValue();
 
@@ -366,14 +376,16 @@ public class FactionGUI {
             String displayName = info.getCustomName() != null ? info.getCustomName() : petId;
             double req = 100 * Math.pow(1.5, info.getLevel() - 1);
 
-            inv.setItem(slot++, createItem(icon, "§e" + displayName,
-                "§7Type: §f" + info.getType(),
-                "§7Niveau: §6" + info.getLevel(),
-                "§7XP: §f" + String.format("%.0f", info.getExp()) + " / " + String.format("%.0f", req),
-                "§7Bébé: §f" + (info.isBaby() ? "Oui" : "Non"),
-                "",
-                "§a▶ Clic Gauche: §7Gérer / Détails",
-                "§c▶ Shift + Clic Droit: §7Supprimer définitivement"));
+            inv.setItem(slots[i], createItem(icon, "§e§l" + displayName,
+                "§8§m-----------------------",
+                " §6• §7Espèce: §f" + info.getType(),
+                " §6• §7Niveau: §e" + info.getLevel(),
+                " §6• §7Exp: §f" + String.format("%.0f", info.getExp()) + " §7/ §f" + String.format("%.0f", req),
+                " §6• §7Bébé: §f" + (info.isBaby() ? "Oui" : "Non"),
+                "§8§m-----------------------",
+                "§a▶ Clic Gauche: §lGérer",
+                "§c▶ Shift + Clic Droit: §lSupprimer",
+                "§8§m-----------------------"));
         }
 
         if (data.getCapturedPets().isEmpty()) {
@@ -412,6 +424,21 @@ public class FactionGUI {
         ItemMeta meta = item.getItemMeta();
         meta.setDisplayName(name);
         meta.setLore(Arrays.asList(lore));
+        item.setItemMeta(meta);
+        return item;
+    }
+
+    private static ItemStack createGuiItem(Material material, String name, String actionId, String... lore) {
+        ItemStack item = new ItemStack(material);
+        if (item.getItemMeta() == null) return item;
+        ItemMeta meta = item.getItemMeta();
+        meta.setDisplayName(name);
+        meta.setLore(Arrays.asList(lore));
+
+        if (actionId != null && plugin != null) {
+            meta.getPersistentDataContainer().set(new NamespacedKey(plugin, "gui_action"), PersistentDataType.STRING, actionId);
+        }
+
         item.setItemMeta(meta);
         return item;
     }

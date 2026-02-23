@@ -1,0 +1,32 @@
+# Configuration du Module Staff
+messages:
+  staff-activated: "§a§l[Staff] §aMode Staff activé."
+  staff-deactivated: "§c§l[Staff] §cMode Staff désactivé. Inventaire restauré."
+  vanish-on: "§aVanish: §aActivé"
+  vanish-off: "§aVanish: §cDésactivé"
+  freeze-on: "§cVous avez été gelé par un modérateur !"
+  freeze-off: "§aVous avez été libéré !"
+  freeze-staff-on: "§cJoueur gelé."
+  freeze-staff-off: "§aJoueur libéré."
+
+items:
+  vanish:
+    material: "ENDER_EYE"
+    name: "§aVanish"
+    lore: "§7Clic pour alterner"
+  freeze:
+    material: "PACKED_ICE"
+    name: "§bFreeze"
+    lore: "§7Clic droit sur joueur"
+  invsee:
+    material: "CHEST"
+    name: "§eInvSee"
+    lore: "§7Clic droit sur joueur"
+  tools:
+    material: "BOOK"
+    name: "§6Outils Modération"
+    lore: "§7Ouvrir le menu"
+  exit:
+    material: "BARRIER"
+    name: "§cQuitter Staff Mode"
+    lore: "§7Désactiver"

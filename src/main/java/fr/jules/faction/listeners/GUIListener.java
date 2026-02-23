@@ -47,9 +47,18 @@ public class GUIListener implements Listener {
 
         String type = holder.getType();
         int slot = event.getRawSlot();
+
+        String actionId = null;
+        if (event.getCurrentItem().hasItemMeta()) {
+            actionId = event.getCurrentItem().getItemMeta().getPersistentDataContainer().get(
+                new org.bukkit.NamespacedKey(plugin, "gui_action"),
+                org.bukkit.persistence.PersistentDataType.STRING
+            );
+        }
+
         switch (type) {
             case "MAIN":
-                if (faction != null) handleMainMenuClick(player, slot, faction);
+                if (faction != null) handleMainMenuClick(player, slot, faction, actionId);
                 break;
             case "MEMBERS":
                 handleMembersMenuClick(player, name, faction, event);
@@ -132,20 +141,24 @@ public class GUIListener implements Listener {
         }
     }
 
-    private void handleMainMenuClick(Player player, int slot, Faction faction) {
-        switch (slot) {
-            case 10: player.performCommand("f faction"); player.closeInventory(); break;
-            case 11: fr.jules.faction.gui.FactionGUI.openMembersMenu(player, faction); break;
-            case 12: fr.jules.faction.gui.FactionGUI.openClaimsMenu(player, faction); break;
-            case 13: fr.jules.faction.gui.FactionGUI.openBankMenu(player, faction); break;
-            case 14: fr.jules.faction.gui.FactionGUI.openRelationsMenu(player, faction); break;
-            case 15: fr.jules.faction.gui.FactionGUI.openParametersMenu(player, faction); break;
-            case 16: fr.jules.faction.gui.FactionGUI.openPermissionsMenu(player, faction); break;
-            case 20: fr.jules.faction.gui.FactionGUI.openFactionLevelMenu(player, faction); break;
-            case 21: fr.jules.faction.gui.FactionGUI.openJobsMenu(player, plugin.getPlayerManager().getPlayerData(player.getUniqueId())); break;
-            case 22: fr.jules.faction.gui.FactionGUI.openPowersMenu(player, plugin.getPlayerManager().getPlayerData(player.getUniqueId()), plugin.getPowerManager()); break;
-            case 23: fr.jules.faction.gui.FactionGUI.openQuestsMenu(player, plugin.getPlayerManager().getPlayerData(player.getUniqueId()), plugin.getQuestManager()); break;
-            case 24: fr.jules.faction.gui.FactionGUI.openPetMenu(player, plugin.getPlayerManager().getPlayerData(player.getUniqueId())); break;
+    private void handleMainMenuClick(Player player, int slot, Faction faction, String actionId) {
+        if (actionId == null) {
+            if (slot == 10) { player.performCommand("f faction"); player.closeInventory(); }
+            return;
+        }
+
+        switch (actionId) {
+            case "MEMBERS": fr.jules.faction.gui.FactionGUI.openMembersMenu(player, faction); break;
+            case "CLAIMS": fr.jules.faction.gui.FactionGUI.openClaimsMenu(player, faction); break;
+            case "BANK": fr.jules.faction.gui.FactionGUI.openBankMenu(player, faction); break;
+            case "RELATIONS": fr.jules.faction.gui.FactionGUI.openRelationsMenu(player, faction); break;
+            case "PARAMETERS": fr.jules.faction.gui.FactionGUI.openParametersMenu(player, faction); break;
+            case "PERMISSIONS": fr.jules.faction.gui.FactionGUI.openPermissionsMenu(player, faction); break;
+            case "LEVELS": fr.jules.faction.gui.FactionGUI.openFactionLevelMenu(player, faction); break;
+            case "JOBS": fr.jules.faction.gui.FactionGUI.openJobsMenu(player, plugin.getPlayerManager().getPlayerData(player.getUniqueId())); break;
+            case "POWERS": fr.jules.faction.gui.FactionGUI.openPowersMenu(player, plugin.getPlayerManager().getPlayerData(player.getUniqueId()), plugin.getPowerManager()); break;
+            case "QUESTS": fr.jules.faction.gui.FactionGUI.openQuestsMenu(player, plugin.getPlayerManager().getPlayerData(player.getUniqueId()), plugin.getQuestManager()); break;
+            case "PETS": fr.jules.faction.gui.FactionGUI.openPetMenu(player, plugin.getPlayerManager().getPlayerData(player.getUniqueId())); break;
         }
     }
 
@@ -293,10 +306,26 @@ public class GUIListener implements Listener {
     }
 
     private void handlePetMenuClick(Player player, String name, PlayerData data, Faction faction, InventoryClickEvent event) {
-        if (name.contains("Suivante")) { int p = (int) ((fr.jules.faction.gui.FactionInventoryHolder) event.getInventory().getHolder()).getData(); fr.jules.faction.gui.FactionGUI.openPetMenu(player, data, p + 1); return; }
-        if (name.contains("Précédente")) { int p = (int) ((fr.jules.faction.gui.FactionInventoryHolder) event.getInventory().getHolder()).getData(); fr.jules.faction.gui.FactionGUI.openPetMenu(player, data, p - 1); return; }
-        if (name.contains("Retour") || name.contains("Quitter")) { if (faction != null) fr.jules.faction.gui.FactionGUI.openMainMenu(player, faction); else player.closeInventory(); return; }
-        if (name.contains("Renvoyer")) { plugin.getPetManager().despawnPet(player); return; }
+        if (name.contains("Suivante")) {
+            int p = (int) ((fr.jules.faction.gui.FactionInventoryHolder) event.getInventory().getHolder()).getData();
+            fr.jules.faction.gui.FactionGUI.openPetMenu(player, data, p + 1);
+            return;
+        }
+        if (name.contains("Précédente")) {
+            int p = (int) ((fr.jules.faction.gui.FactionInventoryHolder) event.getInventory().getHolder()).getData();
+            fr.jules.faction.gui.FactionGUI.openPetMenu(player, data, p - 1);
+            return;
+        }
+        if (name.contains("Retour") || name.contains("Quitter")) {
+            if (faction != null) fr.jules.faction.gui.FactionGUI.openMainMenu(player, faction);
+            else player.closeInventory();
+            return;
+        }
+        if (name.contains("Renvoyer")) {
+            plugin.getPetManager().despawnPet(player);
+            fr.jules.faction.gui.FactionGUI.openPetMenu(player, data);
+            return;
+        }
 
         String match = null;
         for (String id : data.getCapturedPets().keySet()) {
@@ -334,21 +363,14 @@ public class GUIListener implements Listener {
                 else player.getInventory().addItem(item);
                 player.sendMessage("§aSelle retirée.");
             } else {
-                ItemStack itemInHand = player.getInventory().getItemInMainHand();
-                if (itemInHand.getType() == Material.SADDLE) {
-                    itemInHand.setAmount(itemInHand.getAmount() - 1);
+                int firstSaddle = player.getInventory().first(Material.SADDLE);
+                if (firstSaddle != -1) {
+                    ItemStack saddle = player.getInventory().getItem(firstSaddle);
+                    saddle.setAmount(saddle.getAmount() - 1);
                     info.setSaddle("SADDLE");
                     player.sendMessage("§aSelle équipée !");
                 } else {
-                    int firstSaddle = player.getInventory().first(Material.SADDLE);
-                    if (firstSaddle != -1) {
-                        ItemStack saddle = player.getInventory().getItem(firstSaddle);
-                        saddle.setAmount(saddle.getAmount() - 1);
-                        info.setSaddle("SADDLE");
-                        player.sendMessage("§aSelle équipée !");
-                    } else {
-                        player.sendMessage("§cTenez une selle en main ou ayez-en une dans votre inventaire !");
-                    }
+                    player.sendMessage("§cVous n'avez pas de selle dans votre inventaire !");
                 }
             }
             fr.jules.faction.gui.FactionGUI.openPetEquipmentMenu(player, petId, info);
@@ -362,7 +384,7 @@ public class GUIListener implements Listener {
                 player.sendMessage("§aArmure retirée.");
             } else {
                 ItemStack itemInHand = player.getInventory().getItemInMainHand();
-                if (itemInHand.getType().name().contains("HORSE_ARMOR") || itemInHand.getType() == Material.WOLF_ARMOR) {
+                if (itemInHand != null && (itemInHand.getType().name().contains("HORSE_ARMOR") || itemInHand.getType() == Material.WOLF_ARMOR)) {
                     info.setChestplate(itemInHand.getType().name());
                     itemInHand.setAmount(itemInHand.getAmount() - 1);
                     player.sendMessage("§aArmure équipée !");
