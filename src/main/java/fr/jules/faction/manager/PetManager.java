@@ -3,6 +3,7 @@ package fr.jules.faction.manager;
 import fr.jules.faction.FactionPlugin;
 import fr.jules.faction.model.PlayerData;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.entity.*;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
@@ -68,6 +69,7 @@ public class PetManager {
         }
 
         applyVariant(pet, info.getVariant());
+        applyEquipment(pet, info);
 
         activePets.put(player.getUniqueId(), pet);
         data.setCurrentPet(petId);
@@ -123,7 +125,8 @@ public class PetManager {
         // Block Hostile and Nether/End Mobs
         if (entity instanceof Monster || entity instanceof Ghast || entity instanceof Slime || entity instanceof MagmaCube ||
             entity instanceof Phantom || entity instanceof Shulker || entity instanceof Hoglin || entity instanceof Piglin ||
-            entity instanceof Warden) {
+            entity instanceof Warden || entity instanceof Blaze || entity instanceof WitherSkeleton ||
+            entity instanceof Enderman || entity instanceof Breeze || entity instanceof Endermite) {
             player.sendMessage("§cVous ne pouvez pas capturer de monstres hostiles !");
             return;
         }
@@ -143,8 +146,16 @@ public class PetManager {
 
         // Block Large Creatures
         if (entity instanceof Ravager || entity instanceof ElderGuardian || entity instanceof Wither ||
-            entity instanceof EnderDragon || entity instanceof Giant) {
+            entity instanceof EnderDragon || entity instanceof Giant || entity instanceof Sniffer ||
+            entity instanceof Camel) {
             player.sendMessage("§cCette créature est beaucoup trop imposante pour être capturée !");
+            return;
+        }
+
+        // Block Aquatic
+        if (entity instanceof Squid || entity instanceof GlowSquid || entity instanceof Dolphin ||
+            entity instanceof Turtle || entity instanceof Fish) {
+            player.sendMessage("§cVous ne pouvez pas capturer de créatures aquatiques !");
             return;
         }
 
@@ -202,6 +213,31 @@ public class PetManager {
             if (entity instanceof Villager vil) return vil.getVillagerType().toString();
         } catch (Exception ignored) {}
         return null;
+    }
+
+    private void applyEquipment(Entity entity, fr.jules.faction.model.PetInfo info) {
+        if (entity instanceof Pig pig && info.getSaddle() != null) {
+            pig.setSaddle(true);
+        } else if (entity instanceof Horse horse) {
+            if (info.getSaddle() != null) horse.getInventory().setSaddle(new ItemStack(Material.SADDLE));
+            if (info.getChestplate() != null) {
+                try {
+                    horse.getInventory().setArmor(new ItemStack(Material.valueOf(info.getChestplate())));
+                } catch (Exception ignored) {}
+            }
+        } else if (entity instanceof Wolf wolf && info.getChestplate() != null) {
+            try {
+                // In 1.21.1 Wolves use a specific body armor slot or method
+                wolf.getEquipment().setChestplate(new ItemStack(Material.valueOf(info.getChestplate())));
+            } catch (Exception ignored) {}
+        } else if (entity instanceof Camel camel && info.getSaddle() != null) {
+            camel.getInventory().setSaddle(new ItemStack(Material.SADDLE));
+        } else if (entity instanceof Llama llama && info.getChestplate() != null) {
+            // Llamas use carpets as armor
+            try {
+                llama.getInventory().setDecor(new ItemStack(Material.valueOf(info.getChestplate())));
+            } catch (Exception ignored) {}
+        }
     }
 
     private void applyVariant(Entity entity, String variant) {

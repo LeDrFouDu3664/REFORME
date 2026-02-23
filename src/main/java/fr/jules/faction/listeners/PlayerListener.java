@@ -101,10 +101,17 @@ public class PlayerListener implements Listener {
         boolean rotationChanged = event.getFrom().getYaw() != event.getTo().getYaw() || event.getFrom().getPitch() != event.getTo().getPitch();
         boolean activeInput = rotationChanged || player.isSneaking() || player.isSprinting();
 
-        if (activeInput) {
-            if (plugin.getAfkManager().isAFK(player)) {
+        if (plugin.getAfkManager().isAFK(player)) {
+            if (activeInput) {
                 plugin.getAfkManager().setAFK(player, false);
+            } else if (event.getFrom().getX() != event.getTo().getX() || event.getFrom().getY() != event.getTo().getY() || event.getFrom().getZ() != event.getTo().getZ()) {
+                // If AFK and moved without active input (e.g., pushed), teleport back
+                event.setCancelled(true);
+                return;
             }
+        }
+
+        if (activeInput) {
             plugin.getAfkManager().updateActivity(player);
         }
 

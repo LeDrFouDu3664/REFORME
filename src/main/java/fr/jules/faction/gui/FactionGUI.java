@@ -347,7 +347,6 @@ public class FactionGUI {
         for (int i = start; i < end; i++) {
             while (slot % 9 == 0 || slot % 9 == 8 || slot < 10 || slot > 43) {
                 slot++;
-                if (slot > 43) break;
             }
             if (slot > 43) break;
 
@@ -375,7 +374,6 @@ public class FactionGUI {
                 "",
                 "§a▶ Clic Gauche: §7Gérer / Détails",
                 "§c▶ Shift + Clic Droit: §7Supprimer définitivement"));
-            slot++;
         }
 
         if (data.getCapturedPets().isEmpty()) {

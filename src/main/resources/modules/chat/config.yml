@@ -21,4 +21,4 @@ death:
   other:
     - "§e%player% §fest mort de façon mystérieuse."
 
-pet-death: "§cLe compagnon de %player% (%name%) a rendu l'âme !"
+pet-death: "§cLe compagnon §e%name% §ca rendu l'âme ! (§7Propriétaire: §f%player%§7)"

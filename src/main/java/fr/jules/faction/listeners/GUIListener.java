@@ -362,12 +362,12 @@ public class GUIListener implements Listener {
                 player.sendMessage("§aArmure retirée.");
             } else {
                 ItemStack itemInHand = player.getInventory().getItemInMainHand();
-                if (itemInHand.getType().name().contains("HORSE_ARMOR")) {
+                if (itemInHand.getType().name().contains("HORSE_ARMOR") || itemInHand.getType() == Material.WOLF_ARMOR) {
                     info.setChestplate(itemInHand.getType().name());
                     itemInHand.setAmount(itemInHand.getAmount() - 1);
                     player.sendMessage("§aArmure équipée !");
                 } else {
-                    player.sendMessage("§cTenez l'armure pour cheval dans votre main principale !");
+                    player.sendMessage("§cTenez l'armure (Cheval ou Loup) dans votre main principale !");
                 }
             }
             fr.jules.faction.gui.FactionGUI.openPetEquipmentMenu(player, petId, info);
