@@ -60,6 +60,11 @@ typings/
 # next.js build output
 .next
 
+config.json
+index.js
+package-lock.json
+!FactionPlugin.jar
+
 # Java/Maven
 target/
 *.class
