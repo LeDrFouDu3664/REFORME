@@ -90,8 +90,7 @@ public class PlayerListener implements Listener {
     public void onDrop(PlayerDropItemEvent event) {
         org.bukkit.inventory.ItemStack item = event.getItemDrop().getItemStack();
         if (item.hasItemMeta()) {
-            String dn = item.getItemMeta().getDisplayName();
-            if (dn.contains("§bVanish") || dn.contains("§bFreeze") || dn.contains("§eInvSee") || dn.contains("§6Outils Modération") || dn.contains("§cQuitter Staff Mode")) {
+            if (item.getItemMeta().getPersistentDataContainer().has(new org.bukkit.NamespacedKey(plugin, "staff_item"), org.bukkit.persistence.PersistentDataType.STRING)) {
                 event.setCancelled(true);
             }
         }

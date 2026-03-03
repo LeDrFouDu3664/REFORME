@@ -63,7 +63,7 @@ public class MiscCommands implements CommandExecutor {
                 handleEconomy(player, args);
                 break;
             case "mod":
-                handleMod(player);
+                handleMod(player, args);
                 break;
             case "ec":
                 player.openInventory(player.getEnderChest());
@@ -157,8 +157,14 @@ public class MiscCommands implements CommandExecutor {
         }
     }
 
-    private void handleMod(Player player) {
+    private void handleMod(Player player, String[] args) {
         if (!player.hasPermission("faction.staff")) return;
+
+        if (args.length > 0 && (args[0].equalsIgnoreCase("gui") || args[0].equalsIgnoreCase("menu"))) {
+            fr.jules.faction.gui.ModGUI.openModMenu(player);
+            return;
+        }
+
         PlayerData data = plugin.getPlayerManager().getPlayerData(player.getUniqueId());
         fr.jules.faction.modules.staff.StaffModule staffMod = (fr.jules.faction.modules.staff.StaffModule) plugin.getModuleManager().getModule("Staff");
 
@@ -170,11 +176,11 @@ public class MiscCommands implements CommandExecutor {
 
             player.getInventory().clear();
 
-            player.getInventory().setItem(0, createStaffItem(org.bukkit.Material.valueOf(staffMod.getConfig().getString("items.vanish.material")), staffMod.getConfig().getString("items.vanish.name"), staffMod.getConfig().getString("items.vanish.lore")));
-            player.getInventory().setItem(1, createStaffItem(org.bukkit.Material.valueOf(staffMod.getConfig().getString("items.freeze.material")), staffMod.getConfig().getString("items.freeze.name"), staffMod.getConfig().getString("items.freeze.lore")));
-            player.getInventory().setItem(2, createStaffItem(org.bukkit.Material.valueOf(staffMod.getConfig().getString("items.invsee.material")), staffMod.getConfig().getString("items.invsee.name"), staffMod.getConfig().getString("items.invsee.lore")));
-            player.getInventory().setItem(4, createStaffItem(org.bukkit.Material.valueOf(staffMod.getConfig().getString("items.tools.material")), staffMod.getConfig().getString("items.tools.name"), staffMod.getConfig().getString("items.tools.lore")));
-            player.getInventory().setItem(8, createStaffItem(org.bukkit.Material.valueOf(staffMod.getConfig().getString("items.exit.material")), staffMod.getConfig().getString("items.exit.name"), staffMod.getConfig().getString("items.exit.lore")));
+            player.getInventory().setItem(0, createStaffItem(org.bukkit.Material.valueOf(staffMod.getConfig().getString("items.vanish.material")), staffMod.getConfig().getString("items.vanish.name"), "STAFF_VANISH", staffMod.getConfig().getString("items.vanish.lore")));
+            player.getInventory().setItem(1, createStaffItem(org.bukkit.Material.valueOf(staffMod.getConfig().getString("items.freeze.material")), staffMod.getConfig().getString("items.freeze.name"), "STAFF_FREEZE", staffMod.getConfig().getString("items.freeze.lore")));
+            player.getInventory().setItem(2, createStaffItem(org.bukkit.Material.valueOf(staffMod.getConfig().getString("items.invsee.material")), staffMod.getConfig().getString("items.invsee.name"), "STAFF_INVSEE", staffMod.getConfig().getString("items.invsee.lore")));
+            player.getInventory().setItem(4, createStaffItem(org.bukkit.Material.valueOf(staffMod.getConfig().getString("items.tools.material")), staffMod.getConfig().getString("items.tools.name"), "STAFF_TOOLS", staffMod.getConfig().getString("items.tools.lore")));
+            player.getInventory().setItem(8, createStaffItem(org.bukkit.Material.valueOf(staffMod.getConfig().getString("items.exit.material")), staffMod.getConfig().getString("items.exit.name"), "STAFF_EXIT", staffMod.getConfig().getString("items.exit.lore")));
 
             player.sendMessage(staffMod.getConfig().getString("messages.staff-activated"));
         } else {
@@ -192,12 +198,15 @@ public class MiscCommands implements CommandExecutor {
         }
     }
 
-    private ItemStack createStaffItem(org.bukkit.Material material, String name, String lore) {
+    private ItemStack createStaffItem(org.bukkit.Material material, String name, String id, String lore) {
         ItemStack item = new ItemStack(material);
         org.bukkit.inventory.meta.ItemMeta meta = item.getItemMeta();
-        meta.setDisplayName(name);
-        meta.setLore(java.util.Collections.singletonList(lore));
-        item.setItemMeta(meta);
+        if (meta != null) {
+            meta.setDisplayName(name);
+            meta.setLore(java.util.Collections.singletonList(lore));
+            meta.getPersistentDataContainer().set(new org.bukkit.NamespacedKey(plugin, "staff_item"), org.bukkit.persistence.PersistentDataType.STRING, id);
+            item.setItemMeta(meta);
+        }
         return item;
     }
 

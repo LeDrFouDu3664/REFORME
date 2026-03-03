@@ -28,17 +28,30 @@ public class GUIListener implements Listener {
     public void onInventoryClick(InventoryClickEvent event) {
         if (!(event.getWhoClicked() instanceof Player player)) return;
 
+        // 1. Check for staff item interaction in ANY inventory
         if (event.getCurrentItem() != null && event.getCurrentItem().hasItemMeta()) {
-            String dn = event.getCurrentItem().getItemMeta().getDisplayName();
-            if (dn.contains("§bVanish") || dn.contains("§bFreeze") || dn.contains("§eInvSee") || dn.contains("§6Outils Modération") || dn.contains("§cQuitter Staff Mode")) {
+            if (event.getCurrentItem().getItemMeta().getPersistentDataContainer().has(new org.bukkit.NamespacedKey(plugin, "staff_item"), org.bukkit.persistence.PersistentDataType.STRING)) {
                 event.setCancelled(true);
-                return;
+                // If it's staff mode and they clicked an item in their own inventory, handle it
+                if (event.getClickedInventory() != null && event.getClickedInventory().equals(player.getInventory())) {
+                    handleStaffItemAction(player, event.getCurrentItem());
+                    return;
+                }
             }
         }
 
-        if (!(event.getInventory().getHolder() instanceof fr.jules.faction.gui.FactionInventoryHolder holder)) return;
+        // 2. Custom GUI handling (Top Inventory)
+        boolean isFactionInv = event.getInventory().getHolder() instanceof fr.jules.faction.gui.FactionInventoryHolder;
+        if (!isFactionInv) return;
 
+        // Lock all clicks in faction GUIs
         event.setCancelled(true);
+
+        // Only process clicks in the top inventory
+        boolean isTopInv = event.getClickedInventory() != null && event.getClickedInventory().equals(event.getView().getTopInventory());
+        if (!isTopInv) return;
+
+        fr.jules.faction.gui.FactionInventoryHolder holder = (fr.jules.faction.gui.FactionInventoryHolder) event.getInventory().getHolder();
         if (event.getCurrentItem() == null || !event.getCurrentItem().hasItemMeta()) return;
         String name = ChatColor.stripColor(event.getCurrentItem().getItemMeta().getDisplayName());
 
@@ -49,7 +62,7 @@ public class GUIListener implements Listener {
         int slot = event.getRawSlot();
 
         String actionId = null;
-        if (event.getCurrentItem().hasItemMeta()) {
+        if (event.getCurrentItem() != null && event.getCurrentItem().hasItemMeta()) {
             actionId = event.getCurrentItem().getItemMeta().getPersistentDataContainer().get(
                 new org.bukkit.NamespacedKey(plugin, "gui_action"),
                 org.bukkit.persistence.PersistentDataType.STRING
@@ -124,13 +137,15 @@ public class GUIListener implements Listener {
                 handleAuctionClick(player, event);
                 break;
             case "MOD_MAIN":
-                handleModMainClick(player, name);
+                handleModMainClick(player, actionId);
                 break;
             case "MOD_PLAYERS":
-                handleModPlayersClick(player, name);
+                if ("PLAYER_CLICK".equals(actionId)) {
+                    handleModPlayersClick(player, name);
+                }
                 break;
             case "MOD_ACTIONS":
-                handleModActionsClick(player, name, (Player) holder.getData());
+                handleModActionsClick(player, actionId, (Player) holder.getData());
                 break;
             case "SPAWNER":
                 handleSpawnerClick(player, name, (org.bukkit.block.Block) holder.getData(), event);
@@ -148,6 +163,7 @@ public class GUIListener implements Listener {
         }
 
         switch (actionId) {
+            case "STAFF_MOD": fr.jules.faction.gui.ModGUI.openModMenu(player); break;
             case "MEMBERS": fr.jules.faction.gui.FactionGUI.openMembersMenu(player, faction); break;
             case "CLAIMS": fr.jules.faction.gui.FactionGUI.openClaimsMenu(player, faction); break;
             case "BANK": fr.jules.faction.gui.FactionGUI.openBankMenu(player, faction); break;
@@ -491,24 +507,130 @@ public class GUIListener implements Listener {
         if (m != null && plugin.getEconomyManager().has(player, p)) { plugin.getEconomyManager().withdraw(player, p); player.getInventory().addItem(new ItemStack(m, slot == 13 ? 64 : 1)); }
     }
 
-    private void handleModMainClick(Player staff, String name) {
-        if (name.contains("Bâton")) { ItemStack rod = new ItemStack(Material.BLAZE_ROD); org.bukkit.inventory.meta.ItemMeta m = rod.getItemMeta(); m.setDisplayName("§6Bâton de Modération"); rod.setItemMeta(m); staff.getInventory().addItem(rod); }
-        else if (name.contains("Freeze")) fr.jules.faction.gui.ModGUI.openPlayerList(staff);
-        else if (name.contains("Vanish")) plugin.getVanishManager().toggleVanish(staff);
-        else if (name.contains("God Mode")) { if (staff.hasMetadata("godmode")) staff.removeMetadata("godmode", plugin); else staff.setMetadata("godmode", new org.bukkit.metadata.FixedMetadataValue(plugin, true)); }
-        else if (name.contains("Fly")) { float s = staff.getFlySpeed(); staff.setFlySpeed(s < 0.2f ? 0.2f : (s < 0.5f ? 0.5f : (s < 1.0f ? 1.0f : 0.1f))); }
-        else if (name.contains("Joueurs")) fr.jules.faction.gui.ModGUI.openPlayerList(staff);
+    private void handleStaffItemAction(Player staff, ItemStack item) {
+        String staffId = item.getItemMeta().getPersistentDataContainer().get(new org.bukkit.NamespacedKey(plugin, "staff_item"), org.bukkit.persistence.PersistentDataType.STRING);
+        if (staffId == null) return;
+
+        switch (staffId) {
+            case "STAFF_VANISH":
+                plugin.getVanishManager().toggleVanish(staff);
+                break;
+            case "STAFF_TOOLS":
+                fr.jules.faction.gui.ModGUI.openModMenu(staff);
+                break;
+            case "STAFF_EXIT":
+                staff.performCommand("mod");
+                break;
+            // Freeze and InvSee are handled in PlayerInteractEntityEvent (right click on player)
+        }
     }
 
-    private void handleModPlayersClick(Player staff, String target) { Player t = Bukkit.getPlayer(target); if (t != null) fr.jules.faction.gui.ModGUI.openPlayerActions(staff, t); }
+    private void handleModMainClick(Player staff, String actionId) {
+        if (actionId == null) return;
 
-    private void handleModActionsClick(Player staff, String action, Player target) {
+        switch (actionId) {
+            case "MOD_BATON":
+                ItemStack rod = new ItemStack(Material.BLAZE_ROD);
+                org.bukkit.inventory.meta.ItemMeta m = rod.getItemMeta();
+                m.setDisplayName("§6Bâton de Modération");
+                m.setLore(java.util.Collections.singletonList("§7Outil rapide (Clic droit sur joueur)"));
+                m.getPersistentDataContainer().set(new org.bukkit.NamespacedKey(plugin, "staff_item"), org.bukkit.persistence.PersistentDataType.STRING, "STAFF_BATON");
+                rod.setItemMeta(m);
+                staff.getInventory().addItem(rod);
+                staff.sendMessage("§a[Staff] §7Bâton de modération ajouté à votre inventaire.");
+                break;
+            case "MOD_FREEZE":
+                fr.jules.faction.gui.ModGUI.openPlayerList(staff);
+                break;
+            case "MOD_VANISH":
+                plugin.getVanishManager().toggleVanish(staff);
+                break;
+            case "MOD_GOD":
+                if (staff.hasMetadata("godmode")) {
+                    staff.removeMetadata("godmode", plugin);
+                    staff.sendMessage("§a[Staff] §7God Mode §cdésactivé§7.");
+                } else {
+                    staff.setMetadata("godmode", new org.bukkit.metadata.FixedMetadataValue(plugin, true));
+                    staff.sendMessage("§a[Staff] §7God Mode §aactivé§7.");
+                }
+                break;
+            case "MOD_FLY":
+                float s = staff.getFlySpeed();
+                float newSpeed = s < 0.2f ? 0.2f : (s < 0.5f ? 0.5f : (s < 1.0f ? 1.0f : 0.1f));
+                staff.setFlySpeed(newSpeed);
+                staff.sendMessage("§a[Staff] §7Vitesse de vol réglée sur §e" + (newSpeed * 10) + "§7.");
+                break;
+            case "MOD_PLAYERS":
+                fr.jules.faction.gui.ModGUI.openPlayerList(staff);
+                break;
+            case "MOD_RTP":
+                List<Player> others = Bukkit.getOnlinePlayers().stream()
+                    .filter(p -> !p.getUniqueId().equals(staff.getUniqueId()))
+                    .map(p -> (Player) p)
+                    .toList();
+                if (others.isEmpty()) {
+                    staff.sendMessage("§cAucun autre joueur en ligne.");
+                } else {
+                    Player target = others.get(new java.util.Random().nextInt(others.size()));
+                    staff.teleport(target.getLocation());
+                    staff.sendMessage("§a[Staff] §7Téléportation sur §e" + target.getName() + "§7.");
+                }
+                break;
+            case "MOD_CLEARCHAT":
+                for (int i = 0; i < 100; i++) Bukkit.broadcastMessage("");
+                Bukkit.broadcastMessage("§c§l[Modération] §7Le chat a été vidé par §e" + staff.getName() + "§7.");
+                break;
+        }
+    }
+
+    private void handleModPlayersClick(Player staff, String targetName) {
+        Player t = Bukkit.getPlayer(targetName);
+        if (t != null) fr.jules.faction.gui.ModGUI.openPlayerActions(staff, t);
+    }
+
+    private void handleModActionsClick(Player staff, String actionId, Player target) {
         if (target.getUniqueId().equals(staff.getUniqueId())) return;
-        if (action.contains("Inventaire")) staff.openInventory(target.getInventory());
-        else if (action.contains("Mute")) { dataManagerSetMuted(target); }
-        else if (action.contains("Freeze")) { if (target.hasMetadata("frozen")) target.removeMetadata("frozen", plugin); else target.setMetadata("frozen", new org.bukkit.metadata.FixedMetadataValue(plugin, true)); }
-        else if (action.contains("Kick")) { target.kickPlayer("§cKické."); staff.closeInventory(); }
-        else if (action.contains("Ban")) { Bukkit.getBanList(org.bukkit.BanList.Type.NAME).addBan(target.getName(), "§cBanni.", null, null); target.kickPlayer("§cBanni."); staff.closeInventory(); }
+        if (actionId == null) return;
+
+        switch (actionId) {
+            case "ACTION_INV":
+                staff.openInventory(target.getInventory());
+                break;
+            case "ACTION_MUTE":
+                dataManagerSetMuted(target);
+                staff.sendMessage("§a[Staff] §7Joueur §e" + target.getName() + " §7rendu muet pour 1 heure.");
+                break;
+            case "ACTION_FREEZE":
+                if (target.hasMetadata("frozen")) {
+                    target.removeMetadata("frozen", plugin);
+                    target.sendMessage("§a[Staff] §7Vous avez été libéré.");
+                    staff.sendMessage("§a[Staff] §7Joueur §e" + target.getName() + " §7libéré.");
+                } else {
+                    target.setMetadata("frozen", new org.bukkit.metadata.FixedMetadataValue(plugin, true));
+                    target.sendMessage("§c[Staff] §7Vous avez été gelé par un modérateur.");
+                    staff.sendMessage("§a[Staff] §7Joueur §e" + target.getName() + " §7gelé.");
+                }
+                break;
+            case "ACTION_KICK":
+                target.kickPlayer("§cExpulsé par un modérateur.");
+                staff.sendMessage("§a[Staff] §7Joueur §e" + target.getName() + " §7expulsé.");
+                staff.closeInventory();
+                break;
+            case "ACTION_BAN":
+                Bukkit.getBanList(org.bukkit.BanList.Type.NAME).addBan(target.getName(), "§cBanni par un modérateur.", null, null);
+                target.kickPlayer("§cBanni du serveur.");
+                staff.sendMessage("§a[Staff] §7Joueur §e" + target.getName() + " §7banni.");
+                staff.closeInventory();
+                break;
+            case "ACTION_CLEAR":
+                target.getInventory().clear();
+                staff.sendMessage("§a[Staff] §7Inventaire de §e" + target.getName() + " §7vidé.");
+                break;
+            case "ACTION_TP":
+                staff.teleport(target.getLocation());
+                staff.sendMessage("§a[Staff] §7Téléporté sur §e" + target.getName() + "§7.");
+                break;
+        }
     }
 
     private void dataManagerSetMuted(Player target) { PlayerData d = plugin.getPlayerManager().getPlayerData(target.getUniqueId()); d.setMutedUntil(System.currentTimeMillis() + 3600000); }

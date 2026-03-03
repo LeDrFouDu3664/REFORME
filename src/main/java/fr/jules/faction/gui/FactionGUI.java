@@ -44,6 +44,10 @@ public class FactionGUI {
         inv.setItem(15, createGuiItem(Material.COMPARATOR, plugin.getConfig().getString("gui.main.settings", "§eParamètres"), "PARAMETERS", "§7Flags de faction (TNT, PVP, etc)"));
         inv.setItem(16, createGuiItem(Material.REDSTONE_TORCH, plugin.getConfig().getString("gui.main.perms", "§ePermissions"), "PERMISSIONS", "§7Actions autorisées par grade"));
 
+        if (player.hasPermission("faction.staff")) {
+            inv.setItem(18, createGuiItem(Material.BLAZE_ROD, "§6Outils Staff", "STAFF_MOD", "§7Accès rapide à la modération"));
+        }
+
         inv.setItem(20, createGuiItem(Material.EXPERIENCE_BOTTLE, plugin.getConfig().getString("gui.main.levels", "§eNiveaux Faction"), "LEVELS", "§7Voir les récompenses de niveau"));
         inv.setItem(21, createGuiItem(Material.IRON_SWORD, plugin.getConfig().getString("gui.main.jobs", "§eMétiers"), "JOBS", "§7Choisir un métier"));
         inv.setItem(22, createGuiItem(Material.BLAZE_POWDER, plugin.getConfig().getString("gui.main.powers", "§ePouvoirs"), "POWERS", "§7Débloquer des capacités"));

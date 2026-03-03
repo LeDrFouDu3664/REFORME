@@ -40,17 +40,24 @@ public class ModerationListener implements Listener {
         org.bukkit.inventory.ItemStack item = staff.getInventory().getItemInMainHand();
         if (item == null || !item.hasItemMeta()) return;
 
-        String name = item.getItemMeta().getDisplayName();
+        String staffId = item.getItemMeta().getPersistentDataContainer().get(
+            new org.bukkit.NamespacedKey(plugin, "staff_item"),
+            org.bukkit.persistence.PersistentDataType.STRING
+        );
+        if (staffId == null) return;
 
         if (event.getRightClicked() instanceof Player target) {
             event.setCancelled(true);
-            if (name.contains("Bâton") || name.contains("Modération")) {
-                fr.jules.faction.gui.ModGUI.openPlayerActions(staff, target);
-            } else if (name.contains("Freeze")) {
-                staff.performCommand("mod freeze " + target.getName()); // I should implement this sub or just call the logic
-                toggleFreeze(target, staff);
-            } else if (name.contains("InvSee")) {
-                staff.openInventory(target.getInventory());
+            switch (staffId) {
+                case "STAFF_BATON":
+                    fr.jules.faction.gui.ModGUI.openPlayerActions(staff, target);
+                    break;
+                case "STAFF_FREEZE":
+                    toggleFreeze(target, staff);
+                    break;
+                case "STAFF_INVSEE":
+                    staff.openInventory(target.getInventory());
+                    break;
             }
         }
     }
@@ -63,17 +70,26 @@ public class ModerationListener implements Listener {
         org.bukkit.inventory.ItemStack item = event.getItem();
         if (item == null || !item.hasItemMeta()) return;
 
-        String name = item.getItemMeta().getDisplayName();
+        String staffId = item.getItemMeta().getPersistentDataContainer().get(
+            new org.bukkit.NamespacedKey(plugin, "staff_item"),
+            org.bukkit.persistence.PersistentDataType.STRING
+        );
+        if (staffId == null) return;
 
-        if (name.contains("Vanish")) {
-            event.setCancelled(true);
-            toggleVanish(staff);
-        } else if (name.contains("Outils Modération")) {
-            event.setCancelled(true);
-            fr.jules.faction.gui.ModGUI.openModMenu(staff);
-        } else if (name.contains("Quitter Staff Mode")) {
-            event.setCancelled(true);
-            staff.performCommand("mod");
+        event.setCancelled(true);
+
+        if (event.getAction().name().contains("RIGHT")) {
+            switch (staffId) {
+                case "STAFF_VANISH":
+                    plugin.getVanishManager().toggleVanish(staff);
+                    break;
+                case "STAFF_TOOLS":
+                    fr.jules.faction.gui.ModGUI.openModMenu(staff);
+                    break;
+                case "STAFF_EXIT":
+                    staff.performCommand("mod");
+                    break;
+            }
         }
     }
 
